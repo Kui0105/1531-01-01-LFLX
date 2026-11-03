@@ -22,6 +22,38 @@ function bindModalQuantity() {
   });
 }
 
+function bindCommerceQuantities() {
+  document.querySelectorAll('[data-quantity]').forEach(input => {
+    const update = () => {
+      const value = validProductQuantity(input.value);
+      if (input.dataset.quantity === 'product') {
+        st.qty = value;
+      } else {
+        st.cart[Number(input.dataset.i)].qty = value;
+        const count = st.cart.reduce((total, item) => total + item.qty, 0);
+        document.querySelector('.cart-toolbar > span').textContent = `总共 ${count} 件`;
+        const total = st.cart.filter(item => item.checked && !item.invalid)
+          .reduce((sum, item) => sum + item.price * item.qty, 0);
+        document.querySelector('.cart-total .price').textContent = `¥${total}`;
+      }
+    };
+    input.addEventListener('focus', () => input.select());
+    input.addEventListener('input', update);
+    const commit = () => {
+      input.value = validProductQuantity(input.value);
+      update();
+    };
+    input.addEventListener('change', commit);
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        input.blur();
+      }
+    });
+  });
+}
+
 const originalHome = home;
 home = function () {
   return originalHome().replace(/<img id="bannerImage"[^>]*>/,
@@ -29,8 +61,8 @@ home = function () {
 };
 
 function mountSceneCarousels() {
-  // Keep the legacy banner timer for the unchanged shop page only.
-  if (st.page === 'home' && st.bannerTimer) {
+  // Both home and shop now use the same sliding carousel.
+  if (['home', 'products'].includes(st.page) && st.bannerTimer) {
     clearInterval(st.bannerTimer);
     st.bannerTimer = null;
   }
@@ -170,5 +202,6 @@ draw = function () {
   }
   mountSceneCarousels();
   updateFloatingCart();
+  bindCommerceQuantities();
 };
 draw();

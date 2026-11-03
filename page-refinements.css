@@ -53,6 +53,7 @@
 .hot-searches{flex-wrap:wrap}
 .scene-carousel{position:relative;width:100%;overflow:hidden;border-radius:12px;background:#e9f1ee;touch-action:pan-y;user-select:none}
 .home-carousel{aspect-ratio:2.15/1;margin-bottom:0}
+.shop-carousel{aspect-ratio:2.15/1;margin:0}
 .service-carousel{aspect-ratio:4/3;margin-bottom:12px}
 .scene-carousel-track{display:flex;width:100%;height:100%;transition:transform 420ms cubic-bezier(.22,.7,.25,1);will-change:transform}
 .scene-carousel-image{display:block;flex:0 0 100%;width:100%;height:100%;object-fit:cover;pointer-events:none}
@@ -117,7 +118,7 @@
 .cart-toolbar{margin:0 0 16px;min-height:44px;font-size:14px;line-height:22px}
 .cart-toolbar .textbtn{font-size:14px;line-height:22px;padding:0}
 .cart-items{display:flex;flex-direction:column;gap:12px}
-.cart-item.listitem{display:grid;grid-template-columns:24px 52px minmax(0,1fr) 108px;gap:8px;padding:12px 10px;margin:0;align-items:center}
+.cart-item.listitem{display:grid;grid-template-columns:24px 52px minmax(0,1fr) 120px;gap:8px;padding:12px 10px;margin:0;align-items:center}
 .cart-item .thumb{width:52px;height:60px;margin:0}
 .screen .cart-select{display:grid;place-items:center;width:44px;min-width:44px;height:44px;margin-left:-10px;padding:0;border:0;background:transparent}
 .cart-select-mark{display:grid;place-items:center;width:22px;height:22px;border:1.5px solid #a9bcb7;border-radius:50%;background:#fff}
@@ -128,12 +129,20 @@
 .cart-copy p{margin-bottom:6px}
 .cart-quantity{display:flex;align-items:center;justify-content:center;gap:0;margin:0}
 .cart-quantity .pill{flex:none;width:44px;min-height:44px;padding:9px 0;border-radius:8px;font-size:17px}
-.cart-quantity>span{width:20px;min-width:20px;text-align:center;font-size:14px;overflow-wrap:anywhere}
-.screen .modal-close{display:grid;place-items:center;flex:none;width:44px;height:44px;min-height:44px;padding:0;border:1px solid #d4e3de;border-radius:50%;background:#fff;color:#617579;font-size:25px;line-height:1}
+.cart-quantity .quantity-input{width:32px;min-width:32px;padding:0;font-size:14px}
+.screen .modal-close{display:grid;place-items:center;flex:none;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:0;background:transparent;color:#617579;font-size:25px;line-height:1}
 .modal-quantity{display:flex;align-items:center;gap:6px}
+.product-quantity{display:flex;align-items:center;gap:6px}
 .modal-quantity .pill{width:44px;min-height:44px;padding:9px 0;border-radius:8px;font-size:18px}
+.product-quantity .pill{width:44px;min-height:44px;padding:9px 0;font-size:18px}
+.cart-quantity .pill,.modal-quantity .pill,.product-quantity .pill{border:0;border-radius:0;background:transparent}
 .quantity-input{width:64px;height:44px;padding:0 4px;border:1px solid var(--line);border-radius:8px;background:#f7faf9;text-align:center;font-size:16px;appearance:textfield;-moz-appearance:textfield}
 .quantity-input::-webkit-inner-spin-button,.quantity-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .quantity-input:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
 .cart-total{font-size:14px;white-space:nowrap;flex:1}
 .commerce-action-bar .cart-total+.btn{flex:none;min-width:132px}
+.checkout-address{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.checkout-address-copy{min-width:0;flex:1}
+.checkout-address-copy p{overflow-wrap:anywhere}
+.checkout-address .checkout-address-copy p{margin:6px 0 0}
+.checkout-address>.textbtn{flex:none;min-width:44px;min-height:44px;padding:0;white-space:nowrap}
