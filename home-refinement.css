@@ -1,0 +1,27 @@
+/* Home refinements, in logical points within the iPhone canvas. */
+.home-topbar{display:flex;align-items:center;gap:12px;margin-bottom:12px;min-height:44px}
+.screen .home-store{display:flex;align-items:center;justify-content:flex-start;gap:5px;border:0;background:none;padding:0;color:var(--teal);min-width:0;max-width:58%;font-size:13px;line-height:20px;flex:none;white-space:nowrap}
+.home-store>svg{display:block;width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7}
+.home-store-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.home-store>.store-chevron{width:12px;height:12px}
+.screen .home-search{display:flex;align-items:center;justify-content:flex-start;gap:7px;border:1px solid #dde7e3;border-radius:22px;background:#fff;flex:1;min-width:112px;padding:0 12px;color:#718282;font-size:13px;line-height:20px;text-align:left}
+.home-search svg{width:17px;height:17px;display:block;flex:none;fill:none;stroke:currentColor;stroke-width:1.6}
+.home-announcement{display:flex;align-items:center;gap:8px;height:48px;padding:0 10px;background:#fff;border:1px solid var(--line);border-radius:12px;margin:0 0 12px;overflow:hidden}
+.home-announcement>.tag{flex:none;font-size:10px;line-height:16px;padding:3px 5px}
+.home-announcement-copy{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:18px;color:#526c6d}
+.screen .home-announcement-more{display:flex;align-items:center;justify-content:flex-end;gap:3px;margin-left:auto;flex:none;min-width:44px;padding:0;white-space:nowrap;font-size:12px;line-height:18px}
+.home-assessments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:4px 0 2px}
+.screen .home-assessment{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;min-height:92px;padding:10px 4px;border:1px solid #e3eeea;border-radius:13px;background:white;color:#263e42;text-align:center}
+.home-assessment-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#eaf5f1;color:#2d897b}
+.home-assessment-icon svg{display:block;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.home-assessment b{font-size:13px;line-height:20px;font-weight:600;white-space:nowrap}
+.home-assessment:active{background:#eaf5f1;border-color:#90bdb2}
+.home-coaches{display:flex;flex-direction:column;gap:8px}
+.screen .home-coach{display:flex;width:100%;min-height:82px;text-align:left;padding:12px;gap:10px;margin:0;color:var(--ink);cursor:pointer}
+.home-coach-title{display:flex;align-items:center;gap:7px;margin-bottom:5px;white-space:nowrap}
+.home-coach-title>b{font-size:14px;line-height:20px}
+.home-coach-title>.tag{font-size:10px;line-height:15px;padding:2px 5px}
+.home-coach-meta{display:block;font-size:11px;line-height:18px;color:#617579;white-space:nowrap}
+.home-coach-chevron{width:14px;height:14px;display:block;flex:none;fill:none;stroke:#809590;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.home-coach:active{background:#f0f8f4}
+.coach-hero{object-position:center 30%}
