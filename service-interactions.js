@@ -1,3 +1,27 @@
+function validProductQuantity(value) {
+  const quantity = Number(value);
+  return Number.isSafeInteger(quantity) && quantity > 0 ? quantity : 1;
+}
+
+function bindModalQuantity() {
+  const input = document.getElementById('mq');
+  if (!input) return;
+  input.addEventListener('focus', () => input.select());
+  input.addEventListener('input', () => { st.mq = validProductQuantity(input.value); });
+  const commit = () => {
+    st.mq = validProductQuantity(input.value);
+    input.value = st.mq;
+  };
+  input.addEventListener('change', commit);
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      input.blur();
+    }
+  });
+}
+
 const originalHome = home;
 home = function () {
   return originalHome().replace(/<img id="bannerImage"[^>]*>/,
