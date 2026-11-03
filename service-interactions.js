@@ -131,5 +131,20 @@ function updateFloatingCart() {
 }
 
 const originalDraw = draw;
-draw = function () { originalDraw(); mountSceneCarousels(); updateFloatingCart(); };
+draw = function () {
+  // Move the existing bar outside the scroll area, preserving its bound actions.
+  document.getElementById('commerceActionBar')?.remove();
+  originalDraw();
+  if (['productDetail', 'cart'].includes(st.page)) {
+    const bar = document.querySelector('#view > .cta');
+    if (bar) {
+      bar.id = 'commerceActionBar';
+      bar.classList.add('commerce-action-bar');
+      if (st.page === 'productDetail') bar.classList.add('product-action-bar');
+      document.getElementById('tabbar').before(bar);
+    }
+  }
+  mountSceneCarousels();
+  updateFloatingCart();
+};
 draw();
