@@ -92,6 +92,11 @@ function mountSceneCarousels() {
 const originalAct = act;
 act = function (event) {
   const node = event.currentTarget;
+  if (node.dataset.act === 'shopSearch') {
+    st.searchType = '商品';
+    go('search');
+    return;
+  }
   if (node.dataset.act === 'service') {
     st.qty = 1;
     st.slides.service = 0;
@@ -110,8 +115,21 @@ act = function (event) {
   }
   if (node.dataset.act === 'payCancel') st.paidAmount = checkoutAmount(st.page === 'productCheckout');
   originalAct(event);
+  if (node.dataset.act === 'addOk') updateFloatingCart();
+  if (node.dataset.act === 'message' && st.read) {
+    document.querySelectorAll('.unread-badge').forEach(badge => badge.remove());
+  }
 };
 
+function updateFloatingCart() {
+  document.getElementById('floatingCart')?.remove();
+  if (st.page !== 'products') return;
+  const count = st.cart.reduce((total, item) => total + item.qty, 0);
+  document.getElementById('screen').insertAdjacentHTML('beforeend',
+    `<button id="floatingCart" class="floating-cart" aria-label="购物车，${count} 件商品">${ic('cart')}<span class="cart-count" aria-hidden="true">${count > 99 ? '99+' : count}</span></button>`);
+  document.getElementById('floatingCart').addEventListener('click', () => go('cart'));
+}
+
 const originalDraw = draw;
-draw = function () { originalDraw(); mountSceneCarousels(); };
+draw = function () { originalDraw(); mountSceneCarousels(); updateFloatingCart(); };
 draw();
