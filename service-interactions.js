@@ -54,6 +54,24 @@ function bindCommerceQuantities() {
   });
 }
 
+function rehabAgreement() {
+  const key = `${st.btype}:${st.service}`;
+  if (st.noticeAgreementKey !== key) {
+    st.noticeAgreementKey = key;
+    st.noticeAgreed = false;
+  }
+  return `<div class="rehab-agreement"><label class="rehab-agreement-label"><input id="agreeNotice" type="checkbox" ${st.noticeAgreed ? 'checked' : ''}><span>我已阅读并同意</span></label><button class="textbtn rehab-notice-link" data-act="rehabNotice">《康复须知》</button></div>`;
+}
+
+function showRehabNotice() {
+  modal('康复须知', `<div class="rehab-notice-content"><h4>服务前如实告知</h4><p>请向康复师如实告知既往伤病、手术史、当前身体不适及其他可能影响评估或训练的情况，便于确认本次服务安排。</p><h4>评估与康复安排</h4><p>本次服务内容、时长及适用门店以订单和康复师确认的信息为准。请按预约时间到店；需要改期或取消时，请通过预约页面办理或联系客服。</p><h4>服务过程注意事项</h4><p>请按康复师指导进行评估和训练。如出现疼痛加重、头晕或其他不适，请立即停止并告知康复师。</p><h4>健康与安全</h4><p>康复评估和训练不能替代疾病诊断及急救。如有急性损伤或明显不适，请及时就医，并与康复师沟通后续服务安排。</p></div><button class="btn full" data-act="agreeRehabNotice">已阅读并同意</button>`);
+  const dialog = document.querySelector('#modal .modal');
+  dialog.classList.add('rehab-notice-dialog');
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-label', '康复须知');
+}
+
 const originalHome = home;
 home = function () {
   return originalHome().replace(/<img id="bannerImage"[^>]*>/,
@@ -148,6 +166,19 @@ function mountSceneCarousels() {
 const originalAct = act;
 act = function (event) {
   const node = event.currentTarget;
+  if (node.dataset.act === 'rehabNotice') {
+    showRehabNotice();
+    return;
+  }
+  if (node.dataset.act === 'agreeRehabNotice') {
+    st.noticeAgreed = true;
+    close();
+    const checkbox = document.getElementById('agreeNotice');
+    if (checkbox) checkbox.checked = true;
+    document.querySelector('.rehab-notice-link')?.focus();
+    return;
+  }
+  if (['buyService', 'buyEval'].includes(node.dataset.act)) st.noticeAgreed = false;
   if (node.dataset.act === 'shopSearch') {
     st.searchType = '商品';
     go('search');
@@ -191,17 +222,21 @@ draw = function () {
   // Move the existing bar outside the scroll area, preserving its bound actions.
   document.getElementById('commerceActionBar')?.remove();
   originalDraw();
-  if (['productDetail', 'cart'].includes(st.page)) {
+  if (['productDetail', 'cart', 'serviceCheckout'].includes(st.page)) {
     const bar = document.querySelector('#view > .cta');
     if (bar) {
       bar.id = 'commerceActionBar';
       bar.classList.add('commerce-action-bar');
       if (st.page === 'productDetail') bar.classList.add('product-action-bar');
+      if (st.page === 'serviceCheckout') bar.classList.add('checkout-action-bar');
       document.getElementById('tabbar').before(bar);
     }
   }
   mountSceneCarousels();
   updateFloatingCart();
   bindCommerceQuantities();
+  document.getElementById('agreeNotice')?.addEventListener('change', event => {
+    st.noticeAgreed = event.currentTarget.checked;
+  });
 };
 draw();

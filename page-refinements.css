@@ -146,3 +146,15 @@
 .checkout-address-copy p{overflow-wrap:anywhere}
 .checkout-address .checkout-address-copy p{margin:6px 0 0}
 .checkout-address>.textbtn{flex:none;min-width:44px;min-height:44px;padding:0;white-space:nowrap}
+.checkout-action-bar.cta{flex-direction:column;align-items:stretch;gap:6px}
+.checkout-action-bar>.btn{flex:none;width:100%}
+.rehab-agreement{display:flex;align-items:center;justify-content:center;gap:0;font-size:13px;line-height:20px}
+.rehab-agreement-label{display:flex;align-items:center;gap:4px;min-height:44px;cursor:pointer}
+.rehab-agreement-label input{width:18px;height:18px;margin:0 5px 0 0;accent-color:var(--teal)}
+.screen .rehab-notice-link{min-height:44px;padding:0;font-size:13px;line-height:20px;white-space:nowrap}
+.rehab-notice-dialog{display:flex;flex-direction:column;overflow:hidden}
+.rehab-notice-dialog>.between{flex:none}
+.rehab-notice-content{overflow:auto;min-height:0;margin-bottom:16px;line-height:1.75;color:#506568;font-size:14px}
+.rehab-notice-content h4{margin:0 0 6px;font-size:15px;color:var(--ink)}
+.rehab-notice-content p{margin:0 0 16px}
+.rehab-notice-dialog>.btn{flex:none}
