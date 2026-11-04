@@ -117,6 +117,9 @@ function addressPage() {
   return `<div class="address-list">${cards||'<div class="empty">暂无收货地址</div>'}</div>${cta('<button class="btn" data-act="address">新增地址</button>')}`;
 }
 
+const originalPagesContent=pagesContent;
+pagesContent=function(page){return page==='addresses'?addressPage():originalPagesContent(page)};
+
 function renderRegionOptions(select, values, selected) {
   select.innerHTML = '<option value="">请选择</option>'+values.map(value=>`<option value="${value}" ${value===selected?'selected':''}>${value}</option>`).join('');
 }
@@ -137,9 +140,6 @@ function openAddressForm(index=-1) {
   p.addEventListener('change',()=>{const nextCity=Object.keys(sampleRegions[p.value])[0];renderRegionOptions(c,Object.keys(sampleRegions[p.value]),nextCity);renderRegionOptions(d,sampleRegions[p.value][nextCity],sampleRegions[p.value][nextCity][0])});
   c.addEventListener('change',()=>renderRegionOptions(d,sampleRegions[p.value][c.value],sampleRegions[p.value][c.value][0]));
 }
-
-const originalPagesContent=pagesContent;
-pagesContent=function(page){return page==='addresses'?addressPage():originalPagesContent(page)};
 
 const originalCheckout=checkout;
 checkout=function(product){
