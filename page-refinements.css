@@ -217,14 +217,16 @@
 .order-status-tabs{margin:0 -16px 14px;padding:0 16px 4px}
 .order-status-tabs .pill,.order-type-tabs .pill,.appointment-tabs .pill,.card-tabs .pill{flex:none}
 .order-list,.appointment-list,.card-list{display:flex;flex-direction:column;gap:12px}
-.screen .order-card{margin:0;padding:14px}
+.screen .order-card{margin:0;padding:14px;cursor:pointer}
+.order-card:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 .order-product{margin:12px 0;min-width:0}
 .order-product .thumb{width:64px;height:64px}
 .order-product .grow>b{font-size:14px;line-height:20px}
 .order-product .grow>p{margin:5px 0 0;font-size:12px;color:#617579;line-height:18px}
-.order-card-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid var(--line)}
-.order-card-footer>small{font-size:13px}
-.order-card-footer .btn{flex:none}
+.order-card-footer{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
+.order-card-footer>small{font-size:13px;white-space:nowrap}
+.order-card-footer .order-actions{margin:0;padding:0;gap:8px;flex-wrap:wrap}
+.order-card-footer .order-actions .textbtn{font-size:12px;min-height:44px;padding:3px 2px;white-space:nowrap}
 .order-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin-top:8px;padding-top:6px}
 .order-actions .textbtn{min-height:38px;font-size:13px}
 .appointment-tabs{margin:0 -16px 14px;padding:0 16px 4px}

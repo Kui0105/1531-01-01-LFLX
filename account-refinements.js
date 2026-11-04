@@ -41,7 +41,7 @@ function accountOrderPage() {
   const filter=accountOrdersByType[type].includes(st.orderFilter)?st.orderFilter:'全部';
   st.orderFilter=filter;
   const orders=st.orders.filter(order=>order.type===type&&(filter==='全部'||order.status===filter));
-  return `${tabs(Object.keys(accountOrdersByType),type,'orderType').replace('class="tabs"','class="tabs order-type-tabs"')}${tabs(accountOrdersByType[type],filter,'orderFilter').replace('class="tabs"','class="tabs order-status-tabs"')}<div class="order-list">${orders.map((order,index)=>`<article class="card order-card"><div class="between"><small class="muted">${order.id} · ${order.date}</small><span class="tag ${['待付款','售后中'].includes(order.status)?'gold':''}">${order.status}</span></div><div class="row order-product"><img class="thumb" src="${A+order.image}" alt="${order.name}"><div class="grow"><b>${order.name}</b><p>${order.detail}</p></div><b class="price">¥${order.price}</b></div><div class="order-card-footer"><small>实付 ¥${order.price}</small><button class="btn secondary" data-act="accountOrderDetail" data-id="${order.id}">查看详情</button></div>${accountOrderActions(order)}</article>`).join('')||'<div class="empty">当前状态暂无订单</div>'}</div>`;
+  return `${tabs(Object.keys(accountOrdersByType),type,'orderType').replace('class="tabs"','class="tabs order-type-tabs"')}${tabs(accountOrdersByType[type],filter,'orderFilter').replace('class="tabs"','class="tabs order-status-tabs"')}<div class="order-list">${orders.map(order=>`<article class="card order-card" data-act="accountOrderDetail" data-id="${order.id}" role="link" tabindex="0" aria-label="查看${order.name}订单详情"><div class="between"><small class="muted">${order.id} · ${order.date}</small><span class="tag ${['待付款','售后中'].includes(order.status)?'gold':''}">${order.status}</span></div><div class="row order-product"><img class="thumb" src="${A+order.image}" alt="${order.name}"><div class="grow"><b>${order.name}</b><p>${order.detail}</p></div><b class="price">¥${order.price}</b></div><div class="order-card-footer"><small>实付 ¥${order.price}</small>${accountOrderActions(order)}</div></article>`).join('')||'<div class="empty">当前状态暂无订单</div>'}</div>`;
 }
 
 function accountOrderActions(order) {
@@ -95,9 +95,9 @@ function accountProfileIcon(name) {
 }
 
 function accountProfilePage() {
-  const shortcuts=[['我的订单','orders','orders'],['我的预约','appointments','calendar'],['我的卡包','cards','cards']];
-  const tools=[['康复档案','archives','file'],['优惠券','coupons','coupons'],['邀请有礼','rewards','gift'],['生日福利','birthday','birthday'],['我的评价','reviews','reviews'],['收货地址','addresses','pin'],['投诉反馈','complaints','complaints'],['联系客服','support','support']];
-  return `<div class="profile-page"><section class="profile-summary"><div class="profile-user"><img class="avatar" src="${A}coach-lin.png" alt="用户头像"><div class="profile-identity"><div class="profile-name-line"><h2>林间微光</h2><span class="tag gold">银卡会员</span></div><button class="textbtn profile-edit" data-go="profile">完善个人资料 <span aria-hidden="true">›</span></button></div></div><div class="profile-store">${ic('pin')}<span>绑定门店 · ${st.store}</span></div><div class="profile-metrics">${[['680','成长值','growth'],['320','积分','points'],['2','剩余卡次','cards']].map(([value,label,target])=>`<button data-go="${target}"><b>${value}</b><span>${label}</span></button>`).join('')}</div></section><section class="profile-section"><h3>我的服务</h3><div class="profile-service-grid">${shortcuts.map(([label,target,icon])=>`<button data-go="${target}"><span class="profile-shortcut-icon">${accountProfileIcon(icon)}</span><span>${label}</span></button>`).join('')}</div></section><section class="profile-section"><h3>常用功能</h3><div class="profile-tool-grid">${tools.map(([label,target,icon])=>`<button data-go="${target}">${accountProfileIcon(icon)}<span>${label}</span></button>`).join('')}</div></section><button class="profile-settings" data-go="settings">${accountProfileIcon('settings')}<span>设置</span><span class="profile-chevron" aria-hidden="true">›</span></button></div>`;
+  const shortcuts=[['我的订单','orders','orders'],['我的预约','appointments','calendar'],['康复档案','archives','file']];
+  const tools=[['优惠券','coupons','coupons'],['邀请有礼','rewards','gift'],['生日福利','birthday','birthday'],['我的评价','reviews','reviews'],['收货地址','addresses','pin'],['投诉反馈','complaints','complaints'],['联系客服','support','support'],['设置','settings','settings']];
+  return `<div class="profile-page"><section class="profile-summary"><div class="profile-user"><img class="avatar" src="${A}coach-lin.png" alt="用户头像"><div class="profile-identity"><div class="profile-name-line"><h2>林间微光</h2><span class="tag gold">银卡会员</span></div><button class="textbtn profile-edit" data-go="profile">完善个人资料 <span aria-hidden="true">›</span></button></div></div><div class="profile-store">${ic('pin')}<span>绑定门店 · ${st.store}</span></div><div class="profile-metrics">${[['680','成长值','growth'],['320','积分','points'],['2','剩余卡次','cards']].map(([value,label,target])=>`<button data-go="${target}"><b>${value}</b><span>${label}</span></button>`).join('')}</div></section><section class="profile-section"><h3>我的服务</h3><div class="profile-service-grid">${shortcuts.map(([label,target,icon])=>`<button data-go="${target}"><span class="profile-shortcut-icon">${accountProfileIcon(icon)}</span><span>${label}</span></button>`).join('')}</div></section><section class="profile-section"><h3>常用功能</h3><div class="profile-tool-grid">${tools.map(([label,target,icon])=>`<button data-go="${target}">${accountProfileIcon(icon)}<span>${label}</span></button>`).join('')}</div></section></div>`;
 }
 
 function accountOrderDetail(order) {
@@ -160,7 +160,7 @@ act=function(event){
     return;
   }
   if(action==='orderType'){st.orderFilter='全部';st.accountOrder=null;accountBaseAct(event);return}
-  if(action==='accountOrderDetail'){st.accountOrder=st.orders.find(order=>order.id===id);go('orderDetail');return}
+  if(action==='accountOrderDetail'){if(event.target.closest('button,a,input,select,textarea'))return;st.accountOrder=st.orders.find(order=>order.id===id);go('orderDetail');return}
   if(action==='orderEvalBook'){
     st.accountOrder=st.orders.find(order=>order.id===id)||st.accountOrder;
     st.orderType='评估订单';st.btype='eval';st.service=Math.max(0,S.findIndex(service=>service[0]===st.accountOrder?.name));st.bookedName=st.accountOrder?.name;go('booking');return;
@@ -241,4 +241,13 @@ act=function(event){
   }
   if(action==='assessmentSuccess'&&st.accountOrder){st.accountOrder.status='服务中';st.accountOrder.detail=st.accountOrder.detail.replace('评估服务','评估服务 · 评估资料已提交');st.orderType='评估订单';st.orderFilter='服务中';}
   accountBaseAct(event);
+};
+
+const accountBaseDraw=draw;
+draw=function(){
+  accountBaseDraw();
+  document.querySelectorAll('.order-card[role="link"]').forEach(card=>card.addEventListener('keydown',event=>{
+    if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();card.click()}
+  }));
+  if(st.page==='home')showNewCoupon();
 };
