@@ -226,7 +226,8 @@ act=function(event){
   if(action==='cardTab'||action==='orderFilter'||action==='apptTab'){accountBaseAct(event);return}
   if(action==='payOk'&&node.dataset.product==='false'){
     const service=st.orderedService||S[st.service]||S[6];
-    st.orders.unshift({id:`SV${Date.now()}`,type:st.orderType==='评估订单'?'评估订单':'服务订单',status:st.orderType==='评估订单'?'待评估':'待使用',name:service[0],detail:`${service[2]} · 数量 ×${st.serviceQty||1}`,price:Number(service[3])||0,image:service[4],date:'2026-11-04'});
+    const evaluation=st.btype==='eval',quantity=evaluation?1:Math.max(1,Math.floor(Number(st.serviceQty)||1));
+    st.orders.unshift({id:`${evaluation?'EV':'SV'}${Date.now()}`,type:evaluation?'评估订单':'服务订单',status:evaluation?'待评估':'待服务',name:service[0],detail:`${service[2]}${evaluation?'':` · 数量 ×${quantity}`}`,quantity,unitPrice:Number(service[3])||0,price:checkoutAmount(false),image:service[4],date:new Date().toLocaleDateString('sv-SE')});
     st.orderFilter='全部';
   }
   if(action==='payOk'&&node.dataset.product==='true'){
