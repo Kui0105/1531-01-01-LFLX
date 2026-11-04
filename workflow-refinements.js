@@ -1,11 +1,26 @@
 const workflowBasePages=pagesContent;
 const workflowBaseAct=act;
-const workflowBaseDraw=draw;
-const workflowOriginalBooking=booking;
+
+
 
 const workflowAssessmentBasicKey='lflx-assessment-basic-v1';
 const workflowMultiQuestions=new Set(['issues','areas','specialty']);
 const workflowTitles=coaches.map((_,index)=>index===0?'首席康复师':'高级康复师');
+const workflowMessages=[
+  {title:'预约到店提醒',content:'预约的膝关节康复将于 11月05日 14:00 开始。',target:'appointmentDetail'},
+  {title:'服务到期提醒',content:'您的康复服务即将到期，请查看剩余服务安排。',target:'orders'},
+  {title:'康复复测提醒',content:'您的复测时间为 11月08日。',target:'appointments'},
+  {title:'投诉处理结果',content:'投诉反馈已处理完毕。',target:'complaints'}
+];
+
+function workflowMessagePage(){
+  return `<div class="message-toolbar message-toolbar-left"><button class="textbtn" data-act="allRead">全部已读</button></div>${workflowMessages.map((message,index)=>`<button class="listitem message-item" data-act="message" data-i="${index}"><span class="iconbox">${ic('msg')}</span><span class="grow"><strong>${message.title}${!st.read&&index<2?' <span class="tag gold">未读</span>':''}</strong><span class="message-copy">${message.content}</span><small class="muted">2026-11-04 09:30</small></span><span class="row-chevron" aria-hidden="true">›</span></button>`).join('')}`;
+}
+
+function workflowCurrentStore(page,name){
+  const store=stores.find(item=>item.name===name)||stores[0];
+  return `<section class="selection-group current-store"><div class="between"><h3>服务门店</h3><button class="textbtn" data-act="changeWorkflowStore">更换门店</button></div><button class="selection-store" data-act="changeWorkflowStore" aria-label="更换门店，当前${store.name}"><img src="${A+store.images[0]}" alt="${store.name}门店环境"><span class="selection-store-copy"><b>${store.name}</b><small>${store.address}</small><small>营业 ${store.hours} · 距您 ${store.distance} km</small></span><span class="row-chevron" aria-hidden="true">›</span></button></section>`;
+}
 
 function assessmentBasicInfo(){
   try{return JSON.parse(localStorage.getItem(workflowAssessmentBasicKey)||'null')}catch{return null}
@@ -23,7 +38,7 @@ function workflowAssessmentPage(){
   const index=Math.min(3,Math.max(0,st.service||0));
   const relaxation=index===0||index===3;
   const sets=relaxation?[
-    ['久坐时长','sedentary',['4小时以内','4-6小时','6-8小时','8小时以上']],
+    ['每天久坐时长','sedentary',['4小时以内','4-6小时','6-8小时','8小时以上']],
     ['运动频率','frequency',['基本不运动','1-2次/周','3-4次/周','5次以上/周']],
     ['当前训练或比赛安排','schedule',['无','日常训练','备赛期','赛前1周','赛后3天内']],
     ['这次最想解决的问题','issues',['疲劳恢复','肌肉紧绷','运动后恢复','久坐僵硬','睡眠放松','情绪紧张','体态改善']],
@@ -44,7 +59,7 @@ function workflowAssessmentPage(){
   }).join('');
   const basic=assessmentBasicInfo();
   const basicFields=basic?'':`<section class="card assessment-basic"><h3>基础信息</h3><div class="field"><label>姓名</label><input class="input" name="basicName" autocomplete="name" required></div><div class="field"><label>性别</label><select class="input" name="basicGender" required><option value="">请选择</option><option>女</option><option>男</option><option>其他</option></select></div><div class="field"><label>年龄</label><input class="input" name="basicAge" type="number" min="1" max="120" inputmode="numeric" required></div><div class="field"><label>身高（cm）</label><input class="input" name="basicHeight" type="number" min="1" max="250" inputmode="decimal" required></div><div class="field"><label>体重（kg）</label><input class="input" name="basicWeight" type="number" min="1" max="350" inputmode="decimal" required></div><div class="field"><label>联系电话</label><input class="input" name="basicPhone" type="tel" inputmode="tel" autocomplete="tel" required></div></section>`;
-  return `<h2 class="title">${S[index][0]}资料</h2><div class="card assessment-form"><div class="field"><label>评估项目</label><input class="input" value="${S[index][0]}" disabled></div>${questions}<div class="field"><label>补充说明（选填）</label><textarea class="input textarea" name="assessmentNote" placeholder="补充说明本次评估相关情况"></textarea></div></div>${basicFields}${basic?'<p class="assessment-basic-saved">基础信息已保存</p>':''}${cta('<button class="btn" data-act="submitAssessment">提交评估资料</button>')}`;
+  return `${basicFields}<div class="card assessment-form"><h3>评估资料</h3><div class="field"><label>评估项目</label><input class="input" value="${S[index][0]}" disabled></div>${questions}<div class="field"><label>补充说明（选填）</label><textarea class="input textarea" name="assessmentNote" placeholder="补充说明本次评估相关情况"></textarea></div></div>${basic?'<p class="assessment-basic-saved">基础信息已保存</p>':''}${cta('<button class="btn" data-act="submitAssessment">提交评估资料</button>')}`;
 }
 
 function workflowAppointmentDetail(){
@@ -72,7 +87,7 @@ function workflowBooking(){
   const weekend=/周六|周日/.test(st.date);
   const slots=weekend?['09:30','10:00','10:30','11:00','11:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30']:['11:00','11:30','12:00','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00'];
   const storeIndex=Math.max(0,stores.findIndex(store=>store.name===st.store));
-  return `<div class="between"><h2 class="title">${st.btype==='eval'?'预约评估':'预约服务'}</h2></div><section class="selection-group"><h3>选择服务门店</h3>${stores.map((store,index)=>workflowStoreCard(store,index,index===storeIndex,'bookingStoreCard')).join('')}</section><section class="selection-group"><h3>选择康复师</h3><div class="selection-people">${coaches.map((coach,index)=>workflowCoachCard(coach,index,coach.name===st.therapist,'bookingCoachCard')).join('')}</div></section>${section('预约日期')}<div class="grid3">${['11月02日 周一','11月03日 周二','11月04日 周三','11月05日 周四','11月06日 周五','11月07日 周六','11月08日 周日'].map(value=>`<button class="tile" style="${st.date===value?'border-color:#79b5ac;background:#edf8f5':''}" data-act="date" data-v="${value}">${value.slice(0,5)}<small>${value.slice(6)}</small></button>`).join('')}</div>${section('可预约时段')}<div class="grid3">${slots.map((value,index)=>`<button class="pill ${st.slot===value?'active':''}" ${index===4?'disabled':''} data-act="slot" data-conflict="${index===7?'1':''}" data-v="${value}" style="${index===4||index===7?'opacity:.45;text-decoration:line-through':''}">${value}</button>`).join('')}</div><p class="tiny muted">${weekend?'周末营业 09:30–18:30':'工作日营业 11:00–20:00'}；按 30 分钟划分，时段按服务时长占用。预约开始前 1 小时内不可改期或取消。</p>${cta('<button class="btn" data-act="confirmBooking">确认预约</button>')}`;
+  return `${workflowCurrentStore('booking',st.store)}<section class="selection-group"><h3>选择康复师</h3><div class="selection-people">${coaches.map((coach,index)=>workflowCoachCard(coach,index,coach.name===st.therapist,'bookingCoachCard')).join('')}</div></section>${section('预约日期')}<div class="grid3">${['11月02日 周一','11月03日 周二','11月04日 周三','11月05日 周四','11月06日 周五','11月07日 周六','11月08日 周日'].map(value=>`<button class="tile" style="${st.date===value?'border-color:#79b5ac;background:#edf8f5':''}" data-act="date" data-v="${value}">${value.slice(0,5)}<small>${value.slice(6)}</small></button>`).join('')}</div>${section('可预约时段')}<div class="grid3">${slots.map((value,index)=>`<button class="pill ${st.slot===value?'active':''}" ${index===4?'disabled':''} data-act="slot" data-conflict="${index===7?'1':''}" data-v="${value}" style="${index===4||index===7?'opacity:.45;text-decoration:line-through':''}">${value}</button>`).join('')}</div><p class="tiny muted">${weekend?'周末营业 09:30–18:30':'工作日营业 11:00–20:00'}；按 30 分钟划分，时段按服务时长占用。预约开始前 1 小时内不可改期或取消。</p>${cta('<button class="btn" data-act="confirmBooking">确认预约</button>')}`;
 }
 
 function appointmentIsWithinHour(appointment){
@@ -90,11 +105,11 @@ pagesContent=function(page){
   if(page==='appointmentDetail'&&st.appointments?.length)return workflowAppointmentDetail();
   if(page==='serviceDetail'&&S[st.service]?.[1].startsWith('eval-'))return workflowBasePages(page).replace(/<section class="card service-quantity">[\s\S]*?<\/section>/,'');
   if(page==='serviceCheckout'&&st.btype==='eval')return workflowBasePages(page).replace(/ · 数量 ×\d+/,'');
-  if(page==='messages')return workflowBasePages(page).replace("'康复方案待确认',",'').replaceAll('卡项到期提醒','服务到期提醒').replace("'预约的膝关节康复将于 11月05日 14:00 开始。','评估方案已完成，待签字确认。','持有的康复次卡即将到期。','您的复测时间为 11月08日。','投诉反馈已处理完毕。'","'预约的膝关节康复将于 11月05日 14:00 开始。','您的康复服务即将到期，请查看剩余服务安排。','您的复测时间为 11月08日。','投诉反馈已处理完毕。'");
+  if(page==='messages')return workflowMessagePage();
   if(page==='orderAssessmentStart'){
     const storeIndex=Math.max(0,stores.findIndex(item=>item.name===st.orderFlowStore));
     const coachIndex=Math.max(0,coaches.findIndex(item=>item.name===st.orderFlowCoach));
-    return `<div class="card"><b>评估项目</b><p class="small muted">${st.accountOrder?.name||'评估服务'}</p></div><section class="selection-group"><h3>选择服务门店</h3>${stores.map((store,index)=>workflowStoreCard(store,index,index===storeIndex,'orderFlowStoreCard')).join('')}</section><section class="selection-group"><h3>选择康复师</h3>${coaches.map((coach,index)=>workflowCoachCard(coach,index,index===coachIndex,'orderFlowCoachCard')).join('')}</section><button class="btn full" data-act="continueImmediateAssessment">填写评估资料</button>`;
+    return `<div class="card"><b>评估项目</b><p class="small muted">${st.accountOrder?.name||'评估服务'}</p></div>${workflowCurrentStore('orderAssessmentStart',st.orderFlowStore||st.store)}<section class="selection-group"><h3>选择康复师</h3>${coaches.map((coach,index)=>workflowCoachCard(coach,index,index===coachIndex,'orderFlowCoachCard')).join('')}</section>${cta('<button class="btn" data-act="continueImmediateAssessment">填写评估资料</button>')}`;
   }
   if(page==='booking'){
     return workflowBooking();
@@ -115,15 +130,35 @@ function saveAssessmentBasic(){
 act=function(event){
   const node=event.currentTarget,action=node.dataset.act;
   if(action==='message'){
-    const index=Number(node.dataset.i),messages=[
-      ['预约到店提醒','预约的膝关节康复将于 11月05日 14:00 开始。'],
-      ['服务到期提醒','您的康复服务即将到期，请查看剩余服务安排。'],
-      ['康复复测提醒','您的复测时间为 11月08日。'],
-      ['投诉处理结果','投诉反馈已处理完毕。']
-    ];
-    const [title,content]=messages[index]||messages[0];st.read=true;
+    const index=Number(node.dataset.i),message=workflowMessages[index];
+    if(!message)return;
+    st.read=true;
     if(index===0&&st.appointments[0])st.appointmentId=st.appointments[0].id;
-    modal(title,`<p class="small">${content}</p><button class="btn full" data-act="messageJump" data-i="${index}">查看相关信息</button>`);return;
+    modal(message.title,'<p class="small">'+message.content+'</p><button class="btn full" data-act="messageJump" data-i="'+index+'">查看相关信息</button>');
+    document.querySelectorAll('.unread-badge').forEach(badge=>badge.remove());return;
+  }
+  if(action==='messageJump'){
+    const message=workflowMessages[Number(node.dataset.i)];close();
+    if(message){if(message.target==='orders'){st.orderType='服务订单';st.orderFilter='全部'}go(message.target)}return;
+  }
+  if(action==='changeWorkflowStore'){
+    st.storeReturn=st.page;go('storeList');return;
+  }
+  if(action==='chooseStore'&&['booking','orderAssessmentStart'].includes(st.storeReturn)){
+    const store=stores[Number(node.dataset.i)];
+    modal('确认更换门店',`<p class="small">${store.name}</p><p class="small muted">${store.address}</p><div class="grid2"><button class="btn ghost" data-act="close">再看看</button><button class="btn" data-act="workflowConfirmStore" data-i="${node.dataset.i}">确认选择</button></div>`);return;
+  }
+  if(action==='workflowConfirmStore'){
+    const store=stores[Number(node.dataset.i)];st.store=store.name;st.slot='';
+    if(st.storeReturn==='orderAssessmentStart')st.orderFlowStore=store.name;
+    close();go(st.storeReturn||'booking');toast('服务门店已更新');return;
+  }
+  if(action==='continueImmediateAssessment'){
+    const store=stores.find(item=>item.name===st.orderFlowStore)||stores.find(item=>item.name===st.store)||stores[0];
+    const coach=coaches.find(item=>item.name===st.orderFlowCoach)||coaches[0];
+    st.orderFlowStore=store.name;st.orderFlowCoach=coach.name;st.store=store.name;st.therapist=coach.name;
+    st.btype='eval';st.service=Math.max(0,S.findIndex(service=>service[0]===st.accountOrder?.name));
+    go('assessment');return;
   }
   if(action==='assessmentChoice'){
     const {key,value}=node.dataset;

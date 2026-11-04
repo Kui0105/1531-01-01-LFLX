@@ -257,6 +257,7 @@
 .selection-person>img,.appointment-coach>img{width:48px;height:48px;flex:none;border-radius:50%;object-fit:cover}
 .assessment-basic h3,.assessment-detail-section h3{margin:0 0 12px;font-size:16px;line-height:23px}
 .assessment-question{min-width:0;margin:0 0 17px;padding:0;border:0}
+.assessment-form>h3{margin:0 0 14px;font-size:16px;line-height:23px}
 .assessment-question legend{margin:0 0 8px;padding:0;font-size:14px;font-weight:600;line-height:21px}
 .assessment-options{display:flex;flex-wrap:wrap;gap:8px}
 .screen .assessment-option{min-height:38px;padding:7px 10px;border:1px solid var(--line);border-radius:19px;background:#fff;color:#425a59;font-size:12px;line-height:18px}
@@ -281,6 +282,48 @@
 .appointment-detail-action-bar .tiny{width:100%;text-align:center}
 .assessment-action-bar.cta{position:relative;bottom:auto;flex:none;margin:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));min-height:64px;z-index:10}
 .assessment-action-bar>.btn{width:100%;flex:none}
+.current-store .between{min-height:36px}.current-store .textbtn{min-height:44px}
+.current-store .selection-store{margin-top:0}
+.message-item{width:100%;text-align:left;color:var(--ink)}
+.message-item>.iconbox{flex:none}.message-item strong{font-size:14px;line-height:21px}
+.message-copy{display:block;margin:5px 0;font-size:12px;line-height:19px;color:#617579}
+.coupon-list{display:flex;flex-direction:column;gap:12px}
+.coupon-card{display:grid;grid-template-columns:minmax(0,1fr) 84px;border:1px solid var(--line);border-left:4px solid #d9a558;border-radius:14px;background:#fff;overflow:hidden}
+.coupon-info{padding:14px;min-width:0}.coupon-info b{font-size:14px;line-height:21px}
+.coupon-info .between{align-items:flex-start}.coupon-info .tag{flex:none;white-space:nowrap}
+.coupon-info p{margin:6px 0;font-size:12px;line-height:18px;color:#617579}
+.coupon-info small,.coupon-type{font-size:11px;line-height:18px;color:#7c8d92}
+.coupon-type{display:block;margin-top:5px}
+.coupon-denomination{display:flex;align-items:center;justify-content:center;align-self:stretch;border-left:1px dashed #e4ecea;background:#fcfaf4;color:#a87331}
+.coupon-denomination>span{display:flex;align-items:baseline;justify-content:center;gap:3px}
+.coupon-denomination b{font-family:Arial,sans-serif;font-size:30px;line-height:36px}
+.coupon-denomination small{font-size:13px}.coupon-inactive .coupon-denomination{color:#82918d;background:#f4f7f6}
+.rewards-account{background:#edf6f2}.rewards-user{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+.rewards-user b{display:block;font-size:18px;line-height:26px}.rewards-user small{display:block;margin-top:4px;font-size:12px;color:#617579}
+.rewards-balances,.rewards-earnings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.rewards-balances button{display:flex;flex-direction:column;gap:7px;border:0;background:none;text-align:left;padding:0;min-height:64px}
+.rewards-balances small,.rewards-earnings small{display:block;font-size:12px;line-height:18px;color:#617579}
+.rewards-balances b{font-family:Arial,sans-serif;font-size:26px;line-height:32px;color:#236c60}
+.rewards-earnings{padding-top:14px;margin-top:14px;border-top:1px solid #d9e8e1}
+.rewards-earnings b{display:block;margin-top:6px;font-size:17px;line-height:24px}
+.rewards-menu{padding:0 14px}.rewards-menu>button{display:flex;align-items:center;gap:11px;width:100%;min-height:64px;padding:10px 0;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;font-size:14px}
+.rewards-menu>button:last-child{border-bottom:0}.rewards-menu>button>.row-chevron{margin-left:auto}
+.rewards-menu svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6}
+.promotion-poster img{display:block;width:100%;height:auto;border-radius:14px}
+.poster-download{display:flex;align-items:center;justify-content:center;text-decoration:none;width:100%}
+.rewards-count small{display:block;font-size:13px;color:#617579}.rewards-count>b{display:block;margin-top:6px;font-family:Arial,sans-serif;font-size:28px;color:#236c60}.rewards-count>b>span{font-size:13px;font-weight:400}
+.team-search{display:flex;gap:8px;margin:16px 0}.team-search .input{flex:1;min-width:0}.team-search>.btn{flex:none}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.rewards-month{display:flex;align-items:center;gap:12px;margin:16px 0}.rewards-month label{flex:none;font-size:13px;color:#617579}.rewards-month .input{min-width:0;flex:1}
+.referral-order b,.commission-entry b{font-size:14px;line-height:21px}.referral-order .row .grow>p{margin:4px 0 0}
+.referral-order>p,.commission-entry>p,.referral-order .grow>p{font-size:12px;line-height:19px;color:#617579}
+.referral-order>small,.commission-entry small{font-size:11px;line-height:18px;color:#7c8d92}
+.referral-order-facts{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:13px}
+.referral-order-facts b{color:#287d6e}.referral-order .tag{flex:none}
+.rewards-commission{display:flex;flex-direction:column;gap:8px;background:#edf6f2}.rewards-commission>span{font-size:13px;color:#617579}
+.rewards-commission>b{font-family:Arial,sans-serif;font-size:28px;line-height:36px;color:#236c60}.rewards-commission>small{font-size:12px;color:#617579}
+.rewards-commission>.textbtn{align-self:flex-start;min-height:36px;padding-left:0}
+.withdraw-amount{display:flex;gap:8px;align-items:center}.withdraw-amount>.input{flex:1;min-width:0}.withdraw-amount>.textbtn{flex:none;min-height:44px}
 .card-tabs{margin:0 -16px 14px;padding:0 16px 4px}
 .screen .membership-card{margin:0;padding:14px}
 .membership-card>.between{gap:8px}
