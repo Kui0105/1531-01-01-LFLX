@@ -77,8 +77,24 @@ function accountCardPage() {
   return `${tabs(['使用中','即将到期','已到期'],status,'cardTab').replace('class="tabs"','class="tabs card-tabs"')}<div class="card-list">${cards.map((card,index)=>`<article class="card membership-card"><div class="between"><b>${card.name}</b><span class="tag ${card.status==='即将到期'?'gold':''}">${card.status}</span></div><p class="small muted">${card.remaining} · ${card.expiry}</p><div class="membership-actions"><button class="textbtn" data-act="accountCardRecords" data-index="${index}" data-name="${card.name}">预约明细</button>${card.status!=='已到期'?'<button class="btn secondary" data-go="booking">立即预约</button>':''}</div></article>`).join('')}</div>`;
 }
 
+function accountProfileIcon(name) {
+  const paths={
+    edit:'<path d="m15 4 5 5M4 20l4-1L20 7a2 2 0 0 0-4-4L4 15Z"/>',
+    orders:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v4H9zM9 12h6M9 16h4"/>',
+    cards:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/>',
+    coupons:'<path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4ZM15 5v3m0 3v2m0 3v3"/>',
+    reviews:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9L7.5 14 3 9.6l6.2-.9Z"/>',
+    birthday:'<path d="M4 12h16v9H4zM3 16c3 3 3-3 6 0s3-3 6 0 3-3 6 0M8 12V9m8 3V9m-4 3V7M12 3v1M8 5v1m8-1v1"/>',
+    complaints:'<path d="M4 4h16v13H9l-5 4ZM12 8v4m0 2v.1"/>',
+    settings:'<path d="m10 3-.7 2.2-2 .9L5 5.6 3 9l1.6 1.7v2.6L3 15l2 3.4 2.3-.5 2 .9L10 21h4l.7-2.2 2-.9 2.3.5 2-3.4-1.6-1.7v-2.6L21 9l-2-3.4-2.3.5-2-.9L14 3Z"/><circle cx="12" cy="12" r="3"/>'
+  };
+  return paths[name]?`<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name]}</svg>`:ic(name);
+}
+
 function accountProfilePage() {
-  return `<section class="profile-summary"><div class="profile-user"><img class="avatar" src="${A}coach-lin.png" alt="用户头像"><div class="profile-identity"><div class="profile-name-line"><h2>林间微光</h2><span class="tag gold">银卡会员</span></div><small>绑定门店：${st.store}</small></div><button class="textbtn" data-go="profile">完善资料</button></div><div class="profile-metrics">${[['680','成长值','growth'],['320','积分','points'],['2次','剩余卡次','cards']].map(([value,label,target])=>`<button data-go="${target}"><b>${value}</b><span>${label}</span></button>`).join('')}</div></section><section class="profile-section"><h3>我的服务</h3><div class="profile-service-grid">${[['订单','orders','shop'],['预约','appointments','calendar'],['卡包','cards','gift'],['康复档案','archives','file'],['优惠券','coupons','gift'],['收货地址','addresses','pin']].map(([label,target,icon])=>`<button data-go="${target}"><span class="iconbox">${ic(icon)}</span><b>${label}</b></button>`).join('')}</div></section><section class="profile-section"><h3>我的功能</h3><div class="profile-link-list">${[['邀请有礼','rewards'],['生日福利','birthday'],['我的评价','reviews'],['投诉反馈','complaints'],['收货地址','addresses'],['联系客服','support'],['设置','settings']].map(([label,target])=>`<button data-go="${target}"><span>${label}</span><b>›</b></button>`).join('')}</div></section>`;
+  const shortcuts=[['我的订单','orders','orders'],['我的预约','appointments','calendar'],['我的卡包','cards','cards']];
+  const tools=[['康复档案','archives','file'],['优惠券','coupons','coupons'],['邀请有礼','rewards','gift'],['生日福利','birthday','birthday'],['我的评价','reviews','reviews'],['收货地址','addresses','pin'],['投诉反馈','complaints','complaints'],['联系客服','support','support']];
+  return `<div class="profile-page"><section class="profile-summary"><div class="profile-user"><img class="avatar" src="${A}coach-lin.png" alt="用户头像"><div class="profile-identity"><div class="profile-name-line"><h2>林间微光</h2><span class="tag gold">银卡会员</span></div><button class="textbtn profile-edit" data-go="profile">完善个人资料 <span aria-hidden="true">›</span></button></div></div><div class="profile-store">${ic('pin')}<span>绑定门店 · ${st.store}</span></div><div class="profile-metrics">${[['680','成长值','growth'],['320','积分','points'],['2','剩余卡次','cards']].map(([value,label,target])=>`<button data-go="${target}"><b>${value}</b><span>${label}</span></button>`).join('')}</div></section><section class="profile-section"><h3>我的服务</h3><div class="profile-service-grid">${shortcuts.map(([label,target,icon])=>`<button data-go="${target}"><span class="profile-shortcut-icon">${accountProfileIcon(icon)}</span><span>${label}</span></button>`).join('')}</div></section><section class="profile-section"><h3>常用功能</h3><div class="profile-tool-grid">${tools.map(([label,target,icon])=>`<button data-go="${target}">${accountProfileIcon(icon)}<span>${label}</span></button>`).join('')}</div></section><button class="profile-settings" data-go="settings">${accountProfileIcon('settings')}<span>设置</span><span class="profile-chevron" aria-hidden="true">›</span></button></div>`;
 }
 
 function accountOrderDetail(order) {
