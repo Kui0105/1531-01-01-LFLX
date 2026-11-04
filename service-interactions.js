@@ -342,7 +342,7 @@ draw = function () {
   // Move the existing bar outside the scroll area, preserving its bound actions.
   document.getElementById('commerceActionBar')?.remove();
   originalDraw();
-  if (['productDetail', 'cart', 'serviceCheckout', 'addresses', 'complaints', 'orderDetail'].includes(st.page)) {
+  if (['productDetail', 'cart', 'serviceCheckout', 'addresses', 'complaints', 'orderDetail', 'appointmentDetail', 'assessment'].includes(st.page)) {
     const bar = document.querySelector('#view > .cta');
     if (bar) {
       bar.id = 'commerceActionBar';
@@ -352,6 +352,8 @@ draw = function () {
       if (st.page === 'addresses') bar.classList.add('address-action-bar');
       if (st.page === 'complaints') bar.classList.add('complaint-action-bar');
       if (st.page === 'orderDetail') bar.classList.add('order-detail-action-bar');
+      if (st.page === 'appointmentDetail') bar.classList.add('appointment-detail-action-bar');
+      if (st.page === 'assessment') bar.classList.add('assessment-action-bar');
       document.getElementById('tabbar').before(bar);
     }
   }
