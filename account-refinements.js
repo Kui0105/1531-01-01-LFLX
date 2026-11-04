@@ -101,6 +101,23 @@ function accountOrderDetail(order) {
   return `<div class="card"><span class="tag ${order.status==='待付款'?'gold':''}">${order.status}</span><p class="small">订单编号 ${order.id}</p><p class="tiny muted">下单时间 ${order.date} · 微信支付</p></div><div class="card row"><img class="thumb" src="${A+order.image}" alt="${order.name}"><div class="grow"><b>${order.name}</b><p>${order.detail}</p></div><b class="price">¥${order.price}</b></div><div class="card small"><div class="between"><span>订单金额</span><b>¥${order.price}</b></div><div class="divider"></div><div class="between"><span>实付金额</span><b class="price">¥${order.price}</b></div></div>`;
 }
 
+function showContactOptions() {
+  if (document.getElementById('contactOptions')) return;
+  close();
+  modal('联系客服', `<div class="contact-options" id="contactOptions"><button class="contact-option" data-act="online"><span class="iconbox">${ic('support')}</span><span class="grow"><b>在线客服</b><small>官方在线客服</small></span><span class="profile-chevron" aria-hidden="true">›</span></button><button class="contact-option" data-act="call"><span class="iconbox"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 3 3 5-3 3c2 3 3 4 6 6l3-3 5 3c0 3-2 5-5 4C9 19 5 15 3 8 2 5 4 3 7 3Z"/></svg></span><span class="grow"><b>电话客服</b><small>021-5555-6818</small><small>工作日 09:00–18:00</small></span><span class="profile-chevron" aria-hidden="true">›</span></button></div>`);
+  const dialog=document.querySelector('#modal .modal');
+  dialog.setAttribute('role','dialog');
+  dialog.setAttribute('aria-modal','true');
+  dialog.setAttribute('aria-label','联系客服');
+  dialog.querySelector('.modal-close').focus();
+}
+
+const accountBaseGo=go;
+go=function(page,push=true) {
+  if(page==='support'){showContactOptions();return}
+  accountBaseGo(page,push);
+};
+
 const accountBasePages=pagesContent;
 pagesContent=function(page){
   if(page==='my')return accountProfilePage();
@@ -116,6 +133,11 @@ pagesContent=function(page){
 const accountBaseAct=act;
 act=function(event){
   const node=event.currentTarget,action=node.dataset.act,id=node.dataset.id;
+  if(['online','call'].includes(action)&&node.closest('#contactOptions')) {
+    close();
+    accountBaseAct(event);
+    return;
+  }
   if(action==='orderType'){st.orderFilter='全部';st.accountOrder=null;accountBaseAct(event);return}
   if(action==='accountOrderDetail'){st.accountOrder=st.orders.find(order=>order.id===id);go('orderDetail');return}
   if(action==='cancelAccountOrder'){

@@ -111,6 +111,13 @@
 .icon-add-cart svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7}
 .product-main-image{margin-bottom:16px}
 .commerce-action-bar.cta{position:relative;bottom:auto;flex:none;margin:0;padding:12px 16px;min-height:68px;z-index:10;gap:8px}
+.complaint-action-bar>.btn{width:100%}
+.contact-options{display:flex;flex-direction:column;gap:12px}
+.contact-option{display:flex;align-items:center;gap:12px;width:100%;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:left}
+.contact-option b{display:block;font-size:15px;line-height:23px;font-weight:600}
+.contact-option small{display:block;margin-top:3px;font-size:12px;line-height:19px;color:var(--muted)}
+.contact-option .iconbox{flex:none;width:42px;height:42px}
+.contact-option:active{background:#edf6f2}
 .product-action-bar .detail-icon-action{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:44px;min-width:44px;height:48px;padding:0;flex:none;border:0;background:#fff;color:#52666a;border-radius:8px}
 .detail-icon-action span{font-size:11px;line-height:16px}
 .detail-icon-action svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
