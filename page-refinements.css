@@ -334,6 +334,8 @@
 .membership-actions .textbtn,.membership-actions .btn{min-height:40px}
 .checkout-action-bar.cta{flex-direction:column;align-items:stretch;gap:6px}
 .checkout-action-bar>.btn{flex:none;width:100%}
+.checkout-fees>.between{min-height:32px;gap:16px}.checkout-fees .checkout-saving{color:var(--teal)}
+.product-checkout-action-bar{justify-content:space-between}.checkout-pay-total{display:flex;align-items:baseline;gap:8px;white-space:nowrap}.checkout-pay-total>span{font-size:13px;color:#617579}.checkout-pay-total>.price{font-size:19px}.product-checkout-action-bar>.btn{flex:none;min-width:132px}
 .rehab-agreement{display:flex;align-items:center;justify-content:center;gap:0;font-size:13px;line-height:20px}
 .rehab-agreement-label{display:flex;align-items:center;gap:4px;min-height:44px;cursor:pointer}
 .rehab-agreement-label input{width:18px;height:18px;margin:0 5px 0 0;accent-color:var(--teal)}

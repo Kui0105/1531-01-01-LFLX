@@ -232,7 +232,7 @@ act=function(event){
   }
   if(action==='payOk'&&node.dataset.product==='true'){
     const cartItem=st.cart.find(item=>item.checked&&!item.invalid);
-    if(cartItem)st.orders.unshift({id:`GO${Date.now()}`,type:'商品订单',status:'待发货',name:cartItem.name,detail:`${cartItem.spec} × ${cartItem.qty}`,price:cartItem.price*cartItem.qty,image:'product.png',date:'2026-11-04'});
+    if(cartItem)st.orders.unshift({id:`GO${Date.now()}`,type:'商品订单',status:'待发货',name:cartItem.name,detail:`${cartItem.spec} × ${cartItem.qty}`,price:checkoutAmount(true),image:'product.png',date:'2026-11-04'});
     st.orderFilter='全部';
   }
   if(action==='bookingSuccess'){

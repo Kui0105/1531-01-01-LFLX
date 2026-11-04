@@ -141,10 +141,28 @@ function openAddressForm(index=-1) {
   c.addEventListener('change',()=>renderRegionOptions(d,sampleRegions[p.value][c.value],sampleRegions[p.value][c.value][0]));
 }
 
+// Preserve the prototype's existing ¥5 membership saving and free shipping.
+function productCheckoutTotals(){
+  const selected=st.cart.filter(item=>item.checked&&!item.invalid);
+  const goods=st.cart.length?selected.reduce((sum,item)=>sum+Math.round(item.price*100)*item.qty,0):[5900,8900,12900][st.product||0]*validProductQuantity(st.qty||1);
+  const coupon=Math.min(goods,st.coupon?2000:0);
+  const membership=Math.min(goods-coupon,500);
+  const points=Math.min(goods-coupon-membership,st.points?1000:0);
+  const shipping=0;
+  return {goods:goods/100,coupon:coupon/100,membership:membership/100,points:points/100,shipping:shipping/100,total:(goods-coupon-membership-points+shipping)/100};
+}
+const originalCheckoutAmount=checkoutAmount;
+checkoutAmount=function(product){return product?productCheckoutTotals().total:originalCheckoutAmount(false)};
+
 const originalCheckout=checkout;
 checkout=function(product){
-  const markup=originalCheckout(product);
+  let markup=originalCheckout(product);
   if(!product)return markup;
+  const fees=productCheckoutTotals(),money=value=>Number(value).toFixed(2);
+  markup=markup.replace(/<div class="stepbar">[\s\S]*?<\/div>/,'');
+  const summary=`<section class="card small checkout-fees" aria-label="费用明细"><div class="between"><span>商品总金额</span><span>¥${money(fees.goods)}</span></div><div class="between"><span>会员折扣</span><span class="checkout-saving">−¥${money(fees.membership)}</span></div><div class="between"><span>运费</span><span>¥${money(fees.shipping)}</span></div><div class="between"><span>优惠券优惠</span><span>−¥${money(fees.coupon)}</span></div><div class="between"><span>积分抵扣</span><span>−¥${money(fees.points)}</span></div><div class="divider"></div><div class="between"><span>应付金额</span><b class="price">¥${money(fees.total)}</b></div></section>`;
+  markup=markup.replace(/<div class="card small"><div class="between"><span>应付金额<\/span>[\s\S]*?<\/div><\/div>/,summary);
+  markup=markup.replace('<div class="cta">','<div class="cta"><div class="checkout-pay-total"><span>应付金额</span><b class="price">¥'+money(fees.total)+'</b></div>');
   const address=st.addresses.find(item=>item.isDefault);
   if(!address)return markup;
   const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -342,13 +360,14 @@ draw = function () {
   // Move the existing bar outside the scroll area, preserving its bound actions.
   document.getElementById('commerceActionBar')?.remove();
   originalDraw();
-  if (['productDetail', 'cart', 'serviceCheckout', 'addresses', 'complaints', 'orderDetail', 'appointmentDetail', 'assessment', 'orderAssessmentStart', 'promotionWithdraw', 'promotionPoster'].includes(st.page)) {
+  if (['productDetail', 'cart', 'productCheckout', 'serviceCheckout', 'addresses', 'complaints', 'orderDetail', 'appointmentDetail', 'assessment', 'orderAssessmentStart', 'promotionWithdraw', 'promotionPoster'].includes(st.page)) {
     const bar = document.querySelector('#view > .cta');
     if (bar) {
       bar.id = 'commerceActionBar';
       bar.classList.add('commerce-action-bar');
       if (st.page === 'productDetail') bar.classList.add('product-action-bar');
       if (st.page === 'serviceCheckout') bar.classList.add('checkout-action-bar');
+      if (st.page === 'productCheckout') bar.classList.add('product-checkout-action-bar');
       if (st.page === 'addresses') bar.classList.add('address-action-bar');
       if (st.page === 'complaints') bar.classList.add('complaint-action-bar');
       if (st.page === 'orderDetail') bar.classList.add('order-detail-action-bar');
