@@ -6,7 +6,7 @@ const accountOrders = [
   {id:'EV2026110405',type:'评估订单',status:'售后中',name:'运动损伤评估',detail:'60 分钟 · 评估服务',price:199,image:'service-knee.png',date:'2026-10-27'},
   {id:'EV2026110406',type:'评估订单',status:'已取消',name:'放松评估',detail:'45 分钟 · 评估服务',price:99,image:'service-eval.png',date:'2026-10-25'},
   {id:'SV2026110401',type:'服务订单',status:'待付款',name:'颈肩腰放松疗程',detail:'45 分钟 · 到店康复',price:268,image:'service-back.png',date:'2026-11-04'},
-  {id:'SV2026110402',type:'服务订单',status:'待使用',name:'筋膜放松体验卡',detail:'3 次卡 · 待预约',price:699,image:'service-back.png',date:'2026-11-03'},
+  {id:'SV2026110402',type:'服务订单',status:'待服务',name:'筋膜放松体验卡',detail:'3 次卡 · 待服务',price:699,image:'service-back.png',date:'2026-11-03'},
   {id:'SV2026110403',type:'服务订单',status:'服务中',name:'膝关节运动康复',detail:'50 分钟 · 林教练',price:328,image:'service-knee.png',date:'2026-11-02'},
   {id:'SV2026110404',type:'服务订单',status:'已完成',name:'膝关节运动康复',detail:'50 分钟 · 林教练',price:328,image:'service-knee.png',date:'2026-10-29'},
   {id:'SV2026110405',type:'服务订单',status:'售后中',name:'颈肩腰放松疗程',detail:'45 分钟 · 售后处理中',price:268,image:'service-back.png',date:'2026-10-27'},
@@ -31,12 +31,13 @@ st.appointments ||= accountAppointments.map(item=>({...item}));
 
 const accountOrdersByType = {
   '评估订单':['全部','待付款','待评估','服务中','已完成','售后中','已取消'],
-  '服务订单':['全部','待付款','待使用','服务中','已完成','售后中','已取消'],
+  '服务订单':['全部','待付款','待服务','服务中','已完成','售后中','已取消'],
   '商品订单':['全部','待付款','待发货','待收货','已完成','售后中','已取消']
 };
 
 function accountOrderPage() {
   const type=st.orderType||'服务订单';
+  st.orders.forEach(order=>{if(order.type==='服务订单'&&order.status==='待使用')order.status='待服务'});
   const filter=accountOrdersByType[type].includes(st.orderFilter)?st.orderFilter:'全部';
   st.orderFilter=filter;
   const orders=st.orders.filter(order=>order.type===type&&(filter==='全部'||order.status===filter));
@@ -45,7 +46,9 @@ function accountOrderPage() {
 
 function accountOrderActions(order) {
   if(order.status==='待付款')return `<div class="order-actions"><button class="textbtn" data-act="payAccountOrder" data-id="${order.id}">立即支付</button><button class="textbtn" data-act="cancelAccountOrder" data-id="${order.id}">取消订单</button></div>`;
-  if(['待评估','待使用','待发货','待收货'].includes(order.status))return `<div class="order-actions"><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">${order.type==='商品订单'?'查看物流':order.type==='评估订单'?'预约评估':'立即预约'}</button>${order.type==='商品订单'?'<button class="textbtn" data-act="confirmReceived" data-id="'+order.id+'">确认收货</button>':'<button class="textbtn" data-act="cancelAccountOrder" data-id="'+order.id+'">取消订单</button>'}</div>`;
+  if(order.status==='待评估')return `<div class="order-actions"><button class="textbtn" data-act="orderEvalBook" data-id="${order.id}">预约评估</button><button class="textbtn" data-act="startImmediateAssessment" data-id="${order.id}">立即评估</button><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button></div>`;
+  if(order.status==='待服务')return `<div class="order-actions"><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">预约服务</button></div>`;
+  if(['待发货','待收货'].includes(order.status))return `<div class="order-actions"><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">查看物流</button>${order.status==='待收货'?'<button class="textbtn" data-act="confirmReceived" data-id="'+order.id+'">确认收货</button>':''}</div>`;
   if(order.status==='服务中')return '<div class="order-actions"><button class="textbtn" data-go="appointments">查看预约</button><button class="textbtn" data-go="archives">查看档案</button></div>';
   if(order.status==='已完成')return `<div class="order-actions"><button class="textbtn" data-go="${order.type==='商品订单'?'orders':'reviews'}">${order.type==='商品订单'?'再次购买':'评价服务'}</button><button class="textbtn" data-go="${order.type==='商品订单'?'afterSale':'archives'}">${order.type==='商品订单'?'申请售后':'查看档案'}</button></div>`;
   if(order.status==='售后中')return '<div class="order-actions"><button class="textbtn" data-go="afterSale">售后详情</button></div>';
@@ -98,7 +101,19 @@ function accountProfilePage() {
 }
 
 function accountOrderDetail(order) {
-  return `<div class="card"><span class="tag ${order.status==='待付款'?'gold':''}">${order.status}</span><p class="small">订单编号 ${order.id}</p><p class="tiny muted">下单时间 ${order.date} · 微信支付</p></div><div class="card row"><img class="thumb" src="${A+order.image}" alt="${order.name}"><div class="grow"><b>${order.name}</b><p>${order.detail}</p></div><b class="price">¥${order.price}</b></div><div class="card small"><div class="between"><span>订单金额</span><b>¥${order.price}</b></div><div class="divider"></div><div class="between"><span>实付金额</span><b class="price">¥${order.price}</b></div></div>`;
+  const product=order.type==='商品订单';
+  const checkedIn=order.detail.includes('已核销');
+  st.orderedService=S.find(service=>service[0]===order.name)||st.orderedService;
+  return `<div class="card"><span class="tag ${order.status==='待付款'?'gold':''}">${order.status}</span><p class="small">订单编号 ${order.id}</p><p class="tiny muted">下单时间 ${order.date} · ${order.status==='待付款'?'未支付':'微信支付'}</p></div><div class="card row"><img class="thumb" src="${A+order.image}" alt="${order.name}"><div class="grow"><b>${order.name}</b><p>${order.detail}</p></div><b class="price">¥${order.price}</b></div>${product?`<div class="card small"><b>收货信息</b><p>张女士　138****2888</p><p class="muted">上海市静安区南京西路 1288 号 8F</p></div>`:order.status!=='待付款'?`<div class="card order-code-card"><div class="order-code-icon">${ic('file')}</div><b>到店核销码</b><p class="tiny muted">${checkedIn?'该服务已核销':'请出示此码完成到店核销'}</p></div>`:''}<div class="card small"><b>优惠信息</b><div class="divider"></div><div class="between"><span>优惠券抵扣</span><span>−¥0</span></div><div class="between"><span>积分抵扣</span><span>−¥0</span></div><div class="divider"></div><div class="between"><span>订单金额</span><b>¥${order.price}</b></div><div class="between"><span>实付金额</span><b class="price">¥${order.price}</b></div></div><div class="card small"><b>订单信息</b><p>订单编号　${order.id}</p><p>下单时间　${order.date}</p><p>支付时间　${order.status==='待付款'?'待支付':order.date}</p><p>支付方式　${order.status==='待付款'?'—':'微信支付'}</p></div>${cta(accountOrderActions(order))}`;
+}
+
+function accountOrderFlowPage(kind) {
+  const order=st.accountOrder;
+  const options=stores.map(store=>`<option value="${store.name}" ${st.orderFlowStore===store.name?'selected':''}>${store.name}</option>`).join('');
+  const coachOptions=coaches.map(coach=>`<option value="${coach.name}" ${st.orderFlowCoach===coach.name?'selected':''}>${coach.name}</option>`).join('');
+  if(kind==='orderAssessmentStart')return `<div class="card"><b>评估项目</b><p class="small muted">${order?.name||'评估服务'}</p><p class="small">选择门店和康复师后填写评估资料。</p></div><div class="field"><label>服务门店</label><select class="input" data-order-flow="store">${options}</select></div><div class="field"><label>康复师</label><select class="input" data-order-flow="coach">${coachOptions}</select></div><button class="btn full" data-act="continueImmediateAssessment">填写评估资料</button>`;
+  const serviceOptions=S.slice(6).map(service=>`<option value="${service[0]}" ${st.orderFlowService===service[0]?'selected':''}>${service[0]}</option>`).join('');
+  return `<div class="card"><b>关联评估订单</b><p class="small muted">${order?.name||'评估服务'} · ${order?.id||''}</p></div><div class="field"><label>服务门店</label><select class="input" data-order-flow="store">${options}</select></div><div class="field"><label>康复师</label><select class="input" data-order-flow="coach">${coachOptions}</select></div><div class="field"><label>服务项目</label><select class="input" data-order-flow="service">${serviceOptions}</select></div><div class="field"><label>渠道来源</label><select class="input" data-order-flow="channel"><option>门店预约</option><option>线上商城</option><option>第三方渠道</option><option>其他</option></select></div><div class="field"><label>第三方券码</label><input class="input" data-order-flow="voucher" placeholder="没有券码可留空"></div><button class="btn full" data-act="submitImmediateService">提交并完成核销</button>`;
 }
 
 function showContactOptions() {
@@ -119,6 +134,10 @@ go=function(page,push=true) {
 };
 
 const accountBasePages=pagesContent;
+labels.orderAssessmentStart='立即评估';
+labels.orderServiceStart='立即服务';
+notes.orderAssessmentStart='选择门店与康复师后填写该评估订单的资料。';
+notes.orderServiceStart='填写门店、康复师、服务项目、渠道与第三方券码；确认后生成已核销服务订单。';
 pagesContent=function(page){
   if(page==='my')return accountProfilePage();
   if(page==='orders')return accountOrderPage();
@@ -127,6 +146,8 @@ pagesContent=function(page){
   if(page==='points')return accountBasePages(page).replace('<h2 class="title">积分明细</h2>','');
   if(page==='messages')return accountBasePages(page).replace('class="message-toolbar"','class="message-toolbar message-toolbar-left"');
   if(page==='orderDetail'&&st.accountOrder)return accountOrderDetail(st.accountOrder);
+  if(page==='orderAssessmentStart'||page==='orderServiceStart')return accountOrderFlowPage(page);
+  if(page==='settings')return accountBasePages(page).replace('<h2 class="title">设置</h2>','');
   return accountBasePages(page);
 };
 
@@ -140,6 +161,31 @@ act=function(event){
   }
   if(action==='orderType'){st.orderFilter='全部';st.accountOrder=null;accountBaseAct(event);return}
   if(action==='accountOrderDetail'){st.accountOrder=st.orders.find(order=>order.id===id);go('orderDetail');return}
+  if(action==='orderEvalBook'){
+    st.accountOrder=st.orders.find(order=>order.id===id)||st.accountOrder;
+    st.orderType='评估订单';st.btype='eval';st.service=Math.max(0,S.findIndex(service=>service[0]===st.accountOrder?.name));st.bookedName=st.accountOrder?.name;go('booking');return;
+  }
+  if(action==='startImmediateAssessment'){
+    st.accountOrder=st.orders.find(order=>order.id===id)||st.accountOrder;st.orderFlowStore=st.store;st.orderFlowCoach=st.therapist;go('orderAssessmentStart');return;
+  }
+  if(action==='continueImmediateAssessment'){
+    st.orderFlowStore=document.querySelector('[data-order-flow="store"]').value;st.orderFlowCoach=document.querySelector('[data-order-flow="coach"]').value;
+    st.store=st.orderFlowStore;st.therapist=st.orderFlowCoach;st.btype='eval';st.service=Math.max(0,S.findIndex(service=>service[0]===st.accountOrder?.name));go('assessment');return;
+  }
+  if(action==='startImmediateService'){
+    st.accountOrder=st.orders.find(order=>order.id===id)||st.accountOrder;st.orderFlowStore=st.store;st.orderFlowCoach=st.therapist;st.orderFlowService=S[6][0];go('orderServiceStart');return;
+  }
+  if(action==='submitImmediateService'){
+    const store=document.querySelector('[data-order-flow="store"]').value,coach=document.querySelector('[data-order-flow="coach"]').value,serviceName=document.querySelector('[data-order-flow="service"]').value,channel=document.querySelector('[data-order-flow="channel"]').value,voucher=document.querySelector('[data-order-flow="voucher"]').value.trim();
+    const service=S.find(item=>item[0]===serviceName)||S[6];
+    modal('确认立即服务',`<p class="small">${store} · ${coach}<br>${serviceName}<br>渠道：${channel}${voucher?'<br>券码：'+voucher:''}<br><br>提交后将生成已核销的服务订单。</p><div class="grid2"><button class="btn ghost" data-act="close">返回修改</button><button class="btn" data-act="confirmImmediateService" data-store="${store}" data-coach="${coach}" data-service="${serviceName}" data-channel="${channel}" data-voucher="${voucher}">确认提交</button></div>`);return;
+  }
+  if(action==='confirmImmediateService'){
+    const service=S.find(item=>item[0]===node.dataset.service)||S[6];
+    const now=new Date(),date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const generated={id:`SV${Date.now()}`,type:'服务订单',status:'服务中',name:service[0],detail:`${service[2]} · ${node.dataset.coach} · 已核销`,price:Number(service[3])||0,image:service[4],date,checkedIn:true,store:node.dataset.store,source:node.dataset.channel,voucher:node.dataset.voucher,assessmentOrderId:st.accountOrder?.id};
+    st.orders.unshift(generated);st.accountOrder=generated;st.orderType='服务订单';st.orderFilter='全部';close();go('orderDetail');toast('服务订单已生成并核销');return;
+  }
   if(action==='cancelAccountOrder'){
     const order=st.orders.find(item=>item.id===id);
     modal('取消订单',`<p class="small">确定取消「${order.name}」订单吗？</p><div class="grid2"><button class="btn ghost" data-act="close">返回</button><button class="btn warn" data-act="confirmCancelAccountOrder" data-id="${id}">确认取消</button></div>`);return;
@@ -152,7 +198,7 @@ act=function(event){
     modal('确认支付',`<p class="small">${order.name} · ¥${order.price}</p><button class="btn full" data-act="confirmPayAccountOrder" data-id="${id}">确认支付</button>`);return;
   }
   if(action==='confirmPayAccountOrder'){
-    const order=st.orders.find(item=>item.id===id);if(order)order.status=order.type==='商品订单'?'待发货':order.type==='评估订单'?'待评估':'待使用';st.orderFilter=order.status;close();draw();toast('支付成功');return;
+    const order=st.orders.find(item=>item.id===id);if(order)order.status=order.type==='商品订单'?'待发货':order.type==='评估订单'?'待评估':'待服务';st.orderFilter=order.status;close();draw();toast('支付成功');return;
   }
   if(action==='confirmReceived'){
     const order=st.orders.find(item=>item.id===id);if(order)order.status='已完成';st.orderFilter='已完成';draw();toast('已确认收货');return;
@@ -193,5 +239,6 @@ act=function(event){
     st.appointments.unshift({id:`AP${Date.now()}`,name,status:'待服务',store:st.store,coach:st.therapist,date:`${st.date} ${st.slot||'14:00'}`,duration:S[st.service]?.[2]||'50分钟',image:S[st.service]?.[4]||'service-knee.png'});
     st.apptTab='全部';
   }
+  if(action==='assessmentSuccess'&&st.accountOrder){st.accountOrder.status='服务中';st.accountOrder.detail=st.accountOrder.detail.replace('评估服务','评估服务 · 评估资料已提交');st.orderType='评估订单';st.orderFilter='服务中';}
   accountBaseAct(event);
 };
