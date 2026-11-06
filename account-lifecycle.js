@@ -136,13 +136,15 @@ function lifecyclePolicyPage(privacy){
 }
 
 const lifecycleArchiveRecords=[
-  {type:'评估档案',name:'术后评估',time:'2026-11-03 10:20',title:'术后阶段评估记录',content:'膝关节术后恢复进展稳定，屈伸活动度较上次改善。建议继续加强股四头肌激活与步态训练。'},
-  {type:'服务记录',name:'膝关节运动康复',time:'2026-11-02 14:50',title:'第 2 次康复训练纪要',content:'完成关节活动度练习、股四头肌力量训练及步态纠正。训练过程无明显不适，居家练习按计划进行。'},
-  {type:'评估档案',name:'运动损伤评估',time:'2026-10-30 16:10',title:'首次运动功能评估',content:'记录右膝疼痛及跑步后不适情况，完成关节活动度、单腿稳定性与下肢力量评估，建议阶段性调整训练负荷。'},
-  {type:'服务记录',name:'颈肩腰放松疗程',time:'2026-10-28 11:30',title:'康复方案与居家建议',content:'完成肩颈软组织放松和胸椎活动训练。建议工作间歇进行肩胛活动，每日完成两组胸椎伸展。'},
-  {type:'评估档案',name:'放松评估',time:'2026-10-24 09:40',title:'久坐与肌肉紧张评估',content:'日常久坐时间偏长，颈肩及腰背肌群紧张。根据睡眠、工作姿势与活动情况制定放松计划。'},
-  {type:'服务记录',name:'术后康复训练',time:'2026-10-21 15:00',title:'康复小结',content:'完成阶段康复训练，膝关节稳定性和日常步行能力较前改善。后续逐步增加力量与平衡训练。'},
-  {type:'评估档案',name:'颈肩腰痛评估',time:'2026-10-18 13:25',title:'初次疼痛评估',content:'梳理疼痛部位、持续时间及日常活动影响，并完成基础活动能力筛查，建立后续复评参考。'}
+  {type:'康复纪要',name:'膝关节运动康复',time:'2026-11-03 15:20',title:'第 3 次康复训练纪要',content:'本次完成自行车热身 8 分钟、股四头肌等长收缩 3 组、台阶上下训练 3 组及单腿平衡练习。训练中膝关节无明显疼痛，动作控制较上次稳定。居家练习：靠墙静蹲 3 组，每组 30 秒；如出现疼痛及时停止并联系康复师。'},
+  {type:'评估结果',name:'术后评估',time:'2026-11-03 10:10',title:'术后阶段评估结果',content:'膝关节术后恢复进展稳定，屈伸活动度较上次改善。步行时轻微不适，股四头肌力量仍需加强。评估结果已生成阶段性康复方案。',linked:true},
+  {type:'康复小结',name:'膝关节运动康复',time:'2026-11-02 16:10',title:'阶段康复小结',content:'本阶段已完成 4 次到店康复训练。膝关节活动范围、单腿稳定性和步行耐力均有改善，日常步行基本无不适。建议继续按康复方案进行力量和平衡训练，并于两周后复评。'},
+  {type:'康复纪要',name:'颈肩腰放松疗程',time:'2026-10-30 11:30',title:'肩颈放松训练纪要',content:'完成胸椎活动、肩胛控制练习及颈肩软组织放松。训练后肩颈紧绷感减轻。建议每工作 1 小时起身活动 3 至 5 分钟，每日完成胸椎伸展练习。'},
+  {type:'评估结果',name:'运动损伤评估',time:'2026-10-28 16:10',title:'首次运动功能评估结果',content:'记录右膝跑步后不适情况，完成关节活动度、单腿稳定性与下肢力量评估。建议阶段性调整跑步训练负荷，先进行基础力量及动作控制训练。',linked:true},
+  {type:'康复小结',name:'颈肩腰放松疗程',time:'2026-10-24 09:40',title:'肩颈康复阶段小结',content:'已完成 3 次肩颈放松与活动训练，颈肩僵硬频率减少，活动舒适度提升。建议保持规律活动和居家拉伸，后续根据工作强度安排复评。'}
+];
+const lifecycleArchivePlans=[
+  {name:'术后评估',time:'2026-11-03 10:20',title:'膝关节术后阶段康复方案',content:'康复目标：逐步恢复膝关节活动度、下肢肌力与日常步行能力。第一阶段进行股四头肌激活、踝泵和辅助屈伸练习；第二阶段逐步增加闭链力量及平衡训练。每周到店训练 2 次，训练后如出现持续肿胀或明显疼痛应暂停并联系康复师。',status:'待签名'}
 ];
 function lifecycleMaskPhone(value){
   const digits=String(value||'').replace(/\D/g,'');
@@ -150,10 +152,17 @@ function lifecycleMaskPhone(value){
   return digits?digits.replace(/(\d{3})\d+(\d{4})/,'$1****$2'):'138****2888';
 }
 function lifecycleArchivePage(){
-  const profile=st.accountProfile||{},filter=st.archive||'评估档案';
-  const records=lifecycleArchiveRecords.filter(item=>filter==='全部'||item.type===filter).filter(item=>filter!=='服务记录'||!st.recordTab||st.recordTab==='全部'||item.title.includes(st.recordTab)).slice().sort((a,b)=>b.time.localeCompare(a.time));
+  const profile=st.accountProfile||{},filter=st.recordTab||'全部';
+  const records=lifecycleArchiveRecords.filter(item=>filter==='全部'||item.type===filter).slice().sort((a,b)=>b.time.localeCompare(a.time));
   const identity=[profile.name||'张女士',profile.gender||'女'].join(' · ');
-  return `<section class="card archive-user"><img class="avatar" src="${lifecycleEscape(profile.avatar||A+'coach-lin.png')}" alt="用户头像"><div class="grow"><b>${lifecycleEscape(profile.nickname||'林间微光')}</b><p>${lifecycleEscape(identity)}</p><small>手机号码　${lifecycleEscape(lifecycleMaskPhone(profile.phone))}</small></div></section><h2 class="title">康复档案</h2>${tabs(['评估档案','服务记录'],filter,'archive')}${filter==='服务记录'?tabs(['全部','首次评估','康复方案','康复纪要','康复小结'],st.recordTab||'全部','recordTab'):''}<div class="archive-timeline">${records.map(record=>`<article class="archive-record"><div class="archive-timeline-mark" aria-hidden="true"></div><time>${record.time}</time><section class="card"><div class="archive-record-heading"><b>${record.name}</b><span class="tag">${record.type}</span></div><h3>${record.title}</h3><p>${record.content}</p></section></article>`).join('')||'<div class="empty">当前分类暂无档案记录</div>'}</div>`;
+  return `<section class="card archive-user"><img class="avatar" src="${lifecycleEscape(profile.avatar||A+'coach-lin.png')}" alt="用户头像"><div class="grow"><b>${lifecycleEscape(profile.nickname||'林间微光')}</b><p>${lifecycleEscape(identity)}</p><small>手机号码　${lifecycleEscape(lifecycleMaskPhone(profile.phone))}</small></div></section>${tabs(['全部','评估结果','康复纪要','康复小结'],filter,'recordTab')}<div class="archive-timeline">${records.map(record=>`<article class="archive-record"><div class="archive-timeline-mark" aria-hidden="true"></div><time>${record.time}</time><section class="card"><div class="archive-record-heading"><b>${record.name}</b><span class="tag">${record.type}</span></div><h3>${record.title}</h3><p>${record.content}</p>${record.linked?`<button class="archive-result-link" data-act="openArchiveResult" data-i="${lifecycleArchiveRecords.indexOf(record)}">查看评估结果及康复方案 <span aria-hidden="true">›</span></button>`:''}</section></article>`).join('')||'<div class="empty">当前分类暂无档案记录</div>'}</div>`;
+}
+
+function lifecycleArchiveResult(){
+  const record=lifecycleArchiveRecords[Number(st.archiveRecord)];
+  if(!record||!record.linked)return lifecycleArchivePage();
+  const plan=lifecycleArchivePlans.find(item=>item.name===record.name);
+  return `<section class="card archive-result-heading"><span class="tag">${record.type}</span><h2>${record.name}</h2><time>${record.time}</time></section><section class="card archive-result-content"><h3>${record.title}</h3><p>${record.content}</p></section>${plan?`<section class="card archive-result-content"><div class="between"><h3>康复方案</h3><span class="tag ${plan.status==='待签名'?'gold':''}">${plan.status}</span></div><p class="tiny muted">${plan.time}</p><h4>${plan.title}</h4><p>${plan.content}</p>${plan.status==='待签名'?'<button class="btn full" data-act="signArchivePlan">确认签署康复方案</button>':''}</section>`:''}<button class="btn ghost full" data-act="archiveResultsBack">返回康复档案</button>`;
 }
 
 const lifecycleRoutes=[['reviewDetail','评价详情'],['accountSettingsProfile','用户资料'],['userAgreement','用户协议'],['privacyPolicy','隐私政策']];
@@ -164,6 +173,7 @@ notes.privacyPolicy='隐私政策富文本展示。当前内容为原型示例�
 
 pagesContent=function(page){
   if(page==='archives')return lifecycleArchivePage();
+  if(page==='report'&&Number.isInteger(st.archiveRecord))return lifecycleArchiveResult();
   if(page==='reviews')return lifecycleReviewsPage();
   if(page==='reviewForm')return lifecycleReviewForm();
   if(page==='reviewDetail')return lifecycleReviewDetail();
@@ -186,6 +196,21 @@ function lifecycleSubmitReview(){
 
 act=function(event){
   const node=event.currentTarget,action=node.dataset.act,id=node.dataset.id;
+  if(action==='openArchiveResult'){
+    const record=lifecycleArchiveRecords[Number(node.dataset.i)];
+    if(!record?.linked)return;
+    st.archiveRecord=Number(node.dataset.i);go('report');return;
+  }
+  if(action==='archiveResultsBack'){go('archives');return}
+  if(action==='signArchivePlan'){
+    const record=lifecycleArchivePlans.find(item=>item.name===lifecycleArchiveRecords[Number(st.archiveRecord)]?.name);
+    if(!record||record.status!=='待签名')return;
+    modal('确认签署康复方案',`<p class="small">请确认已阅读「${lifecycleEscape(record.title)}」。</p><div class="grid2"><button class="btn ghost" data-act="close">稍后签署</button><button class="btn" data-act="confirmArchivePlan">确认签署</button></div>`);return;
+  }
+  if(action==='confirmArchivePlan'){
+    const record=lifecycleArchivePlans.find(item=>item.name===lifecycleArchiveRecords[Number(st.archiveRecord)]?.name);
+    if(record)record.status='已签名';close();draw();toast('康复方案已签署');return;
+  }
   if(action==='remainingServiceOrders'){st.orderType='服务订单';st.orderFilter='服务中';st.accountOrder=null;go('orders');return}
   if(action==='accountOrderAction'){
     const order=st.orders.find(item=>item.id===id);
