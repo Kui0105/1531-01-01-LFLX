@@ -14,6 +14,10 @@ button.therapist-star{cursor:pointer}
 .card.therapist-appointment .therapist-card-actions{margin-top:8px;padding-top:6px}
 .card.therapist-customer .therapist-card-actions,.card.therapist-customer-order .therapist-card-actions{gap:14px;margin-top:6px;padding-top:4px}
 .card.therapist-customer .therapist-card-actions .therapist-action,.card.therapist-customer-order .therapist-card-actions .therapist-action{min-height:32px;padding:2px 0;border:0;background:transparent;color:var(--teal);font-size:12px;line-height:18px}
+.therapist-score-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.therapist-score-grid>div{min-width:0;align-items:center;text-align:center}
+.therapist-score-grid b{font-size:18px}
+.therapist-score-grid small{font-size:10px;white-space:nowrap}
 .home-layout{display:flex;flex-direction:column;gap:16px}
 .home-layout>.home-topbar,.home-layout>.banner,.home-layout>.home-announcement{margin:0}
 .home-layout>.home-assessments{padding:0}
