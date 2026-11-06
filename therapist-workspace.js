@@ -43,6 +43,12 @@ st.therapistScheduleWeek??=0;
 st.therapistCustomersFilter||='全部';
 st.therapistCustomerKeyword||='';
 st.therapistPerformanceMonth||=therapistToday.slice(0,7);
+st.therapistRouteStack||=[];
+
+const therapistPrimaryRoutes=new Set(['employee','therapistSchedule','therapistCustomers','therapistMessages','therapistPerformance']);
+const therapistRouteTitles={employee:'工作台',therapistSchedule:'排班',therapistCustomers:'客户',therapistMessages:'消息',therapistPerformance:'绩效',therapistCustomerOrders:'客户服务订单',therapistServiceHistory:'服务记录',therapistPeerTask:'门店协作互评',therapistPeerReview:'同事评价',therapistRecordForm:'服务记录填写',therapistCustomerArchive:'客户档案',therapistArchiveReport:'评估结果'};
+function therapistNavigate(route){if(therapistPrimaryRoutes.has(route)){st.therapistRouteStack=[]}else{st.therapistRouteStack.push(st.employeeTab||'employee')}st.employeeTab=route;go('employee')}
+function therapistBack(){if(st.page!=='employee'||st.employeeRole!=='康复师')return;st.employeeTab=st.therapistRouteStack.pop()||'employee';go('employee',false)}
 
 function therapistEscape(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
 function therapistMaskPhone(phone){return String(phone).replace(/^(\d{3})\d{4}(\d{4})$/,'$1****$2')}
@@ -121,8 +127,8 @@ pagesContent=function(page){
 function therapistSaveRecord(target,key,inputId){target[key]=document.getElementById(inputId)?.value||''}
 act=function(event){
   const node=event.currentTarget,action=node.dataset.act;
-  if(action==='therapistLogout'){st.employeePhone=null;st.employeeRole=null;st.employeeTab='employee';go('role');return}
-  if(action==='therapistTab'){st.employeeTab=node.dataset.v;st.therapistScheduleTab='预约时段';go('employee');return}
+  if(action==='therapistLogout'){st.employeePhone=null;st.employeeRole=null;st.employeeTab='employee';st.therapistRouteStack=[];go('role');return}
+  if(action==='therapistTab'){therapistNavigate(node.dataset.v);st.therapistScheduleTab='预约时段';return}
   if(action==='therapistSelectDate'){st.therapistSelectedDate=node.dataset.v;draw();return}
   if(action==='therapistWeek'){st.therapistScheduleWeek=Number(node.dataset.v)>0?1:0;st.therapistSelectedDate=therapistDateKey(therapistWeekDates()[0]);draw();return}
   if(action==='therapistRestDay'){
@@ -148,48 +154,48 @@ act=function(event){
   if(action==='confirmTherapistSlot'){therapistScheduleSlots[therapistSlotKey(node.dataset.date,node.dataset.time)]=node.dataset.status;close();draw();toast('时段状态已更新');return}
   if(action==='therapistStart'){
     const appointment=therapistAppointment(node.dataset.id);if(!appointment)return;
-    st.therapistAppointmentId=appointment.id;st.therapistDraft={};st.employeeTab='therapistRecordForm';go('employee');return;
+    st.therapistAppointmentId=appointment.id;st.therapistDraft={};therapistNavigate('therapistRecordForm');return;
   }
   if(action==='openNextAssessment'||action==='openNextNote'||action==='openNextSummary'){
     const appointment=therapistAppointments.find(item=>item.date===therapistToday&&item.status==='待服务'&&(action==='openNextAssessment'?item.type==='评估':item.type==='服务'))||therapistAppointments.find(item=>item.type==='服务');
-    if(!appointment){toast('当前没有对应待办');return}st.therapistAppointmentId=appointment.id;st.therapistDraft={};st.employeeTab='therapistRecordForm';go('employee');return;
+    if(!appointment){toast('当前没有对应待办');return}st.therapistAppointmentId=appointment.id;st.therapistDraft={};therapistNavigate('therapistRecordForm');return;
   }
   if(action==='saveTherapistAssessment'){
     const appointment=therapistAppointment(st.therapistAppointmentId),result=document.getElementById('therapistAssessmentResult')?.value.trim(),plan=document.getElementById('therapistAssessmentPlan')?.value.trim();
     if(!result||!plan){toast('评估结果和康复方案均需填写');return}
-    st.therapistRecords.unshift({customerId:appointment.customerId,appointmentId:appointment.id,type:'评估结果',name:appointment.service,time:new Date().toLocaleString('sv-SE'),title:'评估结果与康复方案',content:result+'\n康复方案：'+plan});appointment.status='待核销';therapistMessages.unshift({id:'TM'+Date.now(),type:'订单核销提醒',time:new Date().toLocaleString('sv-SE'),customerId:appointment.customerId,appointmentId:appointment.id,content:`评估订单 ${appointment.orderId} 待核销。`,unread:true});st.employeeTab='therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='待核销';go('employee');toast('评估结果已保存，等待核销');return;
+    st.therapistRecords.unshift({customerId:appointment.customerId,appointmentId:appointment.id,type:'评估结果',name:appointment.service,time:new Date().toLocaleString('sv-SE'),title:'评估结果与康复方案',content:result+'\n康复方案：'+plan});appointment.status='待核销';therapistMessages.unshift({id:'TM'+Date.now(),type:'订单核销提醒',time:new Date().toLocaleString('sv-SE'),customerId:appointment.customerId,appointmentId:appointment.id,content:`评估订单 ${appointment.orderId} 待核销。`,unread:true});st.therapistRouteStack=[];st.employeeTab='therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='待核销';go('employee');toast('评估结果已保存，等待核销');return;
   }
   if(action==='saveTherapistNote'){
     const appointment=therapistAppointment(st.therapistAppointmentId),note=document.getElementById('therapistSessionNote')?.value.trim(),count=therapistServiceOrder(appointment.orderId)?.used||0,summaryDue=(count+1)%5===0,summary=document.getElementById('therapistSessionSummary')?.value.trim();
     if(!note){toast('请填写本次康复纪要');return}if(summaryDue&&!summary){toast('本次服务需同时填写康复小结');return}
-    const time=new Date().toLocaleString('sv-SE');st.therapistRecords.unshift({customerId:appointment.customerId,appointmentId:appointment.id,type:'康复纪要',name:appointment.service,time,title:'康复纪要',content:note});if(summaryDue)st.therapistRecords.unshift({customerId:appointment.customerId,appointmentId:appointment.id,type:'康复小结',name:appointment.service,time,title:'阶段康复小结',content:summary});appointment.status='待核销';therapistMessages.unshift({id:'TM'+Date.now(),type:'订单核销提醒',time,customerId:appointment.customerId,appointmentId:appointment.id,content:`服务订单 ${appointment.orderId} 待核销。`,unread:true});st.employeeTab='therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='待核销';go('employee');toast('康复记录已保存，等待订单核销');return;
+    const time=new Date().toLocaleString('sv-SE');st.therapistRecords.unshift({customerId:appointment.customerId,appointmentId:appointment.id,type:'康复纪要',name:appointment.service,time,title:'康复纪要',content:note});if(summaryDue)st.therapistRecords.unshift({customerId:appointment.customerId,appointmentId:appointment.id,type:'康复小结',name:appointment.service,time,title:'阶段康复小结',content:summary});appointment.status='待核销';therapistMessages.unshift({id:'TM'+Date.now(),type:'订单核销提醒',time,customerId:appointment.customerId,appointmentId:appointment.id,content:`服务订单 ${appointment.orderId} 待核销。`,unread:true});st.therapistRouteStack=[];st.employeeTab='therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='待核销';go('employee');toast('康复记录已保存，等待订单核销');return;
   }
   if(action==='therapistScan'){therapistScanModal(therapistAppointment(node.dataset.id));return}
   if(action==='confirmTherapistRedemption'){
     const appointment=therapistAppointment(node.dataset.appointment),order=therapistServiceOrder(appointment?.orderId);if(!appointment||!order)return;
     if(order.used>=order.total){toast('该订单服务次数已全部核销');return}
-    order.used++;order.records.unshift({time:new Date().toLocaleString('sv-SE'),store:therapistStoreName(),coach:therapistStaffName(),service:appointment.service});appointment.status=order.used>=order.total?'已完成':'服务中';close();st.employeeTab='therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='全部';go('employee');toast(`核销成功，剩余 ${order.total-order.used} 次`);return;
+    order.used++;order.records.unshift({time:new Date().toLocaleString('sv-SE'),store:therapistStoreName(),coach:therapistStaffName(),service:appointment.service});appointment.status=order.used>=order.total?'已完成':'服务中';close();st.therapistRouteStack=[];st.employeeTab='therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='全部';go('employee');toast(`核销成功，剩余 ${order.total-order.used} 次`);return;
   }
-  if(action==='therapistArchive'){st.therapistCustomerId=node.dataset.customer;st.employeeTab='therapistCustomerArchive';go('employee');return}
-  if(action==='therapistCustomerOrders'){st.therapistCustomerId=node.dataset.customer;st.employeeTab='therapistCustomerOrders';go('employee');return}
-  if(action==='therapistServiceHistory'){st.therapistOrderId=node.dataset.order;st.employeeTab='therapistServiceHistory';go('employee');return}
-  if(action==='therapistOpenReport'){st.therapistArchiveReportIndex=Number(node.dataset.i);st.employeeTab='therapistArchiveReport';go('employee');return}
-  if(action==='therapistBackArchive'){st.employeeTab='therapistCustomerArchive';go('employee');return}
+  if(action==='therapistArchive'){st.therapistCustomerId=node.dataset.customer;therapistNavigate('therapistCustomerArchive');return}
+  if(action==='therapistCustomerOrders'){st.therapistCustomerId=node.dataset.customer;therapistNavigate('therapistCustomerOrders');return}
+  if(action==='therapistServiceHistory'){st.therapistOrderId=node.dataset.order;therapistNavigate('therapistServiceHistory');return}
+  if(action==='therapistOpenReport'){st.therapistArchiveReportIndex=Number(node.dataset.i);therapistNavigate('therapistArchiveReport');return}
+  if(action==='therapistBackArchive'){therapistBack();return}
   if(action==='therapistOpenMessage'){
     const message=therapistMessages.find(item=>item.id===node.dataset.id);if(!message)return;message.unread=false;
-    if(['评估资料填写','康复纪要填写','康复小结填写'].includes(message.type)&&message.appointmentId){st.therapistAppointmentId=message.appointmentId;st.therapistDraft={};st.employeeTab='therapistRecordForm';go('employee');return}
+    if(['评估资料填写','康复纪要填写','康复小结填写'].includes(message.type)&&message.appointmentId){st.therapistAppointmentId=message.appointmentId;st.therapistDraft={};therapistNavigate('therapistRecordForm');return}
     if(message.type==='订单核销提醒'&&message.appointmentId){therapistScanModal(therapistAppointment(message.appointmentId));return}
-    if(message.type==='客户预约提醒'&&message.appointmentId){st.employeeTab='therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='全部';go('employee');return}
+    if(message.type==='客户预约提醒'&&message.appointmentId){therapistNavigate('therapistSchedule');st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='全部';return}
     modal(message.type,`<p class="small">${message.content}</p><button class="btn full" data-act="close">知道了</button>`);return;
   }
   if(action==='therapistAllRead'){modal('全部标记已读','<p class="small">确定将所有员工消息标记为已读？</p><div class="grid2"><button class="btn ghost" data-act="close">取消</button><button class="btn" data-act="confirmTherapistAllRead">确认</button></div>');return}
   if(action==='confirmTherapistAllRead'){therapistMessages.forEach(message=>message.unread=false);close();draw();toast('所有消息已读');return}
   if(action==='therapistCustomersFilter'){st.therapistCustomersFilter=node.dataset.v;draw();return}
   if(action==='therapistPeerScore'){if(node.dataset.kind==='attitude')st.therapistAttitude=Number(node.dataset.score);else st.therapistCooperation=Number(node.dataset.score);draw();return}
-  if(action==='openPeerTask'){st.employeeTab='therapistPeerTask';go('employee');return}
-  if(action==='therapistPeer'){st.therapistPeerId=node.dataset.id;st.therapistAttitude=0;st.therapistCooperation=0;st.therapistPeerText='';st.employeeTab='therapistPeerReview';go('employee');return}
+  if(action==='openPeerTask'){therapistNavigate('therapistPeerTask');return}
+  if(action==='therapistPeer'){st.therapistPeerId=node.dataset.id;st.therapistAttitude=0;st.therapistCooperation=0;st.therapistPeerText='';therapistNavigate('therapistPeerReview');return}
   if(action==='submitTherapistPeer'){if(!st.therapistAttitude||!st.therapistCooperation){toast('请完成两项评分');return}modal('确认提交互评','<p class="small">提交后将无法修改本次评分，确认提交？</p><div class="grid2"><button class="btn ghost" data-act="close">取消</button><button class="btn" data-act="confirmTherapistPeer">确认提交</button></div>');return}
-  if(action==='confirmTherapistPeer'){const peer=therapistPeers.find(item=>item.id===st.therapistPeerId);if(peer)peer.status='已评价';close();st.employeeTab='therapistPeerTask';go('employee');toast('互评已提交');return}
+  if(action==='confirmTherapistPeer'){const peer=therapistPeers.find(item=>item.id===st.therapistPeerId);if(peer)peer.status='已评价';close();therapistBack();toast('互评已提交');return}
   if(action==='therapistMonth'){st.therapistPerformanceMonth=node.value;draw();return}
   therapistBaseAct(event);
 };
@@ -199,6 +205,9 @@ draw=function(){
   if(st.page==='employee'&&st.employeeRole==='康复师'){
     const tabbar=document.getElementById('tabbar');tabbar.innerHTML=therapistTabNav();
     tabbar.querySelectorAll('.therapist-tab').forEach(button=>button.addEventListener('click',act));
+    const route=st.employeeTab||'employee',isPrimary=therapistPrimaryRoutes.has(route),title=therapistRouteTitles[route]||'工作台';
+    document.getElementById('wxTitle').textContent=title;document.getElementById('topRoute').textContent=title;document.getElementById('noteTitle').textContent=title;document.getElementById('noteText').textContent=notes.employee;
+    const backButton=document.getElementById('backBtn');backButton.hidden=isPrimary;backButton.onclick=therapistBack;
     document.getElementById('therapistCustomerSearch')?.addEventListener('submit',event=>{event.preventDefault();st.therapistCustomerKeyword=document.getElementById('therapistCustomerQuery').value;draw()});
     document.getElementById('therapistMonth')?.addEventListener('change',event=>{st.therapistPerformanceMonth=event.target.value;draw()});
     document.getElementById('therapistSessionNote')?.addEventListener('input',event=>{st.therapistDraft||={};st.therapistDraft.note=event.target.value});
