@@ -177,19 +177,20 @@ function lifecycleLogisticsPage(){
 
 const lifecycleEmployeePhones=[
   {phone:'13100000001',role:'康复师',store:'静安运动康复中心'},
-  {phone:'13100000002',role:'店长',store:'静安运动康复中心'}
+  {phone:'13100000002',role:'店长',kind:'普通店长',store:'静安运动康复中心'},
+  {phone:'13100000003',role:'店长',kind:'技术型店长',store:'静安运动康复中心'}
 ];
 function lifecycleEmployeeLoginPage(){
   return `<section class="employee-login-brand"><div class="launch-mark">${ic('user')}</div><h2>员工授权登录</h2><p>使用微信授权手机号验证员工身份</p></section><section class="card employee-login-guide"><b>手机号仅用于身份识别</b><p class="small muted">授权后将根据手机号进入对应员工工作台。</p></section><div class="employee-login-footer"><label class="small"><input type="checkbox" id="employeeAgree"> 我已阅读并同意 <button class="textbtn" data-act="protocol">《用户协议》与《隐私政策》</button></label><button class="btn full employee-wechat-button" data-act="employeeLogin">授权登录</button></div>`;
 }
 function lifecycleEmployeePhoneChooser(){
   const selected=st.pendingEmployeePhone||'';
-  return `<div id="employeePhoneChooser" class="employee-phone-list">${lifecycleEmployeePhones.map(item=>`<button class="employee-phone-option ${selected===item.phone?'selected':''}" data-act="selectEmployeePhone" data-v="${item.phone}" aria-pressed="${selected===item.phone}"><span class="employee-phone-check" aria-hidden="true">${selected===item.phone?'✓':''}</span><span><b>${item.phone}</b><small>微信授权手机号</small></span><span class="tag">${item.role}</span></button>`).join('')}</div><button class="btn full employee-authorize-confirm" data-act="confirmEmployeePhone" ${selected?'':'disabled'}>授权并登录</button>`;
+  return `<div id="employeePhoneChooser" class="employee-phone-list">${lifecycleEmployeePhones.map(item=>`<button class="employee-phone-option ${selected===item.phone?'selected':''}" data-act="selectEmployeePhone" data-v="${item.phone}" aria-pressed="${selected===item.phone}"><span class="employee-phone-check" aria-hidden="true">${selected===item.phone?'✓':''}</span><span><b>${item.phone}</b><small>微信授权手机号</small></span><span class="tag">${item.kind||item.role}</span></button>`).join('')}</div><button class="btn full employee-authorize-confirm" data-act="confirmEmployeePhone" ${selected?'':'disabled'}>授权并登录</button>`;
 }
 function lifecycleEmployeePage(){
   const staff=lifecycleEmployeePhones.find(item=>item.phone===st.employeePhone);
   if(!staff)return `<div class="empty"><h3>员工身份尚未授权</h3><p>请选择员工身份并授权手机号后登录。</p><button class="btn secondary" data-go="employeeLogin">前往授权登录</button></div>`;
-  return `<section class="card employee-identity-card"><div class="employee-avatar">${ic('user')}</div><div><small>员工身份</small><h2>${staff.role}</h2><p>${staff.phone}</p><p>${staff.store}</p></div></section><section class="card employee-workspace-note"><h3>${staff.role}工作台</h3><p>当前为身份授权流程演示。员工端业务页面待补充。</p></section><button class="btn ghost full" data-act="employeeLogout">退出员工登录</button>`;
+  return `<section class="card employee-identity-card"><div class="employee-avatar">${ic('user')}</div><div><small>员工身份</small><h2>${staff.kind||staff.role}</h2><p>${staff.phone}</p><p>${staff.store}</p></div></section><section class="card employee-workspace-note"><h3>${staff.kind||staff.role}工作台</h3><p>当前为身份授权流程演示。员工端业务页面待补充。</p></section><button class="btn ghost full" data-act="employeeLogout">退出员工登录</button>`;
 }
 
 const lifecycleRoutes=[['reviewDetail','评价详情'],['accountSettingsProfile','用户资料'],['userAgreement','用户协议'],['privacyPolicy','隐私政策']];
@@ -265,13 +266,13 @@ act=function(event){
   if(action==='confirmEmployeePhone'){
     const staff=lifecycleEmployeePhones.find(item=>item.phone===st.pendingEmployeePhone);
     if(!staff){toast('请选择要授权的手机号');return}
-    st.employeePhone=staff.phone;st.selectedEmployeePhone=staff.phone;st.pendingEmployeePhone='';st.employeeRole=staff.role;st.employeeTab='employee';st.therapistRouteStack=[];st.loggedIn=true;close();go('employee');toast('已授权登录：'+staff.role);return;
+    st.employeePhone=staff.phone;st.selectedEmployeePhone=staff.phone;st.pendingEmployeePhone='';st.employeeRole=staff.role;st.employeeType=staff.kind||staff.role;st.employeeTab=staff.role==='店长'?'managerWorkbench':'employee';st.therapistRouteStack=[];st.loggedIn=true;close();go('employee');toast('已授权登录：'+(staff.kind||staff.role));return;
   }
   if(action==='agreeOk'&&st.page==='employeeLogin'){
     close();const checkbox=document.getElementById('employeeAgree');if(checkbox)checkbox.checked=true;toast('已同意协议');return;
   }
   if(action==='employeeLogout'){
-    st.employeePhone=null;st.employeeRole=null;st.selectedEmployeePhone='';st.pendingEmployeePhone='';st.loggedIn=false;go('role');return;
+    st.employeePhone=null;st.employeeRole=null;st.employeeType=null;st.selectedEmployeePhone='';st.pendingEmployeePhone='';st.loggedIn=false;go('role');return;
   }
   if(action==='submitImmediateService'&&st.accountOrder?.type==='服务订单'){
     const order=st.accountOrder;
