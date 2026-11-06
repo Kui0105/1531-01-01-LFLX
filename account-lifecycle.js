@@ -175,15 +175,33 @@ function lifecycleLogisticsPage(){
   return `<section class="card logistics-product"><div class="row"><img class="thumb" src="${A+order.image}" alt="${lifecycleEscape(order.name)}"><div class="grow"><b>${lifecycleEscape(order.name)}</b><p class="small muted">${lifecycleEscape(order.detail)}</p><small>订单编号 ${lifecycleEscape(order.id)}</small></div></div></section><section class="card logistics-carrier"><div class="between"><b>${lifecycleEscape(order.carrier||'商家配送')}</b><span class="tag ${order.status==='待发货'?'gold':''}">${order.status==='待发货'?'待揽收':order.status==='待收货'?'运输中':order.status==='已完成'?'已签收':order.status}</span></div><p>物流单号　${lifecycleEscape(order.trackingNumber||'待商家发货后生成')}</p></section><section class="card logistics-tracks"><h3>物流轨迹</h3><div class="logistics-timeline">${tracks.map((track,index)=>`<article class="logistics-event ${index===0?'current':''}"><span class="logistics-dot" aria-hidden="true"></span><time>${lifecycleEscape(track.time)}</time><b>${lifecycleEscape(track.title)}</b><p>${lifecycleEscape(track.content)}</p></article>`).join('')}</div></section>`;
 }
 
+const lifecycleEmployeePhones=[
+  {phone:'13100000001',role:'康复师',store:'静安运动康复中心'},
+  {phone:'13100000002',role:'店长',store:'静安运动康复中心'}
+];
+function lifecycleEmployeeLoginPage(){
+  const selected=st.selectedEmployeePhone||'';
+  return `<section class="employee-login-brand"><div class="launch-mark">${ic('heart')}</div><h2>员工授权登录</h2><p>选择微信授权使用的手机号码</p></section><section class="employee-phone-list">${lifecycleEmployeePhones.map(item=>`<button class="employee-phone-option ${selected===item.phone?'selected':''}" data-act="selectEmployeePhone" data-v="${item.phone}" aria-pressed="${selected===item.phone}"><span class="employee-phone-check" aria-hidden="true">${selected===item.phone?'✓':''}</span><span><b>${item.phone}</b><small>授权手机号</small></span><span class="tag">${item.role}</span></button>`).join('')}</section><div class="employee-login-footer"><label class="small"><input type="checkbox" id="employeeAgree"> 我已阅读并同意 <button class="textbtn" data-act="protocol">《用户协议》与《隐私政策》</button></label><button class="btn full" data-act="employeeLogin">授权并登录</button></div>`;
+}
+function lifecycleEmployeePage(){
+  const staff=lifecycleEmployeePhones.find(item=>item.phone===st.employeePhone);
+  if(!staff)return `<div class="empty"><h3>员工身份尚未授权</h3><p>请选择员工身份并授权手机号后登录。</p><button class="btn secondary" data-go="employeeLogin">前往授权登录</button></div>`;
+  return `<section class="card employee-identity-card"><div class="employee-avatar">${ic('user')}</div><div><small>员工身份</small><h2>${staff.role}</h2><p>${staff.phone}</p><p>${staff.store}</p></div></section><section class="card employee-workspace-note"><h3>${staff.role}工作台</h3><p>当前为身份授权流程演示。员工端业务页面待补充。</p></section><button class="btn ghost full" data-act="employeeLogout">退出员工登录</button>`;
+}
+
 const lifecycleRoutes=[['reviewDetail','评价详情'],['accountSettingsProfile','用户资料'],['userAgreement','用户协议'],['privacyPolicy','隐私政策']];
 labels.logisticsDetail='物流详情';
 notes.logisticsDetail='查看所选商品订单的承运状态、物流单号与物流轨迹。';
+labels.employeeLogin='员工授权登录';
+notes.employeeLogin='选择微信授权手机号后按手机号识别康复师或店长身份。';
 const lifecycleGroup=groups.find(group=>group[0]==='消息与我的');
 lifecycleRoutes.forEach(([route,label])=>{labels[route]=label;if(lifecycleGroup&&!lifecycleGroup[1].some(item=>item[0]===route))lifecycleGroup[1].push([route,label])});
 notes.userAgreement='用户协议富文本展示。当前内容为原型示例，正式内容由管理端配置。';
 notes.privacyPolicy='隐私政策富文本展示。当前内容为原型示例，正式内容由管理端配置。';
 
 pagesContent=function(page){
+  if(page==='employeeLogin')return lifecycleEmployeeLoginPage();
+  if(page==='employee')return lifecycleEmployeePage();
   if(page==='logisticsDetail')return lifecycleLogisticsPage();
   if(page==='archives')return lifecycleArchivePage();
   if(page==='report'&&Number.isInteger(st.archiveRecord))return lifecycleArchiveResult();
@@ -233,6 +251,21 @@ act=function(event){
     if(order?.type==='服务订单'&&['待服务','服务中'].includes(order.status)){
       st.accountOrder=order;st.service=Math.max(6,S.findIndex(service=>service[0]===order.name));st.btype='service';st.bookedName=order.name;go('booking');return;
     }
+  }
+  if(action==='selectEmployeePhone'){
+    st.selectedEmployeePhone=node.dataset.v;draw();return;
+  }
+  if(action==='employeeLogin'){
+    const staff=lifecycleEmployeePhones.find(item=>item.phone===st.selectedEmployeePhone);
+    if(!staff){toast('请先选择授权手机号');return}
+    if(!document.getElementById('employeeAgree')?.checked){modal('用户协议与隐私政策','<p class="small">员工授权登录前请阅读并同意用户协议与隐私政策。</p><div class="grid2"><button class="btn ghost" data-act="close">取消</button><button class="btn" data-act="agreeOk">同意并继续</button></div>');return}
+    st.employeePhone=staff.phone;st.employeeRole=staff.role;st.loggedIn=true;go('employee');toast('已授权登录：'+staff.role);return;
+  }
+  if(action==='agreeOk'&&st.page==='employeeLogin'){
+    close();const checkbox=document.getElementById('employeeAgree');if(checkbox)checkbox.checked=true;toast('已同意协议');return;
+  }
+  if(action==='employeeLogout'){
+    st.employeePhone=null;st.employeeRole=null;st.selectedEmployeePhone='';st.loggedIn=false;go('role');return;
   }
   if(action==='submitImmediateService'&&st.accountOrder?.type==='服务订单'){
     const order=st.accountOrder;
