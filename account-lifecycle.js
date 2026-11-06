@@ -165,13 +165,26 @@ function lifecycleArchiveResult(){
   return `<section class="card archive-result-heading"><span class="tag">${record.type}</span><h2>${record.name}</h2><time>${record.time}</time></section><section class="card archive-result-content"><h3>${record.title}</h3><p>${record.content}</p></section>${plan?`<section class="card archive-result-content"><div class="between"><h3>康复方案</h3><span class="tag ${plan.status==='待签名'?'gold':''}">${plan.status}</span></div><p class="tiny muted">${plan.time}</p><h4>${plan.title}</h4><p>${plan.content}</p>${plan.status==='待签名'?'<button class="btn full" data-act="signArchivePlan">确认签署康复方案</button>':''}</section>`:''}<button class="btn ghost full" data-act="archiveResultsBack">返回康复档案</button>`;
 }
 
+function lifecycleLogisticsPage(){
+  const order=st.orders.find(item=>item.id===st.logisticsOrderId)||st.accountOrder;
+  if(!order||order.type!=='商品订单')return '<div class="empty">未找到商品物流信息</div>';
+  const tracks=order.logisticsTracks||[
+    {time:order.date+' 10:25',title:'商品正在打包',content:'商家已完成订单拣货，正在为商品打包。'},
+    {time:order.date+' 09:40',title:'商家已接单',content:'订单已支付成功，等待商家安排发货。'}
+  ];
+  return `<section class="card logistics-product"><div class="row"><img class="thumb" src="${A+order.image}" alt="${lifecycleEscape(order.name)}"><div class="grow"><b>${lifecycleEscape(order.name)}</b><p class="small muted">${lifecycleEscape(order.detail)}</p><small>订单编号 ${lifecycleEscape(order.id)}</small></div></div></section><section class="card logistics-carrier"><div class="between"><b>${lifecycleEscape(order.carrier||'商家配送')}</b><span class="tag ${order.status==='待发货'?'gold':''}">${order.status==='待发货'?'待揽收':order.status==='待收货'?'运输中':order.status==='已完成'?'已签收':order.status}</span></div><p>物流单号　${lifecycleEscape(order.trackingNumber||'待商家发货后生成')}</p></section><section class="card logistics-tracks"><h3>物流轨迹</h3><div class="logistics-timeline">${tracks.map((track,index)=>`<article class="logistics-event ${index===0?'current':''}"><span class="logistics-dot" aria-hidden="true"></span><time>${lifecycleEscape(track.time)}</time><b>${lifecycleEscape(track.title)}</b><p>${lifecycleEscape(track.content)}</p></article>`).join('')}</div></section>`;
+}
+
 const lifecycleRoutes=[['reviewDetail','评价详情'],['accountSettingsProfile','用户资料'],['userAgreement','用户协议'],['privacyPolicy','隐私政策']];
+labels.logisticsDetail='物流详情';
+notes.logisticsDetail='查看所选商品订单的承运状态、物流单号与物流轨迹。';
 const lifecycleGroup=groups.find(group=>group[0]==='消息与我的');
 lifecycleRoutes.forEach(([route,label])=>{labels[route]=label;if(lifecycleGroup&&!lifecycleGroup[1].some(item=>item[0]===route))lifecycleGroup[1].push([route,label])});
 notes.userAgreement='用户协议富文本展示。当前内容为原型示例，正式内容由管理端配置。';
 notes.privacyPolicy='隐私政策富文本展示。当前内容为原型示例，正式内容由管理端配置。';
 
 pagesContent=function(page){
+  if(page==='logisticsDetail')return lifecycleLogisticsPage();
   if(page==='archives')return lifecycleArchivePage();
   if(page==='report'&&Number.isInteger(st.archiveRecord))return lifecycleArchiveResult();
   if(page==='reviews')return lifecycleReviewsPage();
@@ -214,6 +227,9 @@ act=function(event){
   if(action==='remainingServiceOrders'){st.orderType='服务订单';st.orderFilter='服务中';st.accountOrder=null;go('orders');return}
   if(action==='accountOrderAction'){
     const order=st.orders.find(item=>item.id===id);
+    if(order?.type==='商品订单'&&['待发货','待收货','已完成'].includes(order.status)){
+      st.accountOrder=order;st.logisticsOrderId=order.id;go('logisticsDetail');return;
+    }
     if(order?.type==='服务订单'&&['待服务','服务中'].includes(order.status)){
       st.accountOrder=order;st.service=Math.max(6,S.findIndex(service=>service[0]===order.name));st.btype='service';st.bookedName=order.name;go('booking');return;
     }
