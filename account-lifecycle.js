@@ -180,8 +180,11 @@ const lifecycleEmployeePhones=[
   {phone:'13100000002',role:'店长',store:'静安运动康复中心'}
 ];
 function lifecycleEmployeeLoginPage(){
-  const selected=st.selectedEmployeePhone||'';
-  return `<section class="employee-login-brand"><div class="launch-mark">${ic('heart')}</div><h2>员工授权登录</h2><p>选择微信授权使用的手机号码</p></section><section class="employee-phone-list">${lifecycleEmployeePhones.map(item=>`<button class="employee-phone-option ${selected===item.phone?'selected':''}" data-act="selectEmployeePhone" data-v="${item.phone}" aria-pressed="${selected===item.phone}"><span class="employee-phone-check" aria-hidden="true">${selected===item.phone?'✓':''}</span><span><b>${item.phone}</b><small>授权手机号</small></span><span class="tag">${item.role}</span></button>`).join('')}</section><div class="employee-login-footer"><label class="small"><input type="checkbox" id="employeeAgree"> 我已阅读并同意 <button class="textbtn" data-act="protocol">《用户协议》与《隐私政策》</button></label><button class="btn full" data-act="employeeLogin">授权并登录</button></div>`;
+  return `<section class="employee-login-brand"><div class="launch-mark">☎</div><h2>员工授权登录</h2><p>使用微信授权手机号验证员工身份</p></section><section class="card employee-login-guide"><b>手机号仅用于身份识别</b><p class="small muted">授权后将根据手机号进入对应员工工作台。</p></section><div class="employee-login-footer"><label class="small"><input type="checkbox" id="employeeAgree"> 我已阅读并同意 <button class="textbtn" data-act="protocol">《用户协议》与《隐私政策》</button></label><button class="btn full employee-wechat-button" data-act="employeeLogin"><span>☎</span> 微信手机号授权登录</button></div>`;
+}
+function lifecycleEmployeePhoneChooser(){
+  const selected=st.pendingEmployeePhone||'';
+  return `<div id="employeePhoneChooser" class="employee-phone-list">${lifecycleEmployeePhones.map(item=>`<button class="employee-phone-option ${selected===item.phone?'selected':''}" data-act="selectEmployeePhone" data-v="${item.phone}" aria-pressed="${selected===item.phone}"><span class="employee-phone-check" aria-hidden="true">${selected===item.phone?'✓':''}</span><span><b>${item.phone}</b><small>微信授权手机号</small></span><span class="tag">${item.role}</span></button>`).join('')}</div><button class="btn full employee-authorize-confirm" data-act="confirmEmployeePhone" ${selected?'':'disabled'}>授权并登录</button>`;
 }
 function lifecycleEmployeePage(){
   const staff=lifecycleEmployeePhones.find(item=>item.phone===st.employeePhone);
@@ -253,19 +256,22 @@ act=function(event){
     }
   }
   if(action==='selectEmployeePhone'){
-    st.selectedEmployeePhone=node.dataset.v;draw();return;
+    st.pendingEmployeePhone=node.dataset.v;close();modal('选择微信手机号',lifecycleEmployeePhoneChooser());return;
   }
   if(action==='employeeLogin'){
-    const staff=lifecycleEmployeePhones.find(item=>item.phone===st.selectedEmployeePhone);
-    if(!staff){toast('请先选择授权手机号');return}
     if(!document.getElementById('employeeAgree')?.checked){modal('用户协议与隐私政策','<p class="small">员工授权登录前请阅读并同意用户协议与隐私政策。</p><div class="grid2"><button class="btn ghost" data-act="close">取消</button><button class="btn" data-act="agreeOk">同意并继续</button></div>');return}
-    st.employeePhone=staff.phone;st.employeeRole=staff.role;st.loggedIn=true;go('employee');toast('已授权登录：'+staff.role);return;
+    st.pendingEmployeePhone='';modal('选择微信手机号',lifecycleEmployeePhoneChooser());return;
+  }
+  if(action==='confirmEmployeePhone'){
+    const staff=lifecycleEmployeePhones.find(item=>item.phone===st.pendingEmployeePhone);
+    if(!staff){toast('请选择要授权的手机号');return}
+    st.employeePhone=staff.phone;st.selectedEmployeePhone=staff.phone;st.pendingEmployeePhone='';st.employeeRole=staff.role;st.loggedIn=true;close();go('employee');toast('已授权登录：'+staff.role);return;
   }
   if(action==='agreeOk'&&st.page==='employeeLogin'){
     close();const checkbox=document.getElementById('employeeAgree');if(checkbox)checkbox.checked=true;toast('已同意协议');return;
   }
   if(action==='employeeLogout'){
-    st.employeePhone=null;st.employeeRole=null;st.selectedEmployeePhone='';st.loggedIn=false;go('role');return;
+    st.employeePhone=null;st.employeeRole=null;st.selectedEmployeePhone='';st.pendingEmployeePhone='';st.loggedIn=false;go('role');return;
   }
   if(action==='submitImmediateService'&&st.accountOrder?.type==='服务订单'){
     const order=st.accountOrder;
