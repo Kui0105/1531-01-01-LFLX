@@ -266,7 +266,7 @@ act=function(event){
   if(action==='confirmEmployeePhone'){
     const staff=lifecycleEmployeePhones.find(item=>item.phone===st.pendingEmployeePhone);
     if(!staff){toast('请选择要授权的手机号');return}
-    st.employeePhone=staff.phone;st.selectedEmployeePhone=staff.phone;st.pendingEmployeePhone='';st.employeeRole=staff.role;st.employeeType=staff.kind||staff.role;st.employeeTab=staff.role==='店长'?'managerWorkbench':'employee';st.therapistRouteStack=[];st.loggedIn=true;close();go('employee');toast('已授权登录：'+(staff.kind||staff.role));return;
+    st.employeePhone=staff.phone;st.selectedEmployeePhone=staff.phone;st.pendingEmployeePhone='';st.employeeRole=staff.role;st.employeeType=staff.kind||staff.role;st.employeeTab=staff.role==='店长'?'managerWorkbench':'employee';if(staff.role==='店长')st.managerScheduleStaff=staff.kind==='技术型店长'?'周店长':'王店长';st.managerStaffDetail='';st.therapistRouteStack=[];st.loggedIn=true;close();go('employee');toast('已授权登录：'+(staff.kind||staff.role));return;
   }
   if(action==='agreeOk'&&st.page==='employeeLogin'){
     close();const checkbox=document.getElementById('employeeAgree');if(checkbox)checkbox.checked=true;toast('已同意协议');return;
