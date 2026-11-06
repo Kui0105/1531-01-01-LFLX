@@ -135,6 +135,27 @@ function lifecyclePolicyPage(privacy){
   return `<article class="card policy-document"><p class="policy-meta">${title} · 更新日期 2026-11-04</p>${sections.map(([heading,content])=>`<section><h3>${heading}</h3><p>${content}</p></section>`).join('')}</article>`;
 }
 
+const lifecycleArchiveRecords=[
+  {type:'评估档案',name:'术后评估',time:'2026-11-03 10:20',title:'术后阶段评估记录',content:'膝关节术后恢复进展稳定，屈伸活动度较上次改善。建议继续加强股四头肌激活与步态训练。'},
+  {type:'服务记录',name:'膝关节运动康复',time:'2026-11-02 14:50',title:'第 2 次康复训练纪要',content:'完成关节活动度练习、股四头肌力量训练及步态纠正。训练过程无明显不适，居家练习按计划进行。'},
+  {type:'评估档案',name:'运动损伤评估',time:'2026-10-30 16:10',title:'首次运动功能评估',content:'记录右膝疼痛及跑步后不适情况，完成关节活动度、单腿稳定性与下肢力量评估，建议阶段性调整训练负荷。'},
+  {type:'服务记录',name:'颈肩腰放松疗程',time:'2026-10-28 11:30',title:'康复方案与居家建议',content:'完成肩颈软组织放松和胸椎活动训练。建议工作间歇进行肩胛活动，每日完成两组胸椎伸展。'},
+  {type:'评估档案',name:'放松评估',time:'2026-10-24 09:40',title:'久坐与肌肉紧张评估',content:'日常久坐时间偏长，颈肩及腰背肌群紧张。根据睡眠、工作姿势与活动情况制定放松计划。'},
+  {type:'服务记录',name:'术后康复训练',time:'2026-10-21 15:00',title:'康复小结',content:'完成阶段康复训练，膝关节稳定性和日常步行能力较前改善。后续逐步增加力量与平衡训练。'},
+  {type:'评估档案',name:'颈肩腰痛评估',time:'2026-10-18 13:25',title:'初次疼痛评估',content:'梳理疼痛部位、持续时间及日常活动影响，并完成基础活动能力筛查，建立后续复评参考。'}
+];
+function lifecycleMaskPhone(value){
+  const digits=String(value||'').replace(/\D/g,'');
+  if(digits.length===11)return digits.slice(0,3)+'****'+digits.slice(-4);
+  return digits?digits.replace(/(\d{3})\d+(\d{4})/,'$1****$2'):'138****2888';
+}
+function lifecycleArchivePage(){
+  const profile=st.accountProfile||{},filter=st.archive||'评估档案';
+  const records=lifecycleArchiveRecords.filter(item=>filter==='全部'||item.type===filter).filter(item=>filter!=='服务记录'||!st.recordTab||st.recordTab==='全部'||item.title.includes(st.recordTab)).slice().sort((a,b)=>b.time.localeCompare(a.time));
+  const identity=[profile.name||'张女士',profile.gender||'女'].join(' · ');
+  return `<section class="card archive-user"><img class="avatar" src="${lifecycleEscape(profile.avatar||A+'coach-lin.png')}" alt="用户头像"><div class="grow"><b>${lifecycleEscape(profile.nickname||'林间微光')}</b><p>${lifecycleEscape(identity)}</p><small>手机号码　${lifecycleEscape(lifecycleMaskPhone(profile.phone))}</small></div></section><h2 class="title">康复档案</h2>${tabs(['评估档案','服务记录'],filter,'archive')}${filter==='服务记录'?tabs(['全部','首次评估','康复方案','康复纪要','康复小结'],st.recordTab||'全部','recordTab'):''}<div class="archive-timeline">${records.map(record=>`<article class="archive-record"><div class="archive-timeline-mark" aria-hidden="true"></div><time>${record.time}</time><section class="card"><div class="archive-record-heading"><b>${record.name}</b><span class="tag">${record.type}</span></div><h3>${record.title}</h3><p>${record.content}</p></section></article>`).join('')||'<div class="empty">当前分类暂无档案记录</div>'}</div>`;
+}
+
 const lifecycleRoutes=[['reviewDetail','评价详情'],['accountSettingsProfile','用户资料'],['userAgreement','用户协议'],['privacyPolicy','隐私政策']];
 const lifecycleGroup=groups.find(group=>group[0]==='消息与我的');
 lifecycleRoutes.forEach(([route,label])=>{labels[route]=label;if(lifecycleGroup&&!lifecycleGroup[1].some(item=>item[0]===route))lifecycleGroup[1].push([route,label])});
@@ -142,6 +163,7 @@ notes.userAgreement='用户协议富文本展示。当前内容为原型示例�
 notes.privacyPolicy='隐私政策富文本展示。当前内容为原型示例，正式内容由管理端配置。';
 
 pagesContent=function(page){
+  if(page==='archives')return lifecycleArchivePage();
   if(page==='reviews')return lifecycleReviewsPage();
   if(page==='reviewForm')return lifecycleReviewForm();
   if(page==='reviewDetail')return lifecycleReviewDetail();
