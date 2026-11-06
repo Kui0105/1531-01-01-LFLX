@@ -1,4 +1,14 @@
 /* Shared spacing and content patterns, measured in iPhone logical points. */
+.therapist-overview .therapist-metrics{grid-template-columns:minmax(42px,.82fr) minmax(42px,.82fr) minmax(102px,1.65fr) minmax(42px,.82fr)}
+.therapist-overview .therapist-service-target small{max-width:none;font-size:9px!important;line-height:13px;white-space:nowrap}
+.therapist-appointment .therapist-card-actions{gap:14px;margin-top:5px;padding-top:3px}
+.card.therapist-appointment .therapist-card-actions button.therapist-action{min-height:30px;padding-top:2px;padding-bottom:2px}
+.therapist-stars{display:flex;align-items:center;gap:5px;min-height:34px}
+.therapist-star{display:inline-grid;place-items:center;width:30px;height:32px;padding:0;border:0;background:transparent;color:#c7d1ce;font-size:27px;line-height:1}
+button.therapist-star{cursor:pointer}
+.therapist-star.filled{color:#e3a43c}
+.therapist-peer-comment{margin:0;padding:11px 12px;border-radius:8px;background:#f5f8f6;font-size:13px;line-height:1.7;color:#455f5a;white-space:pre-wrap}
+.therapist-peer-readonly{margin:12px 0 0}
 .home-layout{display:flex;flex-direction:column;gap:16px}
 .home-layout>.home-topbar,.home-layout>.banner,.home-layout>.home-announcement{margin:0}
 .home-layout>.home-assessments{padding:0}
