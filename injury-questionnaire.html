@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1F4E3D">
+<title>了凡乐享 · 运动损伤评估</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --green:#1F4E3D; --green-2:#2E7D5B; --green-3:#4F9E78;
+    --mint:#EDF3EF; --bg:#F3F5F3; --line:#E3E8E4;
+    --text:#22302A; --text-2:#5D6B64; --text-3:#93A09A;
+    --amber:#B4791F; --red:#B4453C; --radius:16px;
+  }
+  html,body{height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--text);font-size:15px;line-height:1.55;overflow:hidden}
+  #app{height:100%;display:flex;flex-direction:column;position:relative}
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);
+    opacity:0;pointer-events:none;transition:opacity .22s ease}
+  .screen.on{opacity:1;pointer-events:auto}
+
+  #cover{background:linear-gradient(165deg,#1F4E3D 0%,#2A6650 46%,#357A5D 100%)}
+  #cover .cover-inner{flex:1;display:flex;flex-direction:column;padding:0 26px;overflow-y:auto}
+  .brand{display:flex;align-items:center;gap:9px;padding-top:34px}
+  .brand-mark{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.16);
+    display:grid;place-items:center;border:1px solid rgba(255,255,255,.28)}
+  .brand-mark svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .brand-name{color:#fff;font-size:15px;font-weight:600;letter-spacing:1.5px}
+  .brand-sub{color:rgba(255,255,255,.55);font-size:11px;letter-spacing:2px;margin-left:2px}
+  .cover-title{margin-top:44px;color:#fff;font-size:30px;font-weight:700;letter-spacing:2px;line-height:1.35}
+  .cover-title span{display:block;font-size:30px}
+  .cover-desc{margin-top:16px;color:rgba(255,255,255,.72);font-size:13.5px;line-height:1.85;letter-spacing:.4px}
+  .cover-mid{flex:1;display:flex;align-items:center;padding:18px 0 6px}
+  .cover-dims{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+  .dim{background:rgba(255,255,255,.085);border:1px solid rgba(255,255,255,.15);border-radius:15px;padding:15px 16px 14px}
+  .dim-n{font-size:25px;font-weight:700;color:#fff;line-height:1;letter-spacing:-.5px}
+  .dim-t{font-size:12px;color:rgba(255,255,255,.66);margin-top:7px;letter-spacing:.8px}
+  .cover-meta{display:flex;flex-direction:column;gap:11px;padding-bottom:16px}
+  .cover-meta-item{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.85);font-size:13px}
+  .dot{width:5px;height:5px;border-radius:50%;background:#8FD3AE;flex:0 0 auto}
+  .cover-foot{padding:0 26px calc(env(safe-area-inset-bottom) + 22px)}
+  .btn-start{width:100%;height:52px;border:none;border-radius:26px;background:#fff;color:var(--green);
+    font-size:16.5px;font-weight:600;letter-spacing:2px;font-family:inherit;box-shadow:0 8px 24px rgba(0,0,0,.16);cursor:pointer}
+  .cover-note{margin-top:14px;text-align:center;color:rgba(255,255,255,.5);font-size:11.5px;letter-spacing:.6px}
+
+  .topbar{flex:0 0 auto;background:#fff;padding-top:env(safe-area-inset-top);box-shadow:0 1px 0 var(--line);position:relative;z-index:5}
+  .topbar-row{height:52px;display:flex;align-items:center;padding:0 10px 0 6px}
+  .btn-back{width:40px;height:40px;border:none;background:none;display:grid;place-items:center;cursor:pointer}
+  .btn-back svg{width:11px;height:19px;stroke:var(--text);fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+  .topbar-title{flex:1;text-align:center;font-size:16px;font-weight:600;letter-spacing:.5px}
+  .topbar-right{width:44px;text-align:right;font-size:12.5px;color:var(--text-3);padding-right:8px}
+  .progress-wrap{height:3px;background:var(--mint)}
+  .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--green-2),var(--green-3));transition:width .3s ease}
+
+  .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 13px 118px}
+  .step-head{margin:2px 3px 14px}
+  .step-idx{font-size:11.5px;color:var(--green-3);letter-spacing:2px;font-weight:600}
+  .step-title{font-size:20px;font-weight:700;letter-spacing:1px;margin-top:5px}
+  .step-desc{font-size:12.5px;color:var(--text-2);margin-top:7px;line-height:1.7}
+
+  .card{background:#fff;border-radius:var(--radius);padding:15px 14px 5px;box-shadow:0 1px 3px rgba(31,78,61,.05);margin-bottom:11px}
+  .q{padding:3px 0 13px;border-bottom:1px solid #F1F4F2}
+  .q:last-child{border-bottom:none}
+  .q-label{font-size:14.5px;font-weight:600;letter-spacing:.3px}
+  .q-hint{font-size:11.5px;color:var(--text-3);margin-top:4px;line-height:1.6}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px}
+  .opt{border:1.4px solid var(--line);background:#fff;color:var(--text-2);padding:10px 8px;border-radius:10px;
+    font-size:13.5px;font-family:inherit;letter-spacing:.3px;cursor:pointer;transition:all .16s ease;line-height:1.32;
+    text-align:center;overflow:hidden;white-space:normal;word-break:break-word;height:auto;min-height:42px;
+    display:flex;align-items:center;justify-content:center}
+  .opt.sel{background:var(--green);border-color:var(--green);color:#fff;font-weight:600;box-shadow:0 3px 10px rgba(31,78,61,.2)}
+  .opt.small{padding:8px 6px;font-size:12.5px;min-height:40px}
+  .opt.noneopt{border-style:dashed;color:var(--text-3)}
+  .inp{width:100%;margin-top:11px;height:46px;border:1.4px solid var(--line);border-radius:10px;padding:0 13px;
+    font-size:14.5px;font-family:inherit;color:var(--text);background:#FCFDFC}
+  .inp:focus{outline:none;border-color:var(--green-3);background:#fff}
+  textarea.inp{height:auto;min-height:74px;padding:11px 13px;line-height:1.6;resize:none}
+
+  .scale{margin-top:14px;padding:0 2px}
+  .scale-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:5px}
+  .scale-val{font-size:29px;font-weight:700;color:var(--green);line-height:1;letter-spacing:-.5px}
+  .scale-val small{font-size:12px;font-weight:500;color:var(--text-3);margin-left:4px;letter-spacing:0}
+  .scale-tip{font-size:11.5px;color:var(--text-3);padding-bottom:3px}
+  input[type=range]{-webkit-appearance:none;width:100%;height:26px;background:none;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,#D9E6DD,#B7D2C4)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+    background:#fff;border:2.5px solid var(--green);margin-top:-9px;box-shadow:0 2px 6px rgba(31,78,61,.28)}
+  .scale-ends{display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-top:-2px}
+
+  .grid{margin-top:9px}
+  .grid-head{display:flex;align-items:center;padding:0 0 7px;border-bottom:1px solid #F0F3F1}
+  .grid-head .gn{flex:1;font-size:11px;color:var(--text-3);letter-spacing:.5px}
+  .grid-head .gc{font-size:11px;color:var(--text-3);text-align:center;letter-spacing:.3px}
+  .grid-row{display:flex;align-items:center;padding:7px 0;border-bottom:1px solid #F6F8F7}
+  .grid-row:last-child{border-bottom:none}
+  .grid-row .gn{flex:1;font-size:13.5px;color:var(--text);letter-spacing:.2px;padding-right:6px;line-height:1.35}
+  .grid-row .gc{display:flex;justify-content:flex-end;gap:4px}
+  .cell{width:44px;height:32px;border:1.3px solid var(--line);border-radius:8px;background:#fff;font-size:12px;
+    color:var(--text-2);font-family:inherit;cursor:pointer;transition:all .14s ease;display:grid;place-items:center;padding:0}
+  .cell.sel{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+  .cell.warn.sel{background:var(--amber);border-color:var(--amber)}
+  .cell.bad.sel{background:var(--red);border-color:var(--red)}
+  .cell.mild.sel{background:#E9F1EC;border-color:#BFD5C6;color:var(--green);font-weight:600}
+
+  .footer{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);
+    box-shadow:0 -1px 0 var(--line);padding:11px 13px calc(env(safe-area-inset-bottom) + 11px);display:flex;gap:10px;z-index:10}
+  .btn{height:49px;border-radius:13px;border:none;font-family:inherit;font-size:15.5px;font-weight:600;
+    letter-spacing:1.5px;cursor:pointer;transition:transform .12s ease}
+  .btn:active{transform:scale(.98)}
+  .btn-primary{flex:1;background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(31,78,61,.22)}
+  .btn-ghost{flex:0 0 96px;background:var(--mint);color:var(--green)}
+
+  #result{background:var(--bg)}
+  #result .content{padding-bottom:140px}
+  .res-hero{background:linear-gradient(160deg,#1F4E3D,#2E7D5B);border-radius:20px;padding:20px 20px 22px;color:#fff;
+    margin-bottom:12px;position:relative;overflow:hidden}
+  .res-hero::after{content:"";position:absolute;right:-38px;top:-38px;width:150px;height:150px;border-radius:50%;
+    background:rgba(255,255,255,.055)}
+  .res-hero-label{font-size:11.5px;letter-spacing:2.5px;color:rgba(255,255,255,.62)}
+  .res-hero-name{font-size:13.5px;color:rgba(255,255,255,.85);margin-top:9px;letter-spacing:.4px}
+  .res-grade{display:flex;align-items:center;gap:9px;margin-top:8px}
+  .grade-dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 4px rgba(255,255,255,.12)}
+  .res-level{font-size:23px;font-weight:700;letter-spacing:1.2px;white-space:nowrap}
+  .res-score{margin-left:auto;font-size:12.5px;color:rgba(255,255,255,.7);white-space:nowrap}
+  .res-level-sub{font-size:12.5px;color:rgba(255,255,255,.72);margin-top:9px;line-height:1.7}
+  .res-metrics{display:flex;gap:9px;margin-bottom:12px}
+  .metric{flex:1;background:#fff;border-radius:14px;padding:13px 8px;text-align:center;box-shadow:0 1px 3px rgba(31,78,61,.05)}
+  .metric-v{font-size:20px;font-weight:700;color:var(--green);line-height:1.1;letter-spacing:-.3px}
+  .metric-v small{font-size:11px;font-weight:500;color:var(--text-3);margin-left:1px}
+  .metric-k{font-size:11px;color:var(--text-3);margin-top:5px;letter-spacing:.3px}
+  .metric.flag .metric-v{color:var(--amber)}
+  .sec-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:1px;margin:18px 4px 9px;
+    display:flex;align-items:center;gap:7px}
+  .sec-title::before{content:"";width:3px;height:13px;border-radius:2px;background:var(--green-3)}
+  .sec-title span{font-weight:500;color:var(--text-3);font-size:11.5px;letter-spacing:0;margin-left:2px}
+  .tag-wrap{display:flex;flex-wrap:wrap;gap:7px}
+  .tag{background:#fff;border:1.3px solid #DCE9E1;color:var(--green);border-radius:9px;padding:7px 12px;
+    font-size:12.5px;letter-spacing:.3px}
+  .tag.plain{border-color:var(--line);color:var(--text-2)}
+  .tag.bad{border-color:#EEDCBF;color:var(--amber);background:#FDFAF3}
+  .opt.sel[data-g="0"],.cell.sel[data-g="0"]{background:var(--green);border-color:var(--green)}
+  .opt.sel[data-g="1"],.cell.sel[data-g="1"]{background:var(--amber);border-color:var(--amber)}
+  .opt.sel[data-g="2"],.cell.sel[data-g="2"]{background:var(--red);border-color:var(--red)}
+  .q-note{font-size:12px;color:var(--text-3);line-height:1.75;margin:9px 2px 0;
+    padding:9px 11px;background:#F7FAF8;border-radius:9px}
+  .gn .clue{display:block;font-style:normal;font-size:10.5px;color:var(--text-3);
+    line-height:1.5;margin-top:2px}
+  .tri{display:flex;gap:8px;margin-bottom:10px}
+  .tri-cell{flex:1;background:#fff;border-radius:12px;padding:11px 4px;text-align:center;
+    box-shadow:0 1px 3px rgba(31,78,61,.05)}
+  .tri-n{font-size:20px;font-weight:700;line-height:1.1;letter-spacing:-.3px}
+  .tri-n.g0{color:#3E8E63}.tri-n.g1{color:#B4791F}.tri-n.g2{color:#B4453C}
+  .tri-t{font-size:10.5px;color:var(--text-3);margin-top:5px;letter-spacing:.2px}
+  .lv{display:inline-block;margin-left:7px;font-size:10.5px;line-height:1.6;padding:0 6px;
+    border-radius:5px;border:1px solid;white-space:nowrap;vertical-align:1px}
+  .lv.g0{color:#3E8E63;border-color:#D5EADF;background:#F4FAF7}
+  .lv.g1{color:#8A6420;border-color:#F0E4CB;background:#FBF6EC}
+  .lv.g2{color:#B4453C;border-color:#F0D5D1;background:#FDF4F3}
+  .lv.gn{color:var(--text-3);border-color:var(--line);background:#FAFBFA}
+  .area-list{display:flex;flex-direction:column;gap:8px}
+  .area-item{background:#fff;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:11px;
+    box-shadow:0 1px 3px rgba(31,78,61,.05)}
+  .area-idx{width:23px;height:23px;border-radius:7px;background:var(--mint);color:var(--green);font-size:12px;
+    font-weight:700;display:grid;place-items:center;flex:0 0 auto}
+  .area-txt{font-size:13.5px;letter-spacing:.2px;line-height:1.45}
+  .area-badge{margin-left:auto;font-size:11px;color:var(--text-3);flex:0 0 auto}
+  .dim-box{background:#fff;border-radius:14px;padding:13px 14px;box-shadow:0 1px 3px rgba(31,78,61,.05)}
+  .dim-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #F4F7F5}
+  .dim-row:last-child{border-bottom:none}
+  .dim-k{flex:0 0 92px;font-size:12.5px;color:var(--text-2)}
+  .dim-dots{display:flex;gap:4px;flex:1}
+  .dim-dot{flex:1;height:7px;border-radius:4px;background:#EDF1EE}
+  .dim-dot.on{background:var(--green-3)}
+  .dim-dot.hot{background:var(--amber)}
+  .dim-v{flex:0 0 22px;text-align:right;font-size:12px;font-weight:700;color:var(--green)}
+  .plan{background:#fff;border-radius:14px;padding:4px 14px;box-shadow:0 1px 3px rgba(31,78,61,.05)}
+  .plan-row{padding:12px 0;border-bottom:1px solid #F2F5F3;display:flex;gap:11px}
+  .plan-row:last-child{border-bottom:none}
+  .plan-k{flex:0 0 74px;font-size:12.5px;font-weight:700;color:var(--green);letter-spacing:.3px;padding-top:1px}
+  .plan-v{flex:1;font-size:13px;color:var(--text-2);line-height:1.7}
+  .plan-cap{font-size:11.5px;color:var(--text-3);margin:-2px 4px 7px;line-height:1.6}
+  .notice{background:#FBF6EC;border:1px solid #F0E4CB;border-radius:12px;padding:12px 14px;font-size:12.5px;
+    color:#8A6420;line-height:1.7;margin-top:12px}
+  .notice b{font-weight:700}
+  .res-foot{display:flex;gap:9px;margin-top:16px}
+  .res-foot .btn{flex:1;height:46px;font-size:14px;letter-spacing:.8px}
+  .btn-line{background:#fff;color:var(--text-2);border:1.4px solid var(--line)}
+  .sign{text-align:center;font-size:11px;color:var(--text-3);margin-top:20px;letter-spacing:.6px;line-height:1.8}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,14px);background:rgba(28,42,36,.93);color:#fff;
+    font-size:13px;padding:10px 20px;border-radius:22px;opacity:0;transition:all .26s ease;pointer-events:none;z-index:99;
+    letter-spacing:.4px;max-width:80vw;text-align:center}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section class="screen on" id="cover">
+    <div class="cover-inner">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24"><path d="M12 21c0-6 3-10 8-11-1 7-4 10-8 11z"/><path d="M12 21c0-5-2.5-8.5-7-9.5.8 6 3.6 8.6 7 9.5z"/><path d="M12 21v-6"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">了凡乐享</div>
+          <div class="brand-sub">运动康复</div>
+        </div>
+      </div>
+      <div class="cover-title"><span>运动损伤</span><span>评估问卷</span></div>
+      <div class="cover-desc">建档、查体、最多两个部位专项，加脑科学（6 题）与营养（9 题）速查，出五维评分与康复方案。</div>
+      <div class="cover-mid">
+        <div class="cover-dims">
+          <div class="dim"><div class="dim-n">8</div><div class="dim-t">部位分支</div></div>
+          <div class="dim"><div class="dim-n">5</div><div class="dim-t">五维评分</div></div>
+          <div class="dim"><div class="dim-n">6</div><div class="dim-t">脑科学速查</div></div>
+          <div class="dim"><div class="dim-n">9</div><div class="dim-t">营养速查</div></div>
+        </div>
+      </div>
+      <div class="cover-meta">
+        <div class="cover-meta-item"><span class="dot"></span>评估师填写，约 12–15 分钟</div>
+        <div class="cover-meta-item"><span class="dot"></span>最多 2 个部位，各出 1 组专项</div>
+        <div class="cover-meta-item"><span class="dot"></span>结果仅供运动康复服务参考</div>
+      </div>
+    </div>
+    <div class="cover-foot">
+      <button class="btn-start" id="btnStart">开 始 评 估</button>
+      <div class="cover-note">了凡乐享 · 运动损伤专用</div>
+    </div>
+  </section>
+
+  <section class="screen" id="survey">
+    <div class="topbar">
+      <div class="topbar-row">
+        <button class="btn-back" id="btnBack">
+          <svg viewBox="0 0 12 20"><path d="M10 2L2 10l8 8"/></svg>
+        </button>
+        <div class="topbar-title" id="barTitle">A 建档</div>
+        <div class="topbar-right" id="barStep">1/11</div>
+      </div>
+      <div class="progress-wrap"><div class="progress-bar" id="barFill"></div></div>
+    </div>
+    <div class="content" id="content"></div>
+    <div class="footer">
+      <button class="btn btn-ghost" id="btnPrev">上一步</button>
+      <button class="btn btn-primary" id="btnNext">下一步</button>
+    </div>
+  </section>
+
+  <section class="screen" id="result">
+    <div class="topbar">
+      <div class="topbar-row">
+        <button class="btn-back" id="btnBack2">
+          <svg viewBox="0 0 12 20"><path d="M10 2L2 10l8 8"/></svg>
+        </button>
+        <div class="topbar-title">评估结果</div>
+        <div class="topbar-right"></div>
+      </div>
+    </div>
+    <div class="content" id="resultContent"></div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ================= 部位分支（对应量表第五章 G 组） ================= */
+const PARTS = ['肩','颈 / 上背','肘 / 腕 / 手','腰 / 骶 / 骨盆','髋 / 腹股沟','膝','踝 / 足','肌肉拉伤 / 软组织'];
+
+/* 本次选中的部位（按 E1 点选顺序，最多 2 个） */
+const picks = () => {
+  const v = (typeof ans !== 'undefined' && ans) ? ans.e1 : null;
+  const arr = Array.isArray(v) ? v : (v ? [v] : []);
+  return arr.filter(p=>PARTS.includes(p));
+};
+
+const GB = {
+  '肩': {
+    code:'G-S',
+    screen:[
+      {k:'GS1', t:'GS1 骨性筛查（锁骨 / 肱骨近端）', bone:true,
+       opts:['局部叩击痛阳性','搭肩试验（肩锁关节）阳性'], none:'阴性'},
+      {k:'GS2', t:'GS2 颈椎与上肢神经血管筛查', nerve:true,
+       opts:['Spurling 试验阳性','臂丛牵拉试验阳性','Adson 试验阳性','Wright 试验阳性'], none:'阴性'},
+      {k:'GS6', t:'GS6 肩袖与肩峰下',
+       opts:['Neer 试验阳性','Hawkins-Kennedy 试验阳性','Jobe（空罐）试验阳性','Lift-off 试验阳性','Speed 试验阳性','Yergason 试验阳性','Apprehension 试验阳性'], none:'阴性'}
+    ],
+    single:[
+      {k:'GS3', t:'GS3 肱骨头位置', opts:['正常','前移'], bad:['前移']},
+      {k:'GS4', t:'GS4 胸小肌延展性', opts:['正常','紧张'], bad:['紧张']},
+      {k:'GS5', t:'GS5 肩胛骨运动', opts:['正常','异常'], bad:['异常']}
+    ],
+    rom:['前屈','后伸','外展','内收','内旋','外旋','水平外展','水平内收'],
+    str:['前屈','后伸','外展','外旋','内旋']
+  },
+  '颈 / 上背': {
+    code:'G-N',
+    screen:[
+      {k:'GN1', t:'GN1 颈椎专项筛查', nerve:true,
+       opts:['Hoffmann 征阳性','Babinski 征阳性','Spurling 试验阳性','椎间孔分离试验阳性','臂丛牵拉试验阳性','Adson 试验阳性','Wright 试验阳性','椎动脉试验阳性（转头后眩晕）'], none:'阴性'}
+    ],
+    single:[
+      {k:'GN3', t:'GN3 关节联动', opts:['正常','胸椎伸展受限','胸椎屈曲受限','第一肋活动受限','肩胛胸壁异常'], bad:['胸椎伸展受限','胸椎屈曲受限','第一肋活动受限','肩胛胸壁异常']}
+    ],
+    rom:['前屈','后伸','左侧屈','右侧屈','左旋转','右旋转'],
+    str:['C5 肱二头肌','C6 肱桡肌','C7 肱三头肌']
+  },
+  '肘 / 腕 / 手': {
+    code:'G-E',
+    screen:[
+      {k:'GE1', t:'GE1 肘腕专项筛查',
+       opts:['Cozen 试验阳性（外上髁）','Mill 征阳性','Golfer 肘试验阳性（内上髁）','Tinel 征阳性（肘部）','Tinel 征阳性（腕部）','内翻应力试验阳性','外翻应力试验阳性','Phalen 试验阳性','腕挤压试验阳性'], none:'阴性'},
+      {k:'GE6', t:'GE6 神经卡压点', opts:['斜角肌间隙','肋锁间隙','胸小肌下','四边孔','桡神经沟','肘管','旋前圆肌（Frohse 弓）','桡管','腕管','Guyon 管（尺管）'], none:'无'}
+    ],
+    single:[
+      {k:'GE2', t:'GE2 桡骨头活动', opts:['正常','受限'], bad:['受限']}
+    ],
+    rom:['肘屈','肘伸','肘旋前','肘旋后','腕背伸','腕屈曲','腕尺偏','腕桡偏'],
+    str:['肘屈','肘伸','肘旋前','肘旋后','腕背伸','腕屈曲']
+  },
+  '腰 / 骶 / 骨盆': {
+    code:'G-L',
+    screen:[
+      {k:'GL4', t:'GL4 腰骶专项筛查', nerve:true,
+       opts:['膝反射减弱','踝反射减弱','直腿抬高试验（SLR）阳性','Slump 试验阳性','局部叩击痛阳性','Valsalva 试验阳性','Kemp 试验阳性','托马斯试验阳性','骨盆分离 / 挤压试验阳性'], none:'阴性'}
+    ],
+    single:[
+      {k:'GL2', t:'GL2 骶髂关节（髂骨）位置', opts:['正常','AS（前旋）','PI（后旋）','IN（内翻）','EX（外翻）'], bad:['AS（前旋）','PI（后旋）','IN（内翻）','EX（外翻）']},
+      {k:'GL3', t:'GL3 骶骨点头 / 抬头', opts:['正常','点头（nutation）','抬头（counternutation）'], bad:['点头（nutation）','抬头（counternutation）']}
+    ],
+    rom:['腰椎屈曲','左侧屈','右侧屈','左旋转','右旋转','伸展'],
+    str:['L1–2 屈髋','L3 伸膝','L4 踝背伸内翻','L5 大踇趾伸直','S1 踝跖屈外翻','S2 屈膝']
+  },
+  '髋 / 腹股沟': {
+    code:'G-H',
+    screen:[
+      {k:'GH1', t:'GH1 髋专项筛查',
+       opts:['FADIR（前侧挤压）试验阳性','FABER（4 字）试验阳性','托马斯试验阳性','跟臀（Ely）试验阳性','梨状肌试验阳性','直腿抬高试验阳性','髂胫束挛缩（Ober）试验阳性','臀深部张力增高'], none:'阴性'}
+    ],
+    single:[
+      {k:'GH2', t:'GH2 骶髂关节位置', opts:['正常','AS（前旋）','PI（后旋）','IN（内翻）','EX（外翻）'], bad:['AS（前旋）','PI（后旋）','IN（内翻）','EX（外翻）']},
+      {k:'GH8', t:'GH8 弹响', opts:['无','有'], bad:['有']}
+    ],
+    rom:['屈曲','后伸','内收','外展','内旋','外旋'],
+    str:['屈曲','后伸','内收','外展','内旋','外旋']
+  },
+  '膝': {
+    code:'G-K',
+    screen:[
+      {k:'GK1', t:'GK1 髌骨与关节',
+       opts:['浮髌试验阳性','髌骨恐惧试验阳性','髌骨研磨试验阳性','低位髌骨（<0.8）','高位髌骨（>1.2）'], none:'阴性'},
+      {k:'GK2', t:'GK2 半月板',
+       opts:['McMurray 试验阳性','Apley 研磨试验阳性','关节线压痛阳性'], none:'阴性'},
+      {k:'GK3', t:'GK3 韧带稳定性',
+       opts:['前抽屉试验阳性','Lachman 试验阳性','后抽屉试验阳性','外翻应力试验阳性（伸直位）','外翻应力试验阳性（屈膝 30°）','内翻应力试验阳性'], none:'阴性'},
+      {k:'GK4', t:'GK4 其他',
+       opts:['Noble（髂胫束压迫）试验阳性','托马斯试验阳性','内侧皱襞挤压试验阳性'], none:'阴性'}
+    ],
+    single:[
+      {k:'GK5', t:'GK5 附属活动', opts:['正常','受限'], bad:['受限']},
+      {k:'GK9', t:'GK9 弹响与膝后侧张力', opts:['无弹响','有弹响','膝后侧紧张'], bad:['有弹响','膝后侧紧张']}
+    ],
+    rom:['髌骨活动','屈曲','伸直','内旋','外旋'],
+    str:['伸膝 0°','伸膝 30°','伸膝 90°','屈膝 90°','外展','屈髋']
+  },
+  '踝 / 足': {
+    code:'G-A',
+    screen:[
+      {k:'GA1', t:'GA1 踝部骨性筛查（Ottawa 标准）', bone:true,
+       opts:['内踝 / 外踝后缘 6cm 叩击痛阳性','第五跖骨基底压痛阳性','舟骨压痛阳性','长骨挤压试验阳性'], none:'阴性'},
+      {k:'GA2', t:'GA2 韧带稳定性',
+       opts:['前抽屉试验阳性','内翻应力（距骨倾斜）试验阳性','外翻应力试验阳性','Kleiger 试验阳性'], none:'阴性'}
+    ],
+    single:[
+      {k:'GA3', t:'GA3 距骨横向活动', opts:['正常','活动增大'], bad:['活动增大']},
+      {k:'GA6', t:'GA6 屈膝顶墙（负重背伸）', opts:['不受限','受限'], bad:['受限']}
+    ],
+    rom:['跖屈','背伸','外翻','内翻'],
+    str:['背伸','跖屈','内翻','外翻']
+  },
+  '肌肉拉伤 / 软组织': {
+    code:'G-T',
+    screen:[],
+    single:[
+      {k:'GT1', t:'GT1 拉伤部位', opts:['大腿后侧','大腿前侧','小腿后侧','大腿内侧','臀部','腰侧','肩袖','胸前','腹侧'], bad:[]},
+      {k:'GT2', t:'GT2 拉伤程度', grade3:true, opts:['I 度（轻度）','II 度（中度，力量下降）','III 度（重度，可触及凹陷）'], bad:['II 度（中度，力量下降）','III 度（重度，可触及凹陷）']},
+      {k:'GT3', t:'GT3 拉伤次数', opts:['首次','第二次','多次（≥3 次）'], bad:['多次（≥3 次）']}
+    ],
+    rom:[],
+    str:['按压 VAS','被动活动 VAS','主动活动 VAS']
+  }
+};
+
+/* ================= K 脑科学速查（6 题 · 三级判定 0/1/2） =================
+   0 = 未见异常　1 = 建议观察　2 = 建议深评 */
+const K_QUESTIONS = [
+  {k:'kb1', area:'前庭系统', t:'是否晕车？', opts:[
+    {v:'从来不晕', g:0}, {v:'偶尔晕车', g:1},
+    {v:'经常晕车', g:2}, {v:'平常不晕，处理文字信息时晕', g:2}
+  ]},
+  {k:'kb2', area:'小脑', t:'是否喜欢吃面食？（饮食偏好）', opts:[
+    {v:'每天吃', g:0}, {v:'一周 3~5 次', g:1},
+    {v:'偶尔吃', g:1}, {v:'几乎不吃', g:2}
+  ]},
+  {k:'kb3', area:'小脑', t:'膝跳反射观察（现场检查）', hint:'钟摆样反射（矢状面 / 划圈）是小脑抑制功能的重要检出体征。', opts:[
+    {v:'反射正常', g:0}, {v:'反射难引出', g:1},
+    {v:'反射亢进', g:2}, {v:'有矢状面钟摆现象', g:2}, {v:'有划圈钟摆现象', g:2}
+  ]},
+  {k:'kb4', area:'脑干', t:'面部对称情况（大小脸）', opts:[
+    {v:'两边一样大', g:0}, {v:'右边大、左边小', g:1}, {v:'左边大、右边小', g:1}
+  ]}
+];
+
+/* 第 5 题：基底节 · 膝跳反射下落，左右各一项 */
+const KB5_ROWS = [
+  {k:'kb5L', t:'左侧'},
+  {k:'kb5R', t:'右侧'}
+];
+const KB5_OPTS = [{v:'正常下落', g:0}, {v:'下落有卡顿', g:2}];
+
+/* 第 6 题：原始反射（可选评，16 岁以下必评估） */
+const KB6_ROWS = [
+  {k:'kb6a', t:'惊吓反射（Moro）', clue:'突然声响 / 晃动时易惊、张臂'},
+  {k:'kb6b', t:'迷路反射（TLR）', clue:'抬头 / 低头时身体紧张、踮脚'},
+  {k:'kb6c', t:'脊髓背反射（Spinal Galant）', clue:'背侧轻划会扭动、坐不住'},
+  {k:'kb6d', t:'对称性颈反射（STNR）', clue:'爬行少、低头时姿势塌'},
+  {k:'kb6e', t:'非对称性颈反射（ATNR）', clue:'头偏一侧、握笔过紧'}
+];
+const KB6_OPTS = ['未检出','疑似','明显','跳过'];
+
+/* ================= 营养速查（9 题 / 三级判定） =================
+   0 = 摄入良好　1 = 建议加强　2 = 缺口明显 */
+const N_LEVEL = ['摄入良好','建议加强','缺口明显'];
+
+const N_QUESTIONS = [
+  {k:'nh1', area:'蛋白质', t:'肉、蛋、奶、豆制品的摄入情况（掌心大小 ≈ 一份）',
+   hint:'运动人群每公斤体重每天约需 1.2~2g 蛋白质，建议每餐都有一份。',
+   opts:[{v:'每餐都有一份蛋白质', g:0}, {v:'每天 1~2 餐有', g:1}, {v:'经常缺或不吃', g:2}]},
+  {k:'nh2', area:'碳水', t:'训练日的主食安排',
+   hint:'碳水是训练的「燃料」，长期缺碳水会掉力量、影响恢复。',
+   opts:[{v:'每餐有主食，训练前后会加', g:0}, {v:'只在正餐吃主食', g:1}, {v:'减脂期基本不吃主食', g:2}]},
+  {k:'nh3', area:'早餐', t:'每天的早餐情况',
+   hint:'早餐决定上午的训练状态与注意力，蛋白质 + 主食是基本盘。',
+   opts:[{v:'每天吃，含蛋白质 + 主食', g:0}, {v:'随便吃点或偶尔不吃', g:1}, {v:'经常不吃早餐', g:2}]},
+  {k:'nh4', area:'蔬果', t:'蔬果摄入量',
+   hint:'蔬菜半斤 + 水果 1 个拳头 ≈ 每天推荐量；维 C、叶酸、钾和纤维主要来自蔬果。',
+   opts:[{v:'每天量基本够', g:0}, {v:'有吃但不到量', g:1}, {v:'很少吃蔬果', g:2}]},
+  {k:'nh5', area:'水分', t:'日常与运动中的喝水习惯',
+   hint:'缺水 2% 体重就会明显影响运动表现；运动中每 15~20 分钟补 100~200ml。',
+   opts:[{v:'每天 1500~2000ml，运动中规律补', g:0}, {v:'渴了才喝', g:1}, {v:'喝得很少或用饮料代替', g:2}]},
+  {k:'nh6', area:'恢复窗口', t:'训练后 30~60 分钟内的营养补充',
+   hint:'训练后是吸收黄金窗口，碳水 + 蛋白（如香蕉 + 牛奶）促进恢复。',
+   opts:[{v:'及时补碳水 + 蛋白', g:0}, {v:'随缘吃点', g:1}, {v:'运动后基本不补', g:2}]},
+  {k:'nh7', area:'微量元素', t:'奶制品、海产、坚果的出现频率',
+   hint:'奶制品补钙、海产补锌、坚果补维 E，均与肌肉和神经恢复相关。',
+   opts:[{v:'每天有奶，每周有海产和坚果', g:0}, {v:'偶尔有', g:1}, {v:'基本没有', g:2}]},
+  {k:'nh8', area:'优质脂肪酸', t:'富含 Omega-3 食物的出现频率',
+   hint:'深海鱼（三文鱼 / 鲈鱼 / 沙丁鱼）、亚麻籽、核桃、鱼油；建议每周 2~3 次深海鱼，或每天补 EPA+DHA 约 250~500mg。',
+   opts:[{v:'每周 2~3 次深海鱼或规律吃鱼油', g:0}, {v:'偶尔吃，一周不到 1 次', g:1}, {v:'基本不吃，也很少补充', g:2}]},
+  {k:'nh9', area:'睡眠恢复', t:'每天的睡眠情况',
+   hint:'生长激素在深睡眠分泌，睡不够吃再多也难恢复。',
+   opts:[{v:'7~8 小时且规律', g:0}, {v:'6 小时左右或不规律', g:1}, {v:'经常熬夜', g:2}]}
+];
+
+/* ================= 分步结构 ================= */
+const STEPS = [
+  {code:'A', title:'建档与基本信息', desc:'先留个底。年龄 ≤16 岁会自动把原始反射列入必做。', blocks:[
+    {type:'fields', items:[
+      {k:'client', t:'A1 姓名', ph:'请输入姓名'},
+      {k:'age', t:'A3 年龄', ph:'岁'},
+      {k:'bw', t:'A4 身高 / 体重', ph:'如 175 / 72'},
+      {k:'tel', t:'A5 联系电话', ph:'选填'},
+      {k:'assessor', t:'A11 评估师', ph:'填写人'},
+      {k:'date', t:'A12 评估日期', ph:'如 2026.10.23'}
+    ]},
+    {type:'q', items:[
+      {k:'a2', t:'A2 性别', type:'choice', opts:['男','女']},
+      {k:'a6', t:'A6 职业与运动专项', type:'chips', opts:['久坐办公','体力劳动','学生','跑步','球类','力量训练','格斗','冰雪','舞蹈']},
+      {k:'a7', t:'A7 每周训练频次', type:'choice', opts:['不运动','1–2 次','3–4 次','5 次以上']},
+      {k:'a8', t:'A8 单次训练时长', type:'choice', opts:['小于 30 分钟','30–60 分钟','1–2 小时','大于 2 小时']},
+      {k:'a9', t:'A9 惯用侧', type:'choice', opts:['右','左','双侧']}
+    ]}
+  ]},
+
+  {code:'B', title:'困扰与身体状况', desc:'客户原话优先。这一组里的重点信号会直接影响结论分层。', blocks:[
+    {type:'q', items:[
+      {k:'b1', t:'B1 本次最困扰你的问题（客户原话）', type:'textarea', ph:'一句话，限 50 字'},
+      {k:'b2', t:'B2 不适起始时间', type:'choice', opts:['小于 3 天','3–7 天','1–4 周','1–3 月','3–6 月','大于 6 月']},
+      {k:'b3', t:'B3 出现方式', type:'choice', opts:['突然出现（有明确动作）','逐渐出现（说不清诱因）','手术后','反复出现']},
+      {k:'b4', t:'B4 发生情境', type:'chips', opts:['扭转','落地','撞击','长期重复用力','姿势代偿','手术后','不清楚'], none:'不清楚'},
+      {k:'b5', t:'B5 是否拍过片 / 做过检查', type:'choice', opts:['没做过','做过']},
+      {k:'b5a', t:'B5a 检查结果', type:'text', ph:'如：磁共振提示半月板 II 度信号', when:a=>a.b5==='做过'},
+      {k:'b6', t:'B6 同部位既往受伤次数', type:'choice', opts:['无','1 次','2 次','3 次以上']},
+      {k:'b7', t:'B7 是否有过手术', type:'choice', opts:['无','有']},
+      {k:'b7a', t:'B7a 手术部位与年份', type:'text', ph:'如：右膝前交叉韧带重建 2024', when:a=>a.b7==='有'},
+      {k:'b8', t:'B8 长期身体状况', type:'chips', opts:['血压偏高','血糖偏高','心脏不适','免疫系统问题','骨密度偏低','有血栓情况','曾有重大疾病'], none:'均无'},
+      {k:'b9', t:'B9 当前长期使用的产品', type:'choice', opts:['无','抗凝类产品','激素类产品','止痛类产品','其他']},
+      {k:'b10', t:'B10 女性专项（男性跳过不填）', type:'choice', opts:['未孕','孕期','产后小于 6 月','产后 6–12 月']},
+      {k:'b11', t:'B11 重点关注信号', type:'chips',
+       opts:['不明原因体重下降','夜间静息时不适加重','不明原因发热','排便排尿控制变化','进行性力量下降','会阴区麻木','外伤后明显变形'],
+       none:'以上均无', hint:'任一勾选 → 结论直接判红，建议先做联合检查'}
+    ]}
+  ]},
+
+  {code:'C', title:'不适矩阵', desc:'四个场景各给一个 0–10，取最高值算不适负荷。', blocks:[
+    {type:'q', items:[
+      {k:'c0', t:'C0 目前是否存在不适', type:'choice', opts:['有','无']},
+      {k:'cArea', t:'不适部位（最多写 3 个）', type:'text', ph:'如：右膝前侧、右臀', when:a=>a.c0!=='无'},
+      {k:'c1v', t:'C1 静止时不适（0–10）', type:'scale', min:0, max:10, unit:'分', left:'无', right:'极重', when:a=>a.c0!=='无'},
+      {k:'c2v', t:'C2 按压时不适（0–10）', type:'scale', min:0, max:10, unit:'分', left:'无', right:'极重', when:a=>a.c0!=='无'},
+      {k:'c3v', t:'C3 日常生活最高不适（0–10）', type:'scale', min:0, max:10, unit:'分', left:'无', right:'极重', when:a=>a.c0!=='无'},
+      {k:'c4v', t:'C4 运动专项最高不适（0–10）', type:'scale', min:0, max:10, unit:'分', left:'无', right:'极重', when:a=>a.c0!=='无'},
+      {k:'c3', t:'C3 哪些日常动作会引起不适', type:'chips', opts:['站立','步行','上梯','下梯','蹲起','久坐','弯腰','穿衣','梳头','提物','拧毛巾','打字'], when:a=>a.c0!=='无'},
+      {k:'c4', t:'C4 哪些运动动作会引起不适', type:'chips', opts:['跑步','跳起','落地','变向','投掷','挥拍','踢球','深蹲','硬拉','卧推'], when:a=>a.c0!=='无'},
+      {k:'c5', t:'C5 不适的感觉类型', type:'chips', opts:['酸','刺','胀','撕裂感','牵拉感','发热感','麻木','电击感'], when:a=>a.c0!=='无'},
+      {k:'c6', t:'C6 不适出现规律', type:'choice', opts:['仅活动中','活动后','持续存在','夜间加重'], when:a=>a.c0!=='无'}
+    ]}
+  ]},
+
+  {code:'D', title:'康复目标', desc:'目标决定周期，也决定要不要解锁专项动作复现。', blocks:[
+    {type:'q', items:[
+      {k:'d1', t:'D1 康复目标档位', type:'choice', opts:['缓解不适','恢复日常生活','恢复低强度运动','恢复高强度竞技']},
+      {k:'d2', t:'D2 期望周期', type:'choice', opts:['2 周内','1 个月','2–3 个月','无明确限制']},
+      {k:'d3', t:'D3 每周可投入时间', type:'choice', opts:['小于 2 小时','2–4 小时','4–6 小时','大于 6 小时']},
+      {k:'d4', t:'D4 执行能力自评', type:'choice', opts:['高（能每天做）','中（每周 3–4 次）','低（不确定）']},
+      {k:'d5', t:'D5 比赛 / 考核节点', type:'choice', opts:['无','有']},
+      {k:'d5a', t:'D5a 节点日期', type:'text', ph:'如 2026.11.08', when:a=>a.d5==='有'}
+    ]}
+  ]},
+
+  {code:'E', title:'部位分流', desc:'最多选 2 个部位，按点选顺序决定后面出几组专项。', blocks:[
+    {type:'q', items:[
+      {k:'e1', t:'E1 本次主要评估部位（最多选 2 个）', type:'chips', max:2, opts:PARTS,
+       hint:'按点选顺序排列：第 1 个对应专项 1，第 2 个对应专项 2'}
+    ]}
+  ]},
+
+  {code:'F', title:'局部观察', desc:'每个选中部位各记一组：温度、周径、差值。', blocks:function(){
+    const ps = picks(); const list = ps.length ? ps : ['膝']; const out = [];
+    list.forEach((p,i)=>{
+      out.push({type:'sub', t:'部位 '+(i+1)+'：'+p});
+      const pts = Array.isArray(ans['f'+i+'_f2']) ? ans['f'+i+'_f2'] : [];
+      out.push({type:'q', items:[
+        {k:'f'+i+'_f1', t:'F1 局部温度（'+p+'）', type:'choice', opts:['正常','偏高','偏低']},
+        {k:'f'+i+'_f2', t:'F2 周径测量点（可多选）', type:'chips', opts:['髌骨中点','髌骨上 5cm','髌骨上 10cm','髌骨上 20cm','内踝水平','小腿最粗处','上臂中点','前臂最粗处'], none:'以上均未测'}
+      ]});
+      pts.forEach((pt, j)=>{
+        out.push({type:'sub', t:'　周径 '+(j+1)+'：'+pt});
+        out.push({type:'q', items:[
+          {k:'f'+i+'_f2L_'+pt, t:'左侧周径 cm', type:'text', ph:'如 36.5'},
+          {k:'f'+i+'_f2R_'+pt, t:'右侧周径 cm', type:'text', ph:'如 38.2'}
+        ]});
+      });
+      out.push({type:'q', items:[
+        {k:'f'+i+'_f3', t:'F3 双侧周径差（'+p+'）', type:'choice', opts:['小于 1cm','1–2cm','大于 2cm','未测']}
+      ]});
+    });
+    return out;
+  }},
+
+  {code:'G', title:'专项检查', desc:'按 E1 的点选顺序，选几个部位就答几组；未选中的部位不出现。', blocks:function(){
+    const ps = picks(); const list = ps.length ? ps : ['膝']; const out = [];
+    list.forEach((p,i)=>{
+      const b = GB[p];
+      out.push({type:'sub', t:'（'+(i+1)+'）'+b.code+'　'+p});
+      b.screen.forEach(s=>{
+        out.push({type:'q', items:[
+          {k:'g'+i+'_'+s.k, t:s.t, type:'chips', opts:(s.opts.indexOf('未测')>=0?s.opts:s.opts.concat(['未测'])), none:s.none, hint:'未勾选任何一项 = 阴性'}
+        ]});
+      });
+      b.single.forEach(s=>{
+        out.push({type:'q', items:[
+          {k:'g'+i+'_'+s.k, t:s.t, type:'choice', opts:(s.opts.indexOf('未测')>=0?s.opts:s.opts.concat(['未测']))}
+        ]});
+      });
+      if(b.rom.length){
+        out.push({type:'sub', t:'关节活动度（主动）'});
+        out.push({type:'grid', key:'g'+i+'_rom', rows:b.rom.map(x=>({k:b.code+x, t:x})), cols:['正常','受限','未测'], bad:['受限']});
+      }
+      if(b.str.length){
+        out.push({type:'sub', t:'肌力 / 反射'});
+        out.push({type:'grid', key:'g'+i+'_str', rows:b.str.map(x=>({k:b.code+x, t:x})), cols:['正常','下降','未测'], bad:['下降']});
+      }
+      out.push({type:'q', items:[
+        {k:'g'+i+'_note', t:'本节备注（对侧、弹响、代偿等）', type:'textarea', ph:'选填'}
+      ]});
+    });
+    return out;
+  }},
+
+  {code:'H', title:'骨关节排列与体态', desc:'看站姿与力线；有侧弯才填分度。', blocks:[
+    {type:'q', items:[
+      {k:'h1', t:'H1 骨关节排列与体态', type:'chips',
+       opts:['扁平足','跟骨内翻','跟骨外翻','踇外翻','X 型腿','O 型腿','内八','外八','膝过伸','骨盆前倾','骨盆后倾','骨盆侧倾','骨盆旋转','重心分布异常','脊柱侧弯'], none:'以上均无'},
+      {k:'h2', t:'H2 侧弯分度', type:'choice', opts:['未测','小于 10°','10–20°','大于 20°'],
+       when:a=>Array.isArray(a.h1)&&a.h1.includes('脊柱侧弯')}
+    ]}
+  ]},
+
+  {code:'I-J', title:'动作与步态', desc:'按部位解锁上肢与下肢动作，下肢与躯干分支才做步态；做不了的项选「未测」。', blocks:function(){
+      const ps = picks();
+      const upper = ps.some(p=>['肩','颈 / 上背','肘 / 腕 / 手'].includes(p));
+      const lower = ps.some(p=>['腰 / 骶 / 骨盆','髋 / 腹股沟','膝','踝 / 足'].includes(p));
+      const blocks = [
+        {type:'q', items:[
+          {k:'i1l', t:'I1 单脚站（睁眼·平地）左', type:'choice', opts:['30 秒以上','20–30 秒','10–20 秒','10 秒以下','未测']},
+          {k:'i1r', t:'I1 单脚站（睁眼·平地）右', type:'choice', opts:['30 秒以上','20–30 秒','10–20 秒','10 秒以下','未测']},
+          {k:'i2l', t:'I2 单脚站（闭眼）左', type:'choice', opts:['15 秒以上','10–15 秒','5–10 秒','5 秒以下','未测']},
+          {k:'i2r', t:'I2 单脚站（闭眼）右', type:'choice', opts:['15 秒以上','10–15 秒','5–10 秒','5 秒以下','未测']},
+          {k:'i3', t:'I3 单脚站 10 秒稳定（足→躯干）', type:'choice', opts:['双侧都能','仅一侧能','都不能','未测']},
+          {k:'i3a', t:'I3a 失稳环节', type:'chips', opts:['足踝控制','膝晃动','髋控制','躯干侧倾','上肢代偿','依赖视觉','未测'], none:'未测',
+           when:a=>a.i3&&a.i3!=='双侧都能'&&a.i3!=='未测'},
+          {k:'i4', t:'I4 双侧站立重心', type:'choice', opts:['居中','偏左','偏右','偏前','偏后','未测']},
+          {k:'i5', t:'I5 步行重心', type:'choice', opts:['居中','偏左','偏右','偏前','偏后','未测']},
+          {k:'i6', t:'I6 双侧下蹲', type:'chips', opts:['左侧塌陷','右侧塌陷','膝内扣','足外翻','躯干前倾','躯干侧倾','重心偏移','足跟抬起','不适'], none:['正常','未测']},
+          {k:'i7', t:'I7 单侧下蹲', type:'chips', opts:['膝内扣','足外翻','躯干前倾','躯干侧倾','重心偏移','足跟抬起','不适'], none:['正常','未测']},
+          {k:'i8', t:'I8 双脚跳跃摸高落地', type:'chips', opts:['落地声过大','落地不稳','膝内扣','足外翻','躯干失衡','不适'], none:['正常','未测']},
+          {k:'i9', t:'I9 单脚跳跃落地', type:'chips', opts:['落地声过大','落地不稳','膝内扣','足外翻','下肢排列异常','不适'], none:['正常','未测']}
+        ]}
+      ];
+      if(upper){
+        blocks.push({type:'sub', t:'上肢解锁'});
+        blocks.push({type:'q', items:[
+          {k:'i10', t:'I10 墙壁天使', type:'chips', opts:['腰椎前凸','耸肩','屈肘','不适'], none:['正常','未测']},
+          {k:'i11', t:'I11 四足跪撑', type:'chips', opts:['肘伸不直','腕背伸受限','塌腰','拱腰','耸肩','翼状肩','不适'], none:['正常','未测']},
+          {k:'i12', t:'I12 靠墙肩屈', type:'chips', opts:['腰椎前凸','耸肩','屈肘','不适'], none:['正常','未测']}
+        ]});
+      }
+      if(ans.d1==='恢复高强度竞技'){
+        blocks.push({type:'q', items:[
+          {k:'i13', t:'I13 专项动作复现', type:'text', ph:'动作名称 + 结果'}
+        ]});
+      }
+      if(lower){
+        blocks.push({type:'sub', t:'J 步态测试'});
+        blocks.push({type:'q', items:[
+          {k:'j1', t:'J1 足踝过渡', type:'choice', opts:['有过渡','无过渡','未测']},
+          {k:'j2', t:'J2 膝关节', type:'choice', opts:['正常','伸直受限','屈曲受限','未测']},
+          {k:'j3', t:'J3 髋关节', type:'choice', opts:['正常','伸直受限','屈曲受限','未测']},
+          {k:'j4', t:'J4 骨盆', type:'choice', opts:['正常','侧倾','旋转','未测']},
+          {k:'j5', t:'J5 支撑时间', type:'choice', opts:['正常','缩短','未测']}
+        ]});
+      }
+      return blocks;
+    }
+  },
+
+  {code:'K', title:'脑科学速查', desc:'6 道题，约 2 分钟。三色判定：未见异常 / 建议观察 / 建议深评。', blocks:[
+    {type:'q', items:K_QUESTIONS.map((q,i)=>({
+      k:q.k, t:(i+1)+' · '+q.area+'　'+q.t, type:'choice',
+      opts:q.opts, cols:1, hint:q.hint
+    }))},
+    {type:'sub', t:'5 · 基底节　膝跳反射下落（左右各一项）'},
+    {type:'note', t:'下落卡顿提示肌张力调节异常，与基底节功能相关。由康复师现场操作并勾选。'},
+    {type:'list', rows:KB5_ROWS, cols:KB5_OPTS.map(o=>o.v), gs:KB5_OPTS.map(o=>o.g), cw:80, fs:12},
+    {type:'sub', t:'6 · 原始反射（可选评 · 16 岁以下必评估）'},
+    {type:'note', t:'逐项检查是否残留，不必每项都评；不评的项选「跳过」，成年人可整题留空。「疑似」= 疑似残留，「明显」= 残留明显。'},
+    {type:'list', rows:KB6_ROWS, cols:KB6_OPTS, gs:[0,1,2,null], cw:44, fs:10.5}
+  ]},
+
+  {code:'L', title:'营养速查', desc:'9 道题，约 2 分钟。三色判定：摄入良好 / 建议加强 / 缺口明显。', blocks:[
+    {type:'q', items:N_QUESTIONS.map((q,i)=>({
+      k:q.k, t:(i+1)+' · '+q.area+'　'+q.t, type:'choice',
+      opts:q.opts, cols:1, hint:q.hint
+    }))}
+  ]}
+];
+
+/* ================= 状态 ================= */
+let step = 0;
+const integrationParams = new URLSearchParams(location.search);
+const integrationAppointment = integrationParams.get('appointment');
+const integrationReport = integrationParams.get('report');
+let integrationReportDate = null;
+const draftKey = integrationAppointment ? 'lflx_injury_draft_' + integrationAppointment : 'ly_injury_draft_v2';
+let ans = loadDraft();
+function loadDraft(){
+  try{
+    const s = localStorage.getItem(draftKey);
+    const o = s ? JSON.parse(s) : {};
+    if(o && typeof o.e1 === 'string') o.e1 = [o.e1];
+    return o || {};
+  }catch(e){ return {}; }
+}
+function saveDraft(){ try{ localStorage.setItem(draftKey, JSON.stringify(ans)); }catch(e){} }
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function optsHTML(k, opts, cur, cls, cols){
+  const n = opts.length;
+  const c = cols || (n===3 ? 3 : 2);
+  const list = opts.map(o=> typeof o==='string' ? {v:o} : o);
+  return `<div class="opts" style="grid-template-columns:repeat(${c},1fr)">` + list.map(o=>
+    `<button class="opt ${cls||''} ${cur===o.v?'sel':''}" data-k="${k}" data-v="${esc(o.v)}"${o.g!=null?` data-g="${o.g}"`:''}>${esc(o.v)}</button>`
+  ).join('') + `</div>`;
+}
+
+/* ================= 渲染 ================= */
+function renderStep(){
+  const s = STEPS[step];
+  $('barTitle').textContent = s.code+' '+s.title;
+  $('barStep').textContent = (step+1)+'/'+STEPS.length;
+  $('barFill').style.width = (step/(STEPS.length-1)*100)+'%';
+
+  const blocks = typeof s.blocks==='function' ? s.blocks() : s.blocks;
+  let html = `<div class="step-head">
+      <div class="step-idx">第 ${step+1} / ${STEPS.length} 步</div>
+      <div class="step-title">${esc(s.title)}</div>
+      <div class="step-desc">${esc(s.desc)}</div>
+    </div>`;
+
+  blocks.forEach(b=>{
+    if(b.type==='sub'){ html += `<div class="sec-title" style="margin:6px 4px 8px">${esc(b.t)}</div>`; return; }
+    if(b.type==='note'){ html += `<div class="q-note">${esc(b.t)}</div>`; return; }
+    if(b.type==='fields'){
+      html += `<div class="card">`;
+      b.items.forEach(it=>{
+        if(it.when && !it.when(ans)) return;
+        html += `<div class="q"><div class="q-label">${esc(it.t)}</div>
+          <input class="inp" data-k="${it.k}" type="text" placeholder="${esc(it.ph||'')}" value="${esc(ans[it.k]||'')}"></div>`;
+      });
+      html += `</div>`; return;
+    }
+    if(b.type==='list'){
+      const fixed = b.cw || 0, fs = b.fs || 12;
+      const cw = b.cols.map(c=> fixed || Math.max(46, String(c).length*14+12));
+      html += `<div class="card"><div class="grid">
+        <div class="grid-head"><div class="gn">项目</div>${b.cols.map((c,i)=>`<div class="gc" style="width:${cw[i]}px">${esc(c)}</div>`).join('')}</div>`;
+      b.rows.forEach(row=>{
+        const cur = ans[row.k];
+        html += `<div class="grid-row"><div class="gn">${esc(row.t)}${row.clue?`<em class="clue">${esc(row.clue)}</em>`:''}</div><div class="gc">` +
+          b.cols.map((c,i)=>{
+            const g = (b.gs && b.gs[i]!=null) ? b.gs[i] : null;
+            const warn = (b.warn||[]).includes(c) ? 'warn' : '';
+            return `<button class="cell ${cur===c?'sel':''} ${warn}" style="width:${cw[i]}px;font-size:${fs}px" data-k="${row.k}" data-v="${esc(c)}"${g!=null?` data-g="${g}"`:''}>${esc(c)}</button>`;
+          }).join('') +
+          `</div></div>`;
+      });
+      html += `</div></div>`; return;
+    }
+    if(b.type==='grid'){
+      html += `<div class="card"><div class="grid">
+        <div class="grid-head"><div class="gn">项目</div><div class="gc">${esc(b.cols.join(' · '))}</div></div>`;
+      b.rows.forEach(row=>{
+        const k = b.key+'_'+row.k, cur = ans[k];
+        html += `<div class="grid-row"><div class="gn">${esc(row.t)}</div><div class="gc">` +
+          b.cols.map(c=>{
+            const cls = (b.bad||[]).includes(c)?'bad':((b.warn||[]).includes(c)?'warn':((b.mild||[]).includes(c)?'mild':''));
+            return `<button class="cell ${cur===c?'sel':''} ${cls}" data-k="${k}" data-v="${esc(c)}">${esc(c)}</button>`;
+          }).join('') + `</div></div>`;
+      });
+      html += `</div></div>`; return;
+    }
+    if(b.type==='q'){
+      html += `<div class="card">`;
+      b.items.forEach(it=>{
+        if(it.when && !it.when(ans)) return;
+        const cur = ans[it.k];
+        html += `<div class="q"><div class="q-label">${esc(it.t)}</div>`;
+        if(it.hint) html += `<div class="q-hint">${esc(it.hint)}</div>`;
+        if(it.type==='text'){
+          html += `<input class="inp" data-k="${it.k}" type="text" placeholder="${esc(it.ph||'')}" value="${esc(cur||'')}">`;
+        }else if(it.type==='textarea'){
+          html += `<textarea class="inp" data-k="${it.k}" placeholder="${esc(it.ph||'')}">${esc(cur||'')}</textarea>`;
+        }else if(it.type==='choice'){
+          html += optsHTML(it.k, it.opts, cur, '', it.cols);
+        }else if(it.type==='chips'){
+          const arr = Array.isArray(cur) ? cur : [];
+          const nones = Array.isArray(it.none) ? it.none : (it.none ? [it.none] : []);
+          const list = nones.length ? it.opts.concat(nones.filter(x=>!it.opts.includes(x))) : it.opts;
+          const cols = list.every(o=>String(o).length<=4) ? Math.min(list.length,3) : 2;
+          html += `<div class="opts" style="grid-template-columns:repeat(${cols},1fr)">${list.map(o=>
+            `<button class="opt small ${arr.includes(o)?'sel':''} ${nones.includes(o)?'noneopt':''}" data-k="${it.k}" data-v="${esc(o)}" data-multi="1">${esc(o)}</button>`
+          ).join('')}</div>`;
+        }else if(it.type==='scale'){
+          const v = cur==null ? 0 : cur;
+          html += `<div class="scale">
+            <div class="scale-top"><div class="scale-val">${v}<small>${esc(it.unit||'')}</small></div>
+              <div class="scale-tip">拖动选择</div></div>
+            <input type="range" min="${it.min}" max="${it.max}" step="1" value="${v}" data-k="${it.k}" data-scale="1">
+            <div class="scale-ends"><span>${esc(it.left||'')}</span><span>${esc(it.right||'')}</span></div></div>`;
+          if(cur==null) ans[it.k] = v;
+        }
+        html += `</div>`;
+      });
+      html += `</div>`;
+    }
+  });
+
+  $('content').innerHTML = html;
+  $('content').scrollTop = 0;
+  $('btnPrev').style.display = step===0 ? 'none' : 'block';
+  $('btnNext').textContent = step===STEPS.length-1 ? '生成结果' : '下一步';
+}
+
+/* ================= 交互 ================= */
+document.addEventListener('click', e=>{
+  const opt = e.target.closest('.opt');
+  if(opt){
+    const k = opt.dataset.k, v = opt.dataset.v;
+    if(opt.dataset.multi){
+      const item = findChipsItem(k);
+      const nones = item ? (Array.isArray(item.none) ? item.none : (item.none ? [item.none] : [])) : [];
+      const max = item && item.max;
+      let arr = Array.isArray(ans[k]) ? ans[k].slice() : [];
+      const before = arr.slice();
+      if(nones.includes(v)){
+        ans[k] = arr.includes(v) ? [] : [v];
+      }else{
+        arr = arr.filter(x=>!nones.includes(x));
+        const i = arr.indexOf(v);
+        if(i>=0){ arr.splice(i,1); }
+        else{
+          if(max && arr.length>=max){ toast('最多选 '+max+' 个，先取消一个再选'); return; }
+          arr.push(v);
+        }
+        ans[k] = arr;
+      }
+      // E1 换部位：对应槽位的专项/局部观察答案一并清空，避免张冠李戴
+      if(k==='e1'){
+        [0,1].forEach(i=>{
+          if(before[i] !== (ans[k]||[])[i]){
+            Object.keys(ans).forEach(key=>{
+              if(key.indexOf('f'+i+'_')===0 || key.indexOf('g'+i+'_')===0) delete ans[key];
+            });
+          }
+        });
+      }
+      opt.parentNode.querySelectorAll('.opt').forEach(o=>{
+        o.classList.toggle('sel', (ans[k]||[]).includes(o.dataset.v));
+      });
+    }else{
+      const itemK = k;
+      ans[itemK] = v;
+      opt.parentNode.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+      opt.classList.add('sel');
+      renderIfNeeded(itemK);
+    }
+    saveDraft();
+    return;
+  }
+  const cell = e.target.closest('.cell');
+  if(cell){
+    const k = cell.dataset.k, v = cell.dataset.v;
+    const same = ans[k]===v;
+    if(same) delete ans[k]; else ans[k]=v;
+    cell.parentNode.querySelectorAll('.cell').forEach(c=>c.classList.remove('sel'));
+    if(!same) cell.classList.add('sel');
+    saveDraft();
+  }
+});
+
+/* 单选题里带条件题时重渲染（如 B5 → B5a、D1 → I13） */
+let renderTimer=null;
+function renderIfNeeded(){
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(()=>{
+    const y = $('content').scrollTop;
+    renderStep();
+    $('content').scrollTop = y;
+  }, 120);
+}
+
+function findChipsItem(k){
+  const s = STEPS[step];
+  const blocks = typeof s.blocks==='function' ? s.blocks() : s.blocks;
+  for(const b of blocks){
+    if(b.type==='q'){ const it = b.items.find(x=>x.k===k); if(it) return it; }
+  }
+  return null;
+}
+
+document.addEventListener('input', e=>{
+  const t = e.target;
+  if(t.dataset.scale){
+    ans[t.dataset.k] = +t.value;
+    const val = t.closest('.scale').querySelector('.scale-val');
+    val.innerHTML = t.value + '<small>' + (val.querySelector('small')?val.querySelector('small').textContent:'') + '</small>';
+    saveDraft();
+  }else if(t.dataset.k){
+    ans[t.dataset.k] = t.value;
+    saveDraft();
+  }
+});
+
+/* ================= 评分（对应量表 8.1–8.4） ================= */
+const pad = n => String(n).padStart(2,'0');
+const scoreBy = (n, cuts) => n<=0 ? 0 : (n<=cuts[0] ? 1 : (n<=cuts[1] ? 2 : 3));
+const part = () => picks()[0] || '膝';
+const G = () => GB[part()];
+const listParts = () => (picks().length ? picks() : ['膝']);
+
+function branchStats(){
+  let pos = 0, romLimit = 0, strDown = 0;
+  listParts().forEach((p,i)=>{
+    const b = GB[p];
+    b.screen.forEach(s=>{
+      const v = ans['g'+i+'_'+s.k];
+      if(Array.isArray(v)) pos += v.filter(x=>x!==s.none).length;
+    });
+    b.single.forEach(s=>{
+      const v = ans['g'+i+'_'+s.k];
+      if(v && (s.bad||[]).includes(v)) pos += 1;
+    });
+    b.rom.forEach(x=>{ if(ans['g'+i+'_rom_'+b.code+x]==='受限') romLimit += 1; });
+    b.str.forEach(x=>{ if(ans['g'+i+'_str_'+b.code+x]==='下降') strDown += 1; });
+  });
+  return {pos, romLimit, strDown};
+}
+
+function evaluate(){
+  const b = G();
+  const {pos, romLimit, strDown} = branchStats();
+  const vas = Math.max(+(ans.c1v||0), +(ans.c2v||0), +(ans.c3v||0), +(ans.c4v||0));
+
+  const P = scoreBy(vas, [5,7]);
+  const R = scoreBy(romLimit, [2,4]);
+  const M = scoreBy(strDown, [2,4]);
+  const S = scoreBy(pos, [1,2]);
+  const fnBad = ['i1l','i1r','i2l','i2r'].filter(k=>{
+    const v = ans[k]; if(!v) return false;
+    return ['20–30 秒','10–20 秒','10 秒以下','10–15 秒','5–10 秒','5 秒以下'].includes(v);
+  }).length
+  + (ans.i3 && ans.i3!=='双侧都能' && ans.i3!=='未测' ? 1 : 0)
+  + ['i4','i5'].filter(k=>ans[k]&&ans[k]!=='居中'&&ans[k]!=='未测').length
+  + ['i6','i7','i8','i9'].filter(k=>Array.isArray(ans[k])&&ans[k].filter(x=>x!=='未测'&&x!=='正常').length).length
+  + ['j1','j2','j3','j4','j5'].filter(k=>ans[k]&&ans[k]!=='正常'&&ans[k]!=='有过渡'&&ans[k]!=='未测').length;
+  const F = scoreBy(fnBad, [2,4]);
+  const total = P+R+M+S+F;
+
+  let gName='绿', gLabel='功能良好', gSub='预防性训练方案，3 个月复评。';
+  if(total>=4){ gName='黄'; gLabel='轻中度受限'; gSub='4–6 周干预，2 周复评。'; }
+  if(total>=8){ gName='橙'; gLabel='中重度受限'; gSub='6–12 周联合干预，4 周复评。'; }
+  if(total>=12){ gName='红'; gLabel='明显受限'; gSub='先做联合检查，稳定后再介入。'; }
+
+  /* 红旗（8.4） */
+  const rf = [];
+  const b11 = Array.isArray(ans.b11) ? ans.b11.filter(x=>x!=='以上均无') : [];
+  if(b11.length) rf.push('重点信号：'+b11.join('、'));
+  let bone = 0;
+  listParts().forEach((p,i)=>{
+    GB[p].screen.filter(s=>s.bone).forEach(s=>{
+      const v = ans['g'+i+'_'+s.k];
+      if(Array.isArray(v)) bone += v.filter(x=>x!==s.none).length;
+    });
+  });
+  if(bone) rf.push('骨性筛查阳性，建议先拍片确认');
+  if(ans.GT2 && ans.GT2.indexOf('III')>=0) rf.push('拉伤 III 度，禁止负荷测试');
+  const nerveSigns = [];
+  if(Array.isArray(ans.b11) && ans.b11.includes('进行性力量下降')) nerveSigns.push('进行性力量下降');
+  if(Array.isArray(ans.c5) && ans.c5.includes('麻木')) nerveSigns.push('麻木');
+  if(nerveSigns.length>=2) rf.push('神经相关表现 '+nerveSigns.join('、'));
+  if(['孕期','产后小于 6 月'].includes(ans.b10)) rf.push('孕期 / 产后小于 6 月，腰骶骨盆手法不用');
+  if(b11.length || bone || (ans.GT2&&ans.GT2.indexOf('III')>=0)){
+    gName='红'; gLabel='先排查'; gSub='命中一票否决项：先联合检查，稳定后再进入训练。';
+  }
+
+  /* 脑科学速查（6 题 · 三级判定 0/1/2） */
+  const kItems = K_QUESTIONS.map(q=>{
+    const v = ans[q.k], o = q.opts.find(x=>x.v===v);
+    return {area:q.area, q:q.t, ans:v||'', g:(o? o.g : null)};
+  });
+  const k5L = ans.kb5L || '', k5R = ans.kb5R || '';
+  const k5g = (k5L==='下落有卡顿' || k5R==='下落有卡顿') ? 2 : ((k5L||k5R) ? 0 : null);
+  kItems.push({area:'基底节', q:'膝跳反射下落', g:k5g,
+    ans:[k5L?'左 '+k5L:'', k5R?'右 '+k5R:''].filter(Boolean).join('；')});
+
+  const k6vals = KB6_ROWS.map(x=>ans[x.k]).filter(Boolean);
+  const k6done = k6vals.filter(v=>v!=='跳过');
+  const k6marked = k6done.filter(v=>v==='明显').length;
+  const k6susp = k6done.filter(v=>v==='疑似').length;
+  const k6g = !k6done.length ? null : (k6marked ? 2 : (k6susp ? 1 : 0));
+  const k6txt = !k6done.length ? '已跳过（成年人按需评估）'
+    : ('已评 '+k6done.length+' 项' + (k6marked ? ('，残留明显 '+k6marked+' 项')
+      : (k6susp ? ('，疑似残留 '+k6susp+' 项') : '，均未检出')));
+  kItems.push({area:'原始反射', q:'5 项系列检查', ans:k6txt, g:k6g});
+
+  const kCount = [0,0,0];
+  kItems.forEach(it=>{ if(it.g!=null) kCount[it.g]++; });
+  const kDone = kCount[0]+kCount[1]+kCount[2];
+  const kLevel = kCount[2] ? '建议深评' : (kCount[1] ? '建议观察' : (kDone ? '未见异常' : '未评估'));
+
+  /* 营养速查（9 题 · 三级判定 0/1/2） */
+  const nItems = N_QUESTIONS.map(q=>{
+    const v = ans[q.k], o = q.opts.find(x=>x.v===v);
+    return {area:q.area, q:q.t, ans:v||'', g:(o? o.g : null)};
+  });
+  const nCount = [0,0,0];
+  nItems.forEach(it=>{ if(it.g!=null) nCount[it.g]++; });
+  const nDone = nCount[0]+nCount[1]+nCount[2];
+  const nLevel = nCount[2] ? '缺口明显' : (nCount[1] ? '建议加强' : (nDone ? '摄入良好' : '未填写'));
+
+  /* 主要问题排序 */
+  const issues = [];
+  const psAll = listParts();
+  psAll.forEach((p,i)=>{
+    const bb = GB[p];
+    const pre = psAll.length>1 ? p+'｜' : '';
+    bb.screen.forEach(s=>{
+      const v = ans['g'+i+'_'+s.k];
+      if(Array.isArray(v)) v.filter(x=>x!==s.none).forEach(x=>issues.push(pre+x));
+    });
+    bb.single.forEach(s=>{ const v=ans['g'+i+'_'+s.k]; if(v&&(s.bad||[]).includes(v)) issues.push(pre+s.t.split(' ')[1]+'：'+v); });
+    bb.rom.forEach(x=>{ if(ans['g'+i+'_rom_'+bb.code+x]==='受限') issues.push(pre+x+'活动度受限'); });
+    bb.str.forEach(x=>{ if(ans['g'+i+'_str_'+bb.code+x]==='下降') issues.push(pre+x+'力量下降'); });
+  });
+  const topIssues = issues.slice(0,4);
+
+  /* 周期与复评 */
+  let weeks='4–6 周', recheck='2 周', freq='2 次/周';
+  if(total>=8){ weeks='6–12 周'; recheck='4 周'; freq='2–3 次/周'; }
+  if(total>=12){ weeks='先联合检查'; recheck='1 周'; freq='待定'; }
+  if(total<=3){ weeks='8–12 周（预防）'; recheck='3 个月'; freq='1 次/周'; }
+  const nd = new Date((integrationReportDate || Date.now()) + (recheck==='3 个月'?84:(recheck==='1 周'?7:(recheck==='2 周'?14:28)))*864e5);
+  const nextStr = (nd.getMonth()+1)+' 月 '+nd.getDate()+' 日';
+
+  /* 三套方案 */
+  const psList = listParts();
+  const mul = psList.length > 1;
+  const areaTxt = psList.join(' + ');
+  const romTxt = psList.map((p,i)=>{
+    const bb = GB[p];
+    return bb.rom.filter(x=>ans['g'+i+'_rom_'+bb.code+x]==='受限').map(x=>mul ? (p+'｜'+x) : x).join('、');
+  }).filter(Boolean).join('、');
+  const strTxt = psList.map((p,i)=>{
+    const bb = GB[p];
+    return bb.str.filter(x=>ans['g'+i+'_str_'+bb.code+x]==='下降').map(x=>mul ? (p+'｜'+x) : x).join('、');
+  }).filter(Boolean).join('、');
+  const f1Hot = psList.some((p,i)=>ans['f'+i+'_f1']==='偏高');
+  const FUNC = {
+    '肩':['肩胛稳定训练','肩袖力量训练','肩关节活动度训练'],
+    '颈 / 上背':['深层颈屈肌耐力训练','肩胛后缩控制训练','胸椎活动度训练'],
+    '肘 / 腕 / 手':['前臂力量训练','腕关节稳定训练','握力与耐力训练'],
+    '腰 / 骶 / 骨盆':['核心稳定训练','髋铰链控制训练','腰骨盆分离训练'],
+    '髋 / 腹股沟':['髋外展外旋力量训练','单腿稳定训练','髋关节活动度训练'],
+    '膝':['膝关节稳定训练','股四头肌力量训练','臀中肌力量训练'],
+    '踝 / 足':['踝关节本体感觉训练','小腿三头肌力量训练','足弓控制训练'],
+    '肌肉拉伤 / 软组织':['离心力量训练','局部稳定性训练','专项发力模式训练']
+  };
+  const TAPE = {'肩':'肩关节肌效贴（肩袖减压）','颈 / 上背':'颈胸段肌效贴','肘 / 腕 / 手':'腕关节肌效贴','腰 / 骶 / 骨盆':'腰骶肌效贴','髋 / 腹股沟':'髋周肌效贴','膝':'髌骨带 / 膝周肌效贴','踝 / 足':'踝关节肌效贴（韧带支持）','肌肉拉伤 / 软组织':'拉伤部位肌效贴'};
+  const HOME = {'肩':'弹力带外旋 + 墙面滑动，各 2 组','颈 / 上背':'收下巴 10 次 × 2 组 + 胸椎伸展','肘 / 腕 / 手':'握力球 + 腕背伸弹力带，各 15 次','腰 / 骶 / 骨盆':'死虫 10 次 × 2 组 + 臀桥 15 次','髋 / 腹股沟':'侧卧髋外展 15 次 × 2 组','膝':'靠墙静蹲 3 × 40 秒 + 直腿抬高 15 次','踝 / 足':'提踵 15 次 × 2 组 + 单脚站 30 秒','肌肉拉伤 / 软组织':'等长收缩 5 × 30 秒，无痛范围'};
+  const BRACE = {'肩':'肩袖护具（训练时）','颈 / 上背':'颈托（短期）','肘 / 腕 / 手':'护腕 / 肘束带','腰 / 骶 / 骨盆':'腰围（负重时）','髋 / 腹股沟':'无特殊','膝':'髌骨加压带','踝 / 足':'护踝（跑跳时）','肌肉拉伤 / 软组织':'加压带'};
+
+  const plan1 = [
+    ['手法', `${areaTxt}软组织松解${romTxt?'（围绕 '+romTxt+' 方向）':'（压痛最明显处）'}，每处 3–5 分钟，中等压力。`],
+    ['关节松动', romTxt ? `${romTxt}：Maitland Ⅱ–Ⅲ 级，每方向 2 组 × 30 秒。` : '未见明显受限，做生理性活动维持即可。'],
+    ['物理因子', f1Hot ? '冷疗 15 分钟 + 气压循环；训练后先冷后放。' : '热疗 15 分钟 + 聚焦式冲击波（局部压痛明显处，每周 1 次）。'],
+    ['运动训练', `${psList.map(p=>p+'：'+(FUNC[p]||[]).slice(0,2).join(' + ')).join('；')}；${strTxt?'重点补 '+strTxt+'：':''}每项 3 组、组间 60 秒，以最后 2 次略吃力为度。`],
+    ['贴扎', psList.map(p=>TAPE[p]||'按部位选择肌效贴').join('；')],
+    ['居家', psList.map(p=>HOME[p]||'每天 10 分钟，慢速完成').join('；')],
+    ['护具', psList.map(p=>BRACE[p]||'按需').join('；')]
+  ];
+
+  /* 脑科学与营养的详细方案不在此展开，由专项评估出具。 */
+
+  return {b, pos, romLimit, strDown, vas, P,R,M,S,F,total, gName, gLabel, gSub, rf,
+    kItems, kCount, kDone, kLevel, nItems, nCount, nDone, nLevel, topIssues, weeks, recheck, freq, nextStr, plan1};
+}
+
+/* ================= 结果 ================= */
+function renderResult(){
+  const r = evaluate();
+  const a = ans;
+  const d = new Date(integrationReportDate || Date.now());
+  const dateStr = a.date || (d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate()));
+
+  let html = `
+  <div class="res-hero">
+    <div class="res-hero-label">评 估 结 论</div>
+    <div class="res-hero-name">${esc(a.client||'未填写姓名')} · ${esc(picks().join(' + ')||'未选部位')} · ${esc(dateStr)}</div>
+    <div class="res-grade">
+      <span class="grade-dot" style="background:${({绿:'#7FC79B',黄:'#E5C46B',橙:'#E29A4E',红:'#D9705F'})[r.gName]}"></span>
+      <div class="res-level">${esc(r.gName)} · ${esc(r.gLabel)}</div>
+      <div class="res-score">总分 ${r.total} / 15</div>
+    </div>
+    <div class="res-level-sub">${esc(r.gSub)}</div>
+  </div>
+
+  <div class="res-metrics">
+    <div class="metric ${r.vas>=6?'flag':''}">
+      <div class="metric-v">${r.vas}<small> /10</small></div><div class="metric-k">最高不适</div></div>
+    <div class="metric ${r.pos>=2?'flag':''}">
+      <div class="metric-v">${r.pos}<small> 项</small></div><div class="metric-k">检查阳性</div></div>
+    <div class="metric ${r.nCount[2]>0?'flag':''}">
+      <div class="metric-v">${r.nCount[2]}<small> 项</small></div><div class="metric-k">营养缺口</div></div>
+  </div>
+
+  <div class="sec-title">五维评分<span>0–3 分 / 维</span></div>
+  <div class="dim-box">`;
+
+  [['P 不适负荷',r.P],['R 活动度受限',r.R],['M 肌力不足',r.M],['S 结构稳定',r.S],['F 功能动作',r.F]].forEach(([k,v])=>{
+    html += `<div class="dim-row"><div class="dim-k">${k}</div><div class="dim-dots">` +
+      [0,1,2].map(i=>`<div class="dim-dot ${i<v?('on'+(v>=2?' hot':'')):''}"></div>`).join('') +
+      `</div><div class="dim-v">${v}</div></div>`;
+  });
+  html += `</div>`;
+
+  if(r.topIssues.length){
+    html += `<div class="sec-title">主要问题<span>按阳性与受限自动排序</span></div><div class="area-list">`;
+    r.topIssues.forEach((t,i)=>{
+      html += `<div class="area-item"><div class="area-idx">${i+1}</div><div class="area-txt">${esc(t)}</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  const K_LABELS = ['未见异常','建议观察','建议深评'];
+  const N_LABELS = ['摄入良好','建议加强','缺口明显'];
+  const triHTML = (c, labels)=>`<div class="tri">${c.map((v,i)=>
+    `<div class="tri-cell"><div class="tri-n g${i}">${v}</div><div class="tri-t">${labels[i]}</div></div>`).join('')}</div>`;
+  const detailHTML = (items, labels)=>`<div class="plan">${items.map(it=>
+    `<div class="plan-row"><div class="plan-k">${esc(it.area)}</div><div class="plan-v">${esc(it.ans||'未填')}` +
+    `<span class="lv g${it.g==null?'n':it.g}">${it.g==null?'未评':labels[it.g]}</span></div></div>`).join('')}</div>`;
+
+  html += `<div class="sec-title">脑科学速查<span>6 题 · ${esc(r.kLevel)}</span></div>`;
+  html += triHTML(r.kCount, K_LABELS);
+  html += detailHTML(r.kItems, K_LABELS);
+  html += `<div class="plan-cap">${r.kCount[2]?'建议做脑科学专项评估：结合 V4 八项核心测评（舒尔特 / 记忆广度 / 反应时 / CPT / 反扫视 / 平滑追踪 / TMT / 视觉搜索），由康复师现场解读。':(r.kCount[1]?'有建议观察项，可先做基础筛查；如需深入再约脑科学专项评估。':'本次未见明显异常。')}</div>`;
+
+  html += `<div class="sec-title">营养速查<span>9 题 · ${esc(r.nLevel)}</span></div>`;
+  html += triHTML(r.nCount, N_LABELS);
+  html += detailHTML(r.nItems, N_LABELS);
+  html += `<div class="plan-cap">${r.nCount[2]?'建议预约营养师一对一解读：体成分评估 + 个人膳食方案，逐项补齐缺口。':(r.nCount[1]?'按建议加强项做 1–2 条日常调整即可。':'膳食结构良好，保持即可。')}</div>`;
+
+  html += `<div class="sec-title">运动康复方案</div><div class="plan-cap">对应附件一 · 七类</div><div class="plan">`;
+  r.plan1.forEach(([k,v])=>{ html += `<div class="plan-row"><div class="plan-k">${esc(k)}</div><div class="plan-v">${esc(v)}</div></div>`; });
+  html += `</div>`;
+
+  if(r.kCount[2]>0 || r.nCount[2]>0 || r.nCount[1]>=4){
+    html += `<div class="notice"><b>可进一步评估。</b>${r.kCount[2]>0?'脑科学速查 '+r.kCount[2]+' 项建议深评，可预约脑科学专项评估（V4 八项核心测评）；':''}${r.nCount[2]>0?'营养速查 '+r.nCount[2]+' 项缺口明显，可预约营养师一对一解读（体成分 + 膳食方案）。':(r.nCount[1]>=4?'营养速查有 '+r.nCount[1]+' 项建议加强，可做一次膳食回顾。':'')}</div>`;
+  }
+
+  html += `<div class="sec-title">跟进安排</div><div class="plan">
+    <div class="plan-row"><div class="plan-k">周期</div><div class="plan-v">${esc(r.weeks)}</div></div>
+    <div class="plan-row"><div class="plan-k">频次</div><div class="plan-v">${esc(r.freq)}，每天居家 10 分钟</div></div>
+    <div class="plan-row"><div class="plan-k">复评</div><div class="plan-v">${esc(r.recheck)}后 · ${esc(r.nextStr)} · 只看 C、I、J 组</div></div>
+    <div class="plan-row"><div class="plan-k">三师</div><div class="plan-v">运动康复师（主责）：本次方案；${r.kCount[2]>0?'建议脑科学专项评估':'脑科学：暂不需要'}；${r.nCount[2]>0?'建议营养师一对一解读':'营养：暂不需要'}</div></div>
+  </div>`;
+
+  if(r.rf.length){
+    html += `<div class="notice"><b>先排查，再训练。</b>${esc(r.rf.join('；'))}。这类信号优先查结构性问题，负荷动作暂不做。</div>`;
+  }
+
+  html += `<div class="res-foot">
+      <button class="btn btn-line" id="btnCopy">复制摘要</button>
+      <button class="btn btn-line" id="btnSave">存到本机</button>
+    </div>
+    <div class="res-foot" style="margin-top:9px"><button class="btn btn-primary" id="btnRestart">重新填一份</button></div>
+    <div class="sign">本结果为了凡乐享运动康复服务参考，不替代任何医学结论<br>命中红旗项请先做联合检查，再进入训练</div>`;
+
+  $('resultContent').innerHTML = html;
+  $('resultContent').scrollTop = 0;
+
+  $('btnCopy').onclick = ()=>{
+    navigator.clipboard?.writeText(summaryText(r)).then(()=>toast('摘要已复制')).catch(()=>toast('复制失败，请长按选择'));
+  };
+  if(integrationAppointment){
+    $('btnSave').textContent = '提交评估报告';
+    $('btnSave').onclick = ()=>{
+      if(!confirm('确认提交评估报告？提交后将进入订单流程。')) return;
+      parent.postMessage({type:'lflx-injury-submit', appointmentId:integrationAppointment, answers:ans, summary:summaryText(r)}, location.origin);
+    };
+    $('btnRestart').closest('.res-foot').remove();
+  } else $('btnSave').onclick = ()=>{
+    try{
+      const list = JSON.parse(localStorage.getItem('ly_injury_records')||'[]');
+      list.unshift({at:Date.now(), client:ans.client||'', part:picks().join(' + '), grade:r.gName, total:r.total, data:{...ans}});
+      localStorage.setItem('ly_injury_records', JSON.stringify(list.slice(0,200)));
+      toast('已存到本机，共 '+Math.min(list.length,200)+' 条');
+    }catch(e){ toast('保存失败'); }
+  };
+  if($('btnRestart')) $('btnRestart').onclick = ()=>{
+    if(!confirm('重新填写会清空当前内容，确定吗？')) return;
+    ans = {}; saveDraft(); step = 0; renderStep(); show('survey');
+  };
+}
+
+function summaryText(r){
+  const a = ans, d = new Date();
+  const L = [];
+  L.push('【了凡乐享 · 运动损伤评估】');
+  L.push('客户：'+(a.client||'—')+'　部位：'+(picks().join(' + ')||'—')+'　评估师：'+(a.assessor||'—'));
+  L.push('日期：'+(a.date||(d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate()))));
+  L.push('');
+  L.push('结论：'+r.gName+' · '+r.gLabel+'　总分 '+r.total+'/15');
+  L.push('五维：P'+r.P+' R'+r.R+' M'+r.M+' S'+r.S+' F'+r.F+'（最高不适 '+r.vas+'/10，阳性 '+r.pos+' 项）');
+  L.push('主要问题：'+(r.topIssues.join('；')||'—'));
+  L.push('脑科学速查：未见异常 '+r.kCount[0]+' / 建议观察 '+r.kCount[1]+' / 建议深评 '+r.kCount[2]+'（'+r.kLevel+'）');
+  L.push('营养速查：摄入良好 '+r.nCount[0]+' / 建议加强 '+r.nCount[1]+' / 缺口明显 '+r.nCount[2]+'（'+r.nLevel+'）');
+  L.push('');
+  L.push('运动康复方案：');
+  r.plan1.forEach(([k,v])=>L.push('· '+k+'：'+v));
+  if(r.kCount[2]>0) L.push('建议：预约脑科学专项评估（V4 八项核心测评：舒尔特 / 记忆广度 / 反应时 / CPT / 反扫视 / 平滑追踪 / TMT / 视觉搜索）');
+  if(r.nCount[2]>0) L.push('建议：预约营养师一对一解读（体成分评估 + 个人膳食方案）');
+  L.push('');
+  L.push('周期 '+r.weeks+'　频次 '+r.freq+'　复评 '+r.nextStr);
+  if(r.rf.length) L.push('注意：'+r.rf.join('；'));
+  return L.join('\n');
+}
+
+/* ================= 屏切换 ================= */
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on', s.id===id)); }
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._tm); t._tm = setTimeout(()=>t.classList.remove('on'), 1900);
+}
+
+$('btnStart').onclick = ()=>{ step = 0; renderStep(); show('survey'); };
+$('btnNext').onclick = ()=>{
+  if(step < STEPS.length-1){ step++; renderStep(); $('content').scrollTop=0; }
+  else{ renderResult(); show('result'); }
+};
+$('btnPrev').onclick = ()=>{ if(step>0){ step--; renderStep(); } };
+$('btnBack').onclick = ()=>{
+  if(step>0){ step--; renderStep(); }
+  else if(confirm('退出填写？已填内容会保留在本机。')) show('cover');
+};
+$('btnBack2').onclick = ()=>{ renderStep(); show('survey'); };
+if(integrationReport){
+  try {
+    const records = JSON.parse(localStorage.getItem('lflx_injury_reports') || '[]');
+    const record = records.find(item=>item.id===integrationReport);
+    if(record && record.answers){
+      ans = record.answers;
+      integrationReportDate = record.createdAt;
+      renderResult();
+      document.querySelector('#result .topbar').style.display='none';
+      document.querySelectorAll('#resultContent .res-foot').forEach(el=>el.remove());
+      show('result');
+    }
+  } catch(e) { toast('报告读取失败'); }
+}
+</script>
+</body>
+</html>

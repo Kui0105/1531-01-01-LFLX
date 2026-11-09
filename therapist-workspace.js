@@ -132,7 +132,7 @@ function therapistCustomerList(){
 }
 function therapistCustomerOrders(){const customer=therapistCustomer(st.therapistCustomerId);if(!customer)return '<div class="empty">未找到客户</div>';return `<section class="card"><div class="row"><img class="avatar" src="${A+customer.avatar}" alt="${customer.name}"><div><b>${customer.name}</b><p class="small muted">${therapistMaskPhone(customer.phone)}</p></div></div></section>${customer.orders.map(order=>`<article class="card therapist-customer-order"><div class="between"><b>${order.name}</b><span class="tag ${order.used<order.total?'':'gold'}">${order.used<order.total?'使用中':'已完成'}</span></div><p class="small">剩余 ${order.total-order.used} / ${order.total} 次 · 有效期至 ${order.expiry}</p><p class="tiny muted">订单编号 ${order.id}</p><div class="therapist-card-actions"><button class="textbtn therapist-action" data-act="therapistServiceHistory" data-order="${order.id}">服务记录</button></div></article>`).join('')}`}
 function therapistServiceHistory(){const order=therapistServiceOrder(st.therapistOrderId),customer=therapistCustomerData.find(item=>item.orders.some(entry=>entry.id===st.therapistOrderId));if(!order||!customer)return '<div class="empty">未找到服务记录</div>';return `<section class="card"><b>${customer.name} · ${order.name}</b><p class="small muted">剩余 ${order.total-order.used} / ${order.total} 次</p></section>${order.records.map(record=>`<article class="card therapist-history-item"><img src="${A}store.png" alt="${record.store}"><div class="grow"><b>${record.store}</b><p>${record.coach} · ${record.service}</p><time>${record.time}</time></div></article>`).join('')||'<div class="empty">暂无服务记录</div>'}`}
-function therapistCustomerArchive(){const customer=therapistCustomer(st.therapistCustomerId);if(!customer)return '<div class="empty">未找到客户档案</div>';const records=st.therapistRecords.filter(record=>record.customerId===customer.id).concat([{type:'评估结果',name:'运动损伤评估',time:'2026-10-30 16:10',title:'首次运动功能评估结果',content:'记录膝关节不适情况，完成基础活动能力评估。',customerId:customer.id},{type:'康复纪要',name:'膝关节运动康复',time:'2026-10-28 11:10',title:'第 2 次康复训练纪要',content:'完成关节活动度练习与下肢力量训练，训练过程无明显不适。',customerId:customer.id}]).sort((a,b)=>b.time.localeCompare(a.time));return `<section class="card archive-user"><img class="avatar" src="${A+customer.avatar}" alt="用户头像"><div class="grow"><b>${customer.nickname}</b><p>${customer.name} · ${customer.gender}</p><small>手机号码　${therapistMaskPhone(customer.phone)}</small></div></section><div class="therapist-archive-timeline">${records.map((record,index)=>`<article class="archive-record"><div class="archive-timeline-mark"></div><time>${record.time}</time><section class="card"><div class="archive-record-heading"><b>${record.name}</b><span class="tag">${record.type}</span></div><h3>${record.title}</h3><p>${record.content}</p>${record.type==='评估结果'?`<button class="archive-result-link" data-act="therapistOpenReport" data-i="${index}">查看评估报告 ›</button>`:''}</section></article>`).join('')}</div>`}
+function therapistCustomerArchive(){const customer=therapistCustomer(st.therapistCustomerId);if(!customer)return '<div class="empty">未找到客户档案</div>';const records=st.therapistRecords.filter(record=>record.customerId===customer.id).concat([{type:'评估结果',name:'运动损伤评估',time:'2026-10-30 16:10',title:'首次运动功能评估结果',content:'记录膝关节不适情况，完成基础活动能力评估。',customerId:customer.id},{type:'康复纪要',name:'膝关节运动康复',time:'2026-10-28 11:10',title:'第 2 次康复训练纪要',content:'完成关节活动度练习与下肢力量训练，训练过程无明显不适。',customerId:customer.id}]).sort((a,b)=>b.time.localeCompare(a.time));return `<section class="card archive-user"><img class="avatar" src="${A+customer.avatar}" alt="用户头像"><div class="grow"><b>${customer.nickname}</b><p>${customer.name} · ${customer.gender}</p><small>手机号码　${therapistMaskPhone(customer.phone)}</small></div></section><div class="therapist-archive-timeline">${records.map((record,index)=>`<article class="archive-record"><div class="archive-timeline-mark"></div><time>${record.time}</time><section class="card"><div class="archive-record-heading"><b>${record.name}</b><span class="tag">${record.type}</span></div><h3>${record.title}</h3><p>${therapistEscape(record.content)}</p>${record.type==='评估结果'?`<button class="archive-result-link" data-act="therapistOpenReport" data-i="${index}">查看评估报告 ›</button>`:''}</section></article>`).join('')}</div>`}
 function therapistArchiveReport(){const customer=therapistCustomer(st.therapistCustomerId),records=st.therapistRecords.filter(record=>record.customerId===customer?.id).concat([{type:'评估结果',name:'运动损伤评估',time:'2026-10-30 16:10',title:'首次运动功能评估结果',content:'记录膝关节不适情况，完成基础活动能力评估。'}]);const report=records[Number(st.therapistArchiveReportIndex)]||records.find(record=>record.type==='评估结果');return `<section class="card"><span class="tag">${report.type}</span><h2>${report.name}</h2><time>${report.time}</time></section><section class="card"><h3>${report.title}</h3><p class="therapist-longtext">${report.content}</p></section><button class="btn ghost full" data-act="therapistBackArchive">返回客户档案</button>`}
 
 function therapistMessagesPage(){return `<div class="message-toolbar message-toolbar-left"><button class="textbtn" data-act="therapistAllRead">全部已读</button></div><div class="therapist-message-list">${therapistMessages.map(message=>`<button class="listitem therapist-message ${message.unread?'unread':''}" data-act="therapistOpenMessage" data-id="${message.id}"><span class="iconbox">${ic('msg')}</span><span class="grow"><strong>${message.type}${message.unread?' <span class="unread-dot"></span>':''}</strong><span>${message.content}</span><small>${message.time}</small></span><span class="row-chevron">›</span></button>`).join('')||'<div class="empty">暂无消息</div>'}</div>`}
@@ -284,7 +284,7 @@ act=function(event){
   if(action==='confirmTherapistRedemption'){
     const appointment=therapistAppointment(node.dataset.appointment),order=therapistServiceOrder(appointment?.orderId);if(!appointment||!order)return;
     if(appointment.redeemed){toast('该预约已核销');return}if(order.used>=order.total){toast('该订单服务次数已全部核销');return}
-    order.used++;order.records.unshift({time:new Date().toLocaleString('sv-SE'),store:therapistStoreName(),coach:appointment.assignedTo||therapistStaffName(),service:appointment.service});appointment.redeemed=true;if(appointment.status==='待核销')appointment.status='已完成';close();st.therapistRouteStack=[];st.employeeTab=st.employeeRole==='店长'?'managerSchedule':'therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter=appointment.status==='待服务'?'全部':appointment.status;go('employee');toast(`核销成功，剩余 ${order.total-order.used} 次`);return;
+    order.used++;order.records.unshift({time:new Date().toLocaleString('sv-SE'),store:therapistStoreName(),coach:appointment.assignedTo||therapistStaffName(),service:appointment.service});appointment.redeemed=true;if(appointment.status==='待核销')appointment.status='已完成';try{const reports=injuryReports();for(const report of reports)if(report.appointmentId===appointment.id){report.statusAfterSubmission=appointment.status;report.redeemed=true}localStorage.setItem(injuryReportStorageKey,JSON.stringify(reports))}catch(error){}close();st.therapistRouteStack=[];st.employeeTab=st.employeeRole==='店长'?'managerSchedule':'therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter=appointment.status==='待服务'?'全部':appointment.status;go('employee');toast(`核销成功，剩余 ${order.total-order.used} 次`);return;
   }
   if(action==='therapistArchive'){st.therapistCustomerId=node.dataset.customer;therapistNavigate('therapistCustomerArchive');return}
   if(action==='therapistCustomerOrders'){st.therapistCustomerId=node.dataset.customer;therapistNavigate('therapistCustomerOrders');return}
@@ -387,4 +387,52 @@ draw=function(){
     document.getElementById('managerBookingTime')?.addEventListener('change',event=>{st.managerBookingTime=event.target.value;draw()});
   }
 };
+draw();
+
+// The supplied assessment runs in its own document so its styles and scoring stay intact.
+const injuryReportStorageKey='lflx_injury_reports';
+function injuryReports(){try{const value=JSON.parse(localStorage.getItem(injuryReportStorageKey)||'[]');return Array.isArray(value)?value:[]}catch(error){return []}}
+for(const record of injuryReports()){
+  if(!record.id||!record.appointmentId||!record.customerId)continue;
+  if(!st.therapistRecords.some(item=>item.id===record.id))st.therapistRecords.push(record);
+  const appointment=therapistAppointment(record.appointmentId);
+  if(appointment&&appointment.customerId===record.customerId){appointment.status=record.statusAfterSubmission||'待核销';if(record.redeemed){appointment.redeemed=true;const order=therapistServiceOrder(appointment.orderId);if(order)order.used=Math.max(order.used,1)}}
+}
+const originalTherapistRecordForm=therapistRecordForm;
+therapistRecordForm=function(){
+  const appointment=therapistAppointment(st.therapistAppointmentId);
+  if(appointment?.type==='评估'&&appointment.service==='运动损伤评估'){
+    if(appointment.status!=='服务中')return '<div class="empty">请先开始评估</div>';
+    return `<iframe id="injuryQuestionnaire" title="运动损伤评估资料" src="injury-questionnaire.html?appointment=${encodeURIComponent(appointment.id)}" style="display:block;width:100%;height:620px;border:0;background:white"></iframe>`;
+  }
+  return originalTherapistRecordForm();
+};
+const originalTherapistArchiveReport=therapistArchiveReport;
+therapistArchiveReport=function(){
+  const customer=therapistCustomer(st.therapistCustomerId);
+  if(!customer)return '<div class="empty">未找到客户档案</div>';
+  const records=st.therapistRecords.filter(record=>record.customerId===customer.id).concat([
+    {type:'评估结果',name:'运动损伤评估',time:'2026-10-30 16:10',title:'首次运动功能评估结果',content:'记录膝关节不适情况，完成基础活动能力评估。'},
+    {type:'康复纪要',name:'膝关节运动康复',time:'2026-10-28 11:10',title:'第 2 次康复训练纪要',content:'完成关节活动度练习与下肢力量训练，训练过程无明显不适。'}
+  ]).sort((a,b)=>b.time.localeCompare(a.time));
+  const report=records[Number(st.therapistArchiveReportIndex)];
+  if(!report||report.type!=='评估结果')return '<div class="empty">未找到评估报告</div>';
+  if(report.id&&report.answers)return `<iframe title="运动损伤评估报告" src="injury-questionnaire.html?report=${encodeURIComponent(report.id)}" style="display:block;width:100%;height:620px;border:0;background:white"></iframe>`;
+  return `<section class="card"><span class="tag">${therapistEscape(report.type)}</span><h2>${therapistEscape(report.name)}</h2><time>${therapistEscape(report.time)}</time></section><section class="card"><h3>${therapistEscape(report.title)}</h3><p class="therapist-longtext">${therapistEscape(report.content)}</p></section>`;
+};
+window.addEventListener('message',event=>{
+  const frame=document.getElementById('injuryQuestionnaire'),data=event.data;
+  if(event.origin!==location.origin||!frame||event.source!==frame.contentWindow||!data||data.type!=='lflx-injury-submit')return;
+  const appointment=therapistAppointment(data.appointmentId);
+  if(st.page!=='employee'||st.employeeTab!=='therapistRecordForm'||!appointment||appointment.id!==st.therapistAppointmentId||appointment.status!=='服务中'||appointment.type!=='评估'||appointment.service!=='运动损伤评估'||(st.employeeRole==='店长'&&st.employeeType!=='技术型店长'))return;
+  if(!data.answers||typeof data.answers!=='object'||Array.isArray(data.answers)||typeof data.summary!=='string')return;
+  const createdAt=Date.now(),time=new Date(createdAt).toLocaleString('sv-SE');
+  const record={id:'injury-'+appointment.id+'-'+createdAt,customerId:appointment.customerId,appointmentId:appointment.id,orderId:appointment.orderId,type:'评估结果',name:appointment.service,time,title:'运动损伤评估报告',content:data.summary,answers:data.answers,createdAt,redeemed:!!appointment.redeemed,statusAfterSubmission:appointment.redeemed?'已完成':'待核销'};
+  try{localStorage.setItem(injuryReportStorageKey,JSON.stringify([record,...injuryReports()]));localStorage.removeItem('lflx_injury_draft_'+appointment.id)}catch(error){toast('保存失败，请检查浏览器存储空间');return}
+  st.therapistRecords.unshift(record);appointment.status=record.statusAfterSubmission;
+  if(!appointment.redeemed)therapistMessages.unshift({id:'TM'+createdAt,type:'订单核销提醒',time,customerId:appointment.customerId,appointmentId:appointment.id,content:`评估订单 ${appointment.orderId} 待核销。`,unread:true});
+  st.therapistRouteStack=[];st.employeeTab=st.employeeRole==='店长'?'managerSchedule':'therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter=appointment.status;go('employee');toast(appointment.redeemed?'评估报告已提交，服务完成':'评估报告已提交，等待订单核销');
+});
+const injuryBaseDraw=draw;
+draw=function(){injuryBaseDraw();if(st.page==='employee'&&st.employeeTab==='therapistRecordForm'&&therapistAppointment(st.therapistAppointmentId)?.service==='运动损伤评估'){document.getElementById('wxTitle').textContent='填写评估资料';document.getElementById('topRoute').textContent='填写评估资料';document.getElementById('noteTitle').textContent='填写评估资料'}};
 draw();
