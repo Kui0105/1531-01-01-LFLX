@@ -81,6 +81,15 @@ function therapistMaskPhone(phone){return String(phone).replace(/^(\d{3})\d{4}(\
 function therapistCustomer(id){return therapistCustomerData.find(customer=>customer.id===id)}
 function therapistAppointment(id){return therapistAppointments.find(appointment=>appointment.id===id)}
 function therapistServiceOrder(id){return therapistCustomerData.flatMap(customer=>customer.orders).find(order=>order.id===id)}
+let therapistAssessmentDemoSequence=1;
+function therapistEnsureAssessmentDemo(){
+  const active=therapistAppointments.some(item=>item.customerId==='CU1002'&&item.service==='运动损伤评估'&&!['已完成','已取消'].includes(item.status));
+  if(active)return;
+  const sequence=++therapistAssessmentDemoSequence,orderId=`SO-DEMO-EVAL-${sequence}`,appointmentId=`AP-T-DEMO-${sequence}`;
+  therapistCustomer('CU1002').orders.push({id:orderId,name:'运动损伤评估',total:1,used:0,expiry:'2027-02-28',records:[]});
+  therapistAppointments.push({id:appointmentId,customerId:'CU1002',customer:'李先生',date:therapistToday,time:'14:00',service:'运动损伤评估',type:'评估',status:'待服务',duration:'60 分钟',orderId,image:'service-eval.png'});
+  therapistMessages.unshift({id:'TM-DEMO-'+sequence,type:'评估资料填写',time:therapistToday+' 08:30',customerId:'CU1002',appointmentId,content:'李先生的运动损伤评估资料待填写。',unread:true});
+}
 function therapistCompletedSessions(order){if(!order)return 0;const related=therapistAppointments.filter(item=>item.orderId===order.id),inProgressRedemptions=related.filter(item=>item.redeemed&&item.status!=='已完成').length,pendingUnredeemed=related.filter(item=>item.status==='待核销'&&!item.redeemed&&item.type==='服务').length,savedNotes=st.therapistRecords.filter(record=>record.type==='康复纪要'&&(record.orderId===order.id||therapistAppointment(record.appointmentId)?.orderId===order.id)).length;return Math.max(Math.max(0,order.used-inProgressRedemptions)+pendingUnredeemed,savedNotes)}
 function therapistNeedsSummary(appointment){const order=therapistServiceOrder(appointment?.orderId);return (st.employeeTab==='therapistRecordForm'&&!!st.therapistForceSummary)||(appointment?.type==='服务'&&!!order&&(therapistCompletedSessions(order)+1)%5===0)}
 function therapistAppointmentDetail(){
@@ -284,7 +293,7 @@ act=function(event){
   if(action==='confirmTherapistRedemption'){
     const appointment=therapistAppointment(node.dataset.appointment),order=therapistServiceOrder(appointment?.orderId);if(!appointment||!order)return;
     if(appointment.redeemed){toast('该预约已核销');return}if(order.used>=order.total){toast('该订单服务次数已全部核销');return}
-    order.used++;order.records.unshift({time:new Date().toLocaleString('sv-SE'),store:therapistStoreName(),coach:appointment.assignedTo||therapistStaffName(),service:appointment.service});appointment.redeemed=true;if(appointment.status==='待核销')appointment.status='已完成';try{const reports=injuryReports();for(const report of reports)if(report.appointmentId===appointment.id){report.statusAfterSubmission=appointment.status;report.redeemed=true}localStorage.setItem(injuryReportStorageKey,JSON.stringify(reports))}catch(error){}close();st.therapistRouteStack=[];st.employeeTab=st.employeeRole==='店长'?'managerSchedule':'therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter=appointment.status==='待服务'?'全部':appointment.status;go('employee');toast(`核销成功，剩余 ${order.total-order.used} 次`);return;
+    order.used++;order.records.unshift({time:new Date().toLocaleString('sv-SE'),store:therapistStoreName(),coach:appointment.assignedTo||therapistStaffName(),service:appointment.service});appointment.redeemed=true;if(appointment.status==='待核销')appointment.status='已完成';try{const reports=injuryReports();for(const report of reports)if(report.appointmentId===appointment.id){report.statusAfterSubmission=appointment.status;report.redeemed=true}localStorage.setItem(injuryReportStorageKey,JSON.stringify(reports))}catch(error){}if(appointment.service==='运动损伤评估'&&appointment.status==='已完成')therapistEnsureAssessmentDemo();close();st.therapistRouteStack=[];st.employeeTab=st.employeeRole==='店长'?'managerSchedule':'therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter=appointment.status==='待服务'?'全部':appointment.status;go('employee');toast(`核销成功，剩余 ${order.total-order.used} 次`);return;
   }
   if(action==='therapistArchive'){st.therapistCustomerId=node.dataset.customer;therapistNavigate('therapistCustomerArchive');return}
   if(action==='therapistCustomerOrders'){st.therapistCustomerId=node.dataset.customer;therapistNavigate('therapistCustomerOrders');return}
@@ -427,7 +436,7 @@ function saveInjuryReport(data){
   const createdAt=Date.now(),time=new Date(createdAt).toLocaleString('sv-SE');
   const record={id:'injury-'+appointment.id+'-'+createdAt,customerId:appointment.customerId,appointmentId:appointment.id,orderId:appointment.orderId,type:'评估结果',name:appointment.service,time,title:'运动损伤评估报告',content:data.summary,answers:data.answers,createdAt,redeemed:!!appointment.redeemed,statusAfterSubmission:appointment.redeemed?'已完成':'待核销'};
   try{localStorage.setItem(injuryReportStorageKey,JSON.stringify([record,...injuryReports()]));localStorage.removeItem('lflx_injury_draft_'+appointment.id)}catch(error){toast('保存失败，请检查浏览器存储空间');return}
-  st.therapistRecords.unshift(record);appointment.status=record.statusAfterSubmission;
+  st.therapistRecords.unshift(record);appointment.status=record.statusAfterSubmission;if(appointment.redeemed&&appointment.status==='已完成')therapistEnsureAssessmentDemo();
   if(!appointment.redeemed)therapistMessages.unshift({id:'TM'+createdAt,type:'订单核销提醒',time,customerId:appointment.customerId,appointmentId:appointment.id,content:`评估订单 ${appointment.orderId} 待核销。`,unread:true});
   st.therapistRouteStack=[];st.employeeTab=st.employeeRole==='店长'?'managerSchedule':'therapistSchedule';st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter=appointment.status;go('employee');toast(appointment.redeemed?'评估报告已提交，服务完成':'评估报告已提交，等待订单核销');
 }
