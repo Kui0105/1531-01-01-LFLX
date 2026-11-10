@@ -21,11 +21,13 @@ run('saveInjuryReport')({appointmentId:'AP-T002',answers:{e1:['膝'],c1v:6},summ
 assert.equal(run("therapistAppointment('AP-T002').status"),'待核销');
 assert.equal(run('st.therapistRecords[0].customerId'),'CU1002');
 assert.equal(JSON.parse(store.get('lflx_injury_reports'))[0].answers.c1v,6);
-run("therapistAppointment('AP-T002').status='已完成';therapistEnsureAssessmentDemo()");
+run("therapistAppointment('AP-T002').status='已完成';therapistAppointment('AP-T007').status='已完成';therapistEnsureAssessmentDemo()");
 assert.equal(run("therapistAppointment('AP-T-DEMO-2').status"),'待服务');
 assert.equal(run("therapistServiceOrder('SO-DEMO-EVAL-2').total"),1);
 run('therapistEnsureAssessmentDemo()');
+assert.ok(run("therapistAppointments.some(item=>item.id==='AP-T007'&&item.status==='待服务')"));
 assert.equal(run("therapistAppointments.filter(item=>item.service==='运动损伤评估'&&item.status==='待服务').length"),1);
+assert.equal(run("st.therapistAppointmentFilter"),'全部');
 run("st.therapistCustomerId='CU1002';st.therapistArchiveReportIndex=0");
 assert.match(run('therapistCustomerArchive()'),/膝关节测试报告/);
 assert.match(run('therapistArchiveReport()'),/injuryAssessmentMount/);
