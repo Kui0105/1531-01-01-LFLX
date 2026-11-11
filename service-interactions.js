@@ -193,6 +193,14 @@ home = function () {
     sceneCarousel('home', ['hero.png', 'banner-plan.png', 'banner-training.png'], '首页康复服务'));
 };
 
+const originalStoreDetail = storeDetail;
+storeDetail = function () {
+  const index = st.storeDetail ?? Math.max(0, stores.findIndex(store => store.name === st.store));
+  const store = stores[index];
+  return originalStoreDetail().replace(/^<div class="store-gallery">[\s\S]*?<\/div><\/div>/,
+    `<div class="store-gallery">${sceneCarousel(`store-${index}`, store.images, store.name)}</div>`);
+};
+
 function mountSceneCarousels() {
   // Both home and shop now use the same sliding carousel.
   if (['home', 'products'].includes(st.page) && st.bannerTimer) {
