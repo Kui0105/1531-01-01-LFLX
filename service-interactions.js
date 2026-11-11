@@ -175,7 +175,11 @@ checkout=function(product){
   const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const contact=escape(`${address.name}　${address.phone}`);
   const location=escape(`${address.province} ${address.city} ${address.district} ${address.detail}`);
-  return markup.replace('张女士　138****2888',contact).replace('上海市静安区南京西路 1288 号 8F',location);
+  markup=markup.replace('张女士　138****2888',st.deliveryMethod==='pickup'?`${escape(st.pickupName||'提货人待填写')}　${escape(st.pickupPhone||'联系方式待填写')}`:contact)
+    .replace('上海市静安区南京西路 1288 号 8F',st.deliveryMethod==='pickup'?escape(st.pickupStore||'请选择自提门店'):location);
+  const delivery=`<section class="card checkout-delivery"><div class="between"><b>配送方式</b><span class="tiny muted">${st.deliveryMethod==='pickup'?'到店自提':'配送到家'}</span></div><div class="delivery-choice" role="group" aria-label="配送方式"><button class="delivery-option ${st.deliveryMethod!=='pickup'?'active':''}" data-act="deliveryMethod" data-v="courier" aria-pressed="${st.deliveryMethod!=='pickup'}">快递发货</button><button class="delivery-option ${st.deliveryMethod==='pickup'?'active':''}" data-act="deliveryMethod" data-v="pickup" aria-pressed="${st.deliveryMethod==='pickup'}">上门自提</button></div>${st.deliveryMethod==='pickup'?`<div class="field"><label for="pickupStore">自提门店</label><select id="pickupStore" class="input" data-checkout-field="pickupStore">${stores.map(store=>`<option ${store.name===(st.pickupStore||st.store)?'selected':''}>${store.name}</option>`).join('')}</select></div><div class="grid2 pickup-fields"><div class="field"><label for="pickupName">提货人</label><input id="pickupName" class="input" value="${escape(st.pickupName||'')}" placeholder="填写提货人姓名" data-checkout-field="pickupName"></div><div class="field"><label for="pickupPhone">联系方式</label><input id="pickupPhone" class="input" type="tel" inputmode="numeric" maxlength="11" value="${escape(st.pickupPhone||'')}" placeholder="填写手机号" data-checkout-field="pickupPhone"></div></div>`:`<label class="split-service-choice"><input type="checkbox" data-act="splitService" ${st.splitService?'checked':''}><span><b>分装服务</b><small>可选</small></span><span class="split-service-state">${st.splitService?'是':'否'}</span></label><p class="split-service-note">选择分装服务后，商品拆分包装将不支持售后，请确认后选择。</p>`}</section>`;
+  markup=markup.replace('<div class="card checkout-address">',delivery+'<div class="card checkout-address">');
+  return markup;
 };
 
 const originalHome = home;
@@ -272,6 +276,20 @@ function mountSceneCarousels() {
 const originalAct = act;
 act = function (event) {
   const node = event.currentTarget;
+  if (node.dataset.act === 'serviceCategory') {
+    st.cat=node.dataset.v;st.serviceSub='';st.kw='';go('serviceList',st.page!=='serviceList');return;
+  }
+  if (node.dataset.act === 'serviceSub') { st.serviceSub=node.dataset.v;draw();return; }
+  if (node.dataset.act === 'productCat') { st.productCat=node.dataset.v;st.productSubCat='全部';draw();return; }
+  if (node.dataset.act === 'productSubCat') { st.productSubCat=node.dataset.v;draw();return; }
+  if (node.dataset.act === 'deliveryMethod') { st.deliveryMethod=node.dataset.v;if(st.deliveryMethod==='pickup')st.pickupStore||=st.store;draw();return; }
+  if (node.dataset.act === 'splitService') { st.splitService=node.checked;draw();return; }
+  if (node.dataset.act === 'pay' && node.dataset.product === 'true' && st.deliveryMethod === 'pickup') {
+    const name=document.getElementById('pickupName')?.value.trim()||'',phone=(document.getElementById('pickupPhone')?.value||'').replace(/\D/g,'');
+    st.pickupStore=document.getElementById('pickupStore')?.value||st.pickupStore;
+    if(!st.pickupStore||!name||phone.length<7){toast('请填写自提门店、提货人和有效联系方式');return;}
+    st.pickupName=name;st.pickupPhone=phone;
+  }
   if (node.dataset.act === 'address') {
     openAddressForm();
     return;
@@ -389,5 +407,6 @@ draw = function () {
   document.getElementById('agreeNotice')?.addEventListener('change', event => {
     st.noticeAgreed = event.currentTarget.checked;
   });
+  document.querySelectorAll('[data-checkout-field]').forEach(field=>field.addEventListener('input',()=>{st[field.dataset.checkoutField]=field.value}));
 };
 draw();
