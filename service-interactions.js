@@ -145,7 +145,8 @@ function openAddressForm(index=-1) {
 function productCheckoutTotals(){
   const selected=st.cart.filter(item=>item.checked&&!item.invalid);
   const goods=st.cart.length?selected.reduce((sum,item)=>sum+Math.round(item.price*100)*item.qty,0):[5900,8900,12900][st.product||0]*validProductQuantity(st.qty||1);
-  const coupon=Math.min(goods,st.coupon?2000:0);
+  const couponFaceValueCents=Math.round(Number(st.productCouponFaceValue??20)*100);
+  const coupon=Math.min(goods,st.coupon?couponFaceValueCents:0);
   const membership=Math.min(goods-coupon,500);
   const points=Math.min(goods-coupon-membership,st.points?1000:0);
   const shipping=0;
@@ -170,6 +171,10 @@ checkout=function(product){
   markup=markup.replace(/<div class="card small"><div class="between"><span>应付金额<\/span>[\s\S]*?<\/div><\/div>/,summary);
   markup=markup.replace('<div class="cta">','<div class="cta"><div class="checkout-pay-total"><span>应付金额</span><b class="price">¥'+money(fees.total)+'</b></div>');
   if(!product)return markup;
+  const couponFaceValue=Number(st.productCouponFaceValue??20);
+  const couponNotice=st.coupon&&fees.goods>0&&fees.goods<couponFaceValue
+    ?`<p class="coupon-amount-hint" role="status">优惠券面额高于当前订单金额，您可以继续选购商品，使用优惠券抵扣更多金额。</p>`:'';
+  markup=markup.replace('</div><div class="divider"></div><div class="between"><span>积分抵扣',`</div>${couponNotice}<div class="divider"></div><div class="between"><span>积分抵扣`);
   const address=st.addresses.find(item=>item.isDefault);
   if(!address)return markup;
   const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
