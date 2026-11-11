@@ -35,9 +35,11 @@ function workflowStoreCard(store,index,selected,action){
 }
 
 function workflowAssessmentPage(){
-  const index=Math.min(3,Math.max(0,st.service||0));
+  const index=S[st.service]?.[1].startsWith('eval-')?st.service:0;
   const relaxation=index===0||index===3;
-  const sets=relaxation?[
+  const sets=index===4||index===5?[
+    ['运动频率','frequency',['基本不运动','1-2次/周','3-4次/周','5次以上/周']]
+  ]:relaxation?[
     ['每天久坐时长','sedentary',['4小时以内','4-6小时','6-8小时','8小时以上']],
     ['运动频率','frequency',['基本不运动','1-2次/周','3-4次/周','5次以上/周']],
     ['当前训练或比赛安排','schedule',['无','日常训练','备赛期','赛前1周','赛后3天内']],
@@ -158,7 +160,7 @@ act=function(event){
     const coach=coaches.find(item=>item.name===st.orderFlowCoach)||coaches[0];
     st.orderFlowStore=store.name;st.orderFlowCoach=coach.name;st.store=store.name;st.therapist=coach.name;
     st.btype='eval';st.service=Math.max(0,S.findIndex(service=>service[0]===st.accountOrder?.name));
-    go('assessment');return;
+    st.assessmentAnswers={};go('assessment');return;
   }
   if(action==='assessmentChoice'){
     const {key,value}=node.dataset;

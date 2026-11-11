@@ -373,11 +373,11 @@ act = function (event) {
   }
   if (node.dataset.act === 'buyService') {
     const service = S[st.service];
-    if (service[1].startsWith('offline-') || ['eval-brain', 'eval-nutrition'].includes(service[1])) return;
+    if (service[1].startsWith('offline-')) return;
     st.btype = service[1].startsWith('eval-') ? 'eval' : 'service';
     st.orderType = st.btype === 'eval' ? '评估订单' : '服务订单';
     st.orderedService = service;
-    st.serviceQty = Math.max(1, st.qty || 1);
+    st.serviceQty = st.btype === 'eval' ? 1 : Math.max(1, st.qty || 1);
     st.paidAmount = undefined;
     st.orderStatus = '待付款';
     go('serviceCheckout');
