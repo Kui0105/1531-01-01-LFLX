@@ -175,10 +175,10 @@ checkout=function(product){
   const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const contact=escape(`${address.name}　${address.phone}`);
   const location=escape(`${address.province} ${address.city} ${address.district} ${address.detail}`);
-  markup=markup.replace('张女士　138****2888',st.deliveryMethod==='pickup'?`${escape(st.pickupName||'提货人待填写')}　${escape(st.pickupPhone||'联系方式待填写')}`:contact)
-    .replace('上海市静安区南京西路 1288 号 8F',st.deliveryMethod==='pickup'?escape(st.pickupStore||'请选择自提门店'):location);
-  const delivery=`<section class="card checkout-delivery"><div class="between"><b>配送方式</b><span class="tiny muted">${st.deliveryMethod==='pickup'?'到店自提':'配送到家'}</span></div><div class="delivery-choice" role="group" aria-label="配送方式"><button class="delivery-option ${st.deliveryMethod!=='pickup'?'active':''}" data-act="deliveryMethod" data-v="courier" aria-pressed="${st.deliveryMethod!=='pickup'}">快递发货</button><button class="delivery-option ${st.deliveryMethod==='pickup'?'active':''}" data-act="deliveryMethod" data-v="pickup" aria-pressed="${st.deliveryMethod==='pickup'}">上门自提</button></div>${st.deliveryMethod==='pickup'?`<div class="field"><label for="pickupStore">自提门店</label><select id="pickupStore" class="input" data-checkout-field="pickupStore">${stores.map(store=>`<option ${store.name===(st.pickupStore||st.store)?'selected':''}>${store.name}</option>`).join('')}</select></div><div class="grid2 pickup-fields"><div class="field"><label for="pickupName">提货人</label><input id="pickupName" class="input" value="${escape(st.pickupName||'')}" placeholder="填写提货人姓名" data-checkout-field="pickupName"></div><div class="field"><label for="pickupPhone">联系方式</label><input id="pickupPhone" class="input" type="tel" inputmode="numeric" maxlength="11" value="${escape(st.pickupPhone||'')}" placeholder="填写手机号" data-checkout-field="pickupPhone"></div></div>`:`<label class="split-service-choice"><input type="checkbox" data-act="splitService" ${st.splitService?'checked':''}><span><b>分装服务</b><small>可选</small></span><span class="split-service-state">${st.splitService?'是':'否'}</span></label><p class="split-service-note">选择分装服务后，商品拆分包装将不支持售后，请确认后选择。</p>`}</section>`;
-  markup=markup.replace('<div class="card checkout-address">',delivery+'<div class="card checkout-address">');
+  const delivery=`<section class="card checkout-delivery"><div class="between"><b>配送方式</b><span class="tiny muted">${st.deliveryMethod==='pickup'?'到店自提':'配送到家'}</span></div><div class="delivery-choice" role="group" aria-label="配送方式"><button class="delivery-option ${st.deliveryMethod!=='pickup'?'active':''}" data-act="deliveryMethod" data-v="courier" aria-pressed="${st.deliveryMethod!=='pickup'}">快递发货</button><button class="delivery-option ${st.deliveryMethod==='pickup'?'active':''}" data-act="deliveryMethod" data-v="pickup" aria-pressed="${st.deliveryMethod==='pickup'}">上门自提</button></div>${st.deliveryMethod==='pickup'?`<button class="pickup-store-choice" data-act="pickupStore"><span><small>自提门店</small><b>${escape(st.pickupStore||st.store)}</b></span><span class="row-chevron" aria-hidden="true">›</span></button><div class="grid2 pickup-fields"><div class="field"><label for="pickupName">提货人</label><input id="pickupName" class="input" value="${escape(st.pickupName||'')}" placeholder="填写提货人姓名" data-checkout-field="pickupName"></div><div class="field"><label for="pickupPhone">联系方式</label><input id="pickupPhone" class="input" type="tel" inputmode="numeric" maxlength="11" value="${escape(st.pickupPhone||'')}" placeholder="填写手机号" data-checkout-field="pickupPhone"></div></div>`:`<label class="split-service-choice"><input type="checkbox" data-act="splitService" ${st.splitService?'checked':''}><span class="split-service-copy"><b>分装服务</b><small>选择后按商品分装发货</small></span><span class="split-service-state">${st.splitService?'是':'否'}</span></label><p class="split-service-note">选择分装服务后，商品拆分包装不支持售后。</p>`}</section>`;
+  const addressMarkup=`<div class="card checkout-address"><div class="checkout-address-copy"><b class="small">${contact}</b><p class="small muted">${location}</p></div><button class="textbtn" data-go="addresses">更换　›</button></div>`;
+  markup=markup.replace(/<div class="card checkout-address">[\s\S]*?<\/div>(?=<div class="card row">)/,product?(st.deliveryMethod==='pickup'?'':addressMarkup):'');
+  markup=markup.replace('<div class="card row"><img class="thumb"',delivery+'<div class="card row"><img class="thumb"');
   return markup;
 };
 
@@ -283,10 +283,10 @@ act = function (event) {
   if (node.dataset.act === 'productCat') { st.productCat=node.dataset.v;st.productSubCat='全部';draw();return; }
   if (node.dataset.act === 'productSubCat') { st.productSubCat=node.dataset.v;draw();return; }
   if (node.dataset.act === 'deliveryMethod') { st.deliveryMethod=node.dataset.v;if(st.deliveryMethod==='pickup')st.pickupStore||=st.store;draw();return; }
+  if (node.dataset.act === 'pickupStore') { st.storeReturn='productCheckout';st.storeSelectionMode='pickup';go('storeList');return; }
   if (node.dataset.act === 'splitService') { st.splitService=node.checked;draw();return; }
   if (node.dataset.act === 'pay' && node.dataset.product === 'true' && st.deliveryMethod === 'pickup') {
     const name=document.getElementById('pickupName')?.value.trim()||'',phone=(document.getElementById('pickupPhone')?.value||'').replace(/\D/g,'');
-    st.pickupStore=document.getElementById('pickupStore')?.value||st.pickupStore;
     if(!st.pickupStore||!name||phone.length<7){toast('请填写自提门店、提货人和有效联系方式');return;}
     st.pickupName=name;st.pickupPhone=phone;
   }
@@ -350,6 +350,13 @@ act = function (event) {
   if (node.dataset.act === 'service') {
     st.qty = 1;
     st.slides.service = 0;
+  }
+  if (node.dataset.act === 'chooseStore' && st.storeSelectionMode === 'pickup') {
+    const store=stores[Number(node.dataset.i)];
+    if(!store)return;
+    st.pickupStore=store.name;st.storeSelectionMode='';
+    if(st.prev.at(-1)==='productCheckout')st.prev.pop();
+    go(st.storeReturn||'productCheckout',false);st.storeReturn='home';draw();toast('自提门店已切换');return;
   }
   if (node.dataset.act === 'buyService') {
     const service = S[st.service];
