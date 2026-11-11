@@ -373,7 +373,7 @@ act = function (event) {
   }
   if (node.dataset.act === 'buyService') {
     const service = S[st.service];
-    if (['eval-brain', 'eval-nutrition'].includes(service[1])) return;
+    if (service[1].startsWith('offline-') || ['eval-brain', 'eval-nutrition'].includes(service[1])) return;
     st.btype = service[1].startsWith('eval-') ? 'eval' : 'service';
     st.orderType = st.btype === 'eval' ? '评估订单' : '服务订单';
     st.orderedService = service;
