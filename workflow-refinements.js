@@ -10,11 +10,12 @@ const workflowMessages=[
   {title:'预约到店提醒',content:'预约的膝关节康复将于 11月05日 14:00 开始。',target:'appointmentDetail'},
   {title:'服务到期提醒',content:'您的康复服务即将到期，请查看剩余服务安排。',target:'orders'},
   {title:'康复复测提醒',content:'您的复测时间为 11月08日。',target:'appointments'},
-  {title:'投诉处理结果',content:'投诉反馈已处理完毕。',target:'complaints'}
+  {title:'投诉处理结果',content:'投诉反馈已处理完毕。',target:'complaints'},
+  {title:'生日祝福提醒',get content(){return `尊敬的${st.accountProfile?.nickname||'林间微光'}，本月是您的生日月，祝您生日快乐；平台为您准备了生日福利，可前往我的-生日福利进行领取！`},target:'birthday',unread:true}
 ];
 
 function workflowMessagePage(){
-  return `<div class="message-toolbar message-toolbar-left"><button class="textbtn" data-act="allRead">全部已读</button></div>${workflowMessages.map((message,index)=>`<button class="listitem message-item" data-act="message" data-i="${index}"><span class="iconbox">${ic('msg')}</span><span class="grow"><strong>${message.title}${!st.read&&index<2?' <span class="tag gold">未读</span>':''}</strong><span class="message-copy">${message.content}</span><small class="muted">2026-11-04 09:30</small></span><span class="row-chevron" aria-hidden="true">›</span></button>`).join('')}`;
+  return `<div class="message-toolbar message-toolbar-left"><button class="textbtn" data-act="allRead">全部已读</button></div>${workflowMessages.map((message,index)=>`<button class="listitem message-item" data-act="message" data-i="${index}"><span class="iconbox">${ic('msg')}</span><span class="grow"><strong>${message.title}${!st.read&&(index<2||message.unread)?' <span class="tag gold">未读</span>':''}</strong><span class="message-copy">${lifecycleEscape(message.content)}</span><small class="muted">2026-11-04 09:30</small></span><span class="row-chevron" aria-hidden="true">›</span></button>`).join('')}`;
 }
 
 function workflowCurrentStore(page,name){
@@ -136,7 +137,7 @@ act=function(event){
     if(!message)return;
     st.read=true;
     if(index===0&&st.appointments[0])st.appointmentId=st.appointments[0].id;
-    modal(message.title,'<p class="small">'+message.content+'</p><button class="btn full" data-act="messageJump" data-i="'+index+'">查看相关信息</button>');
+    modal(message.title,'<p class="small">'+lifecycleEscape(message.content)+'</p><button class="btn full" data-act="messageJump" data-i="'+index+'">查看相关信息</button>');
     document.querySelectorAll('.unread-badge').forEach(badge=>badge.remove());return;
   }
   if(action==='messageJump'){
