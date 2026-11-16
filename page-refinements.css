@@ -133,7 +133,15 @@ button.therapist-star{cursor:pointer}
 .screen .shop-product-info>span:not(.shop-product-bottom){font-size:12px;line-height:18px}
 .screen .shop-product-bottom{min-height:30px;padding-top:2px;padding-right:2px}
 .screen .shop-product-bottom .price{line-height:22px}
-.service-subcategories{margin-top:-5px}
+.service-main-categories{display:flex;gap:6px;margin:2px 0 10px;padding:4px;border-radius:12px;background:#edf3f1}
+.service-main-categories>.tabs{display:flex;width:100%;gap:4px;margin:0;overflow:visible}
+.service-main-categories .pill{display:flex;flex:1;align-items:center;justify-content:center;min-width:0;min-height:40px;padding:6px 4px;border:0;border-radius:9px;background:transparent;color:#536967;font-size:12px;font-weight:550;line-height:18px}
+.service-main-categories .pill.active{background:#fff;color:#176f66;font-weight:700;box-shadow:0 1px 4px #173b3217}
+.service-subcategories{margin:0 0 14px;padding:0 2px;border-bottom:1px solid #e7eeeb}
+.service-subcategories>.tabs{display:flex;gap:20px;margin:0;overflow:visible}
+.service-subcategories .pill{position:relative;flex:none;min-width:0;min-height:38px;padding:7px 2px 8px;border:0;border-radius:0;background:transparent;color:#82918f;font-size:12px;font-weight:500;line-height:18px}
+.service-subcategories .pill.active{color:#246f66;font-weight:650}
+.service-subcategories .pill.active:after{position:absolute;right:2px;bottom:-1px;left:2px;height:2px;border-radius:2px;background:#27877b;content:""}
 .checkout-delivery .delivery-choice{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
 .delivery-option{min-height:40px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#53666a;font-size:13px}
 .delivery-option.active{border-color:var(--teal);background:#edf7f4;color:var(--teal);font-weight:650}
