@@ -357,6 +357,7 @@ button.therapist-star{cursor:pointer}
 .message-copy{display:block;margin:5px 0;font-size:12px;line-height:19px;color:#617579}
 .coupon-list{display:flex;flex-direction:column;gap:12px}
 .coupon-card{display:grid;grid-template-columns:minmax(0,1fr) 84px;border:1px solid var(--line);border-left:4px solid #d9a558;border-radius:14px;background:#fff;overflow:hidden}
+.manager-issued-coupon-note{display:block;margin-top:5px;color:#17796f;font-size:10px}
 .coupon-info{padding:14px;min-width:0}.coupon-info b{font-size:14px;line-height:21px}
 .coupon-info .between{align-items:flex-start}.coupon-info .tag{flex:none;white-space:nowrap}
 .coupon-info p{margin:6px 0;font-size:12px;line-height:18px;color:#617579}

@@ -33,8 +33,13 @@ function rewardsCouponPage(){
     {name:'会员商城折扣券',amount:'9',unit:'折',type:'折扣券',limit:'商城商品可用',status:'已使用',expiry:'2026-11-30'},
     {name:'秋季服务满减券',amount:'30',unit:'元',type:'满减券',limit:'满 ¥200 可用 · 指定服务',status:'已过期',expiry:'2026-10-31'}
   ];
+  try{
+    const issued=JSON.parse(localStorage.getItem('lflx_manager_issued_coupons')||'[]');
+    const today=new Date(),todayKey=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    if(Array.isArray(issued))issued.slice().reverse().forEach(item=>coupons.unshift({name:item.name||'店长发放优惠券',amount:String(item.amount??0),unit:'元',type:'满减券',limit:`满 ¥${item.threshold??0} 可用 · ${item.scope||'指定商品或服务'} · 康复师归属 ${item.assignedCoach||'待确认'}`,status:(item.validUntil||'')<todayKey?'已过期':'未使用',expiry:item.validUntil||'—',source:'店长发放',issuedTo:item.userName||'用户',issuedAt:item.issuedAt||''}));
+  }catch(error){}
   const active=st.couponTab||'未使用';
-  return `${tabs(['未使用','已使用/已过期'],active,'couponTab')}<div class="coupon-list">${coupons.filter(coupon=>active==='未使用'?coupon.status==='未使用':coupon.status!=='未使用').map(coupon=>`<article class="coupon-card ${coupon.status==='未使用'?'':'coupon-inactive'}"><div class="coupon-info"><div class="between"><b>${coupon.name}</b><span class="tag">${coupon.status}</span></div><span class="coupon-type">${coupon.type}</span><p>${coupon.limit}</p><small>有效期至 ${coupon.expiry}</small></div><div class="coupon-denomination"><span>${coupon.unit==='元'?'<small>¥</small>':''}<b>${coupon.amount}</b>${coupon.unit==='折'?'<small>折</small>':''}</span></div></article>`).join('')}</div>`;
+  return `${tabs(['未使用','已使用/已过期'],active,'couponTab')}<div class="coupon-list">${coupons.filter(coupon=>active==='未使用'?coupon.status==='未使用':coupon.status!=='未使用').map(coupon=>`<article class="coupon-card ${coupon.status==='未使用'?'':'coupon-inactive'}"><div class="coupon-info"><div class="between"><b>${rewardsEscape(coupon.name)}</b><span class="tag">${rewardsEscape(coupon.status)}</span></div><span class="coupon-type">${rewardsEscape(coupon.type)}</span><p>${rewardsEscape(coupon.limit)}</p><small>有效期至 ${rewardsEscape(coupon.expiry)}</small>${coupon.source?`<small class="manager-issued-coupon-note">${rewardsEscape(coupon.source)} · ${rewardsEscape(coupon.issuedTo)}${coupon.issuedAt?' · '+rewardsEscape(coupon.issuedAt):''}</small>`:''}</div><div class="coupon-denomination"><span>${coupon.unit==='元'?'<small>¥</small>':''}<b>${rewardsEscape(coupon.amount)}</b>${coupon.unit==='折'?'<small>折</small>':''}</span></div></article>`).join('')||'<div class="empty">暂无优惠券</div>'}</div>`;
 }
 
 const rewardsRoutes=[['promotionPoster','推广名片','gift'],['promotionTeam','推广团队','user'],['promotionOrders','推广订单','orders'],['commissionDetails','佣金明细','file'],['promotionWithdraw','佣金提现','cards']];
