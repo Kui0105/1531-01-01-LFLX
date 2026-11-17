@@ -4,7 +4,9 @@ const workflowBaseAct=act;
 
 
 const workflowAssessmentBasicKey='lflx-assessment-basic-v1';
-const workflowMultiQuestions=new Set(['issues','areas','specialty']);
+const workflowMultiQuestions=new Set(['issues','areas','specialty','brainIssues']);
+const workflowBrainIssues=['专注力不好','体态不好','性格敏感/易紧张焦虑','晕车/晕船/晕机','睡眠差','记忆力差','平衡差/易跌倒','运动表现差/容易累','脑雾','痛经/经期不适','视觉问题/眼累/畏光','学习力差'];
+function workflowAuthorizedPhone(){return String(st.authorizedPhone||st.accountProfile?.phone||'13800138000');}
 const workflowTitles=coaches.map((_,index)=>index===0?'首席康复师':'高级康复师');
 const workflowMessages=[
   {title:'预约到店提醒',content:'预约的膝关节康复将于 11月05日 14:00 开始。',target:'appointmentDetail'},
@@ -37,9 +39,10 @@ function workflowStoreCard(store,index,selected,action){
 
 function workflowAssessmentPage(){
   const index=S[st.service]?.[1].startsWith('eval-')?st.service:0;
+  const brain=index===4||index===5;
   const relaxation=index===0||index===3;
-  const sets=index===4||index===5?[
-    ['运动频率','frequency',['基本不运动','1-2次/周','3-4次/周','5次以上/周']]
+  const sets=brain?[
+    ['评估资料','brainIssues',workflowBrainIssues]
   ]:relaxation?[
     ['每天久坐时长','sedentary',['4小时以内','4-6小时','6-8小时','8小时以上']],
     ['运动频率','frequency',['基本不运动','1-2次/周','3-4次/周','5次以上/周']],
@@ -61,8 +64,9 @@ function workflowAssessmentPage(){
     }).join('')}</div></fieldset>`;
   }).join('');
   const basic=assessmentBasicInfo();
-  const basicFields=basic?'':`<section class="card assessment-basic"><h3>基础信息</h3><div class="field"><label>姓名</label><input class="input" name="basicName" autocomplete="name" required></div><div class="field"><label>性别</label><select class="input" name="basicGender" required><option value="">请选择</option><option>女</option><option>男</option><option>其他</option></select></div><div class="field"><label>年龄</label><input class="input" name="basicAge" type="number" min="1" max="120" inputmode="numeric" required></div><div class="field"><label>身高（cm）</label><input class="input" name="basicHeight" type="number" min="1" max="250" inputmode="decimal" required></div><div class="field"><label>体重（kg）</label><input class="input" name="basicWeight" type="number" min="1" max="350" inputmode="decimal" required></div><div class="field"><label>联系电话</label><input class="input" name="basicPhone" type="tel" inputmode="tel" autocomplete="tel" required></div></section>`;
-  return `${basicFields}<div class="card assessment-form"><h3>评估资料</h3><div class="field"><label>评估项目</label><input class="input" value="${S[index][0]}" disabled></div>${questions}<div class="field"><label>补充说明（选填）</label><textarea class="input textarea" name="assessmentNote" placeholder="补充说明本次评估相关情况"></textarea></div></div>${basic?'<p class="assessment-basic-saved">基础信息已保存</p>':''}${cta('<button class="btn" data-act="submitAssessment">提交评估资料</button>')}`;
+  const phone=workflowAuthorizedPhone();
+  const basicFields=basic?'':brain?`<section class="card assessment-basic"><h3>基本资料</h3><div class="field"><label>姓名</label><input class="input" name="basicName" autocomplete="name" required></div><div class="field"><label>性别</label><select class="input" name="basicGender" required><option value="">请选择</option><option>女</option><option>男</option><option>其他</option></select></div><div class="field"><label>年龄</label><input class="input" name="basicAge" type="number" min="1" max="120" inputmode="numeric" required></div><div class="field"><label>联系方式</label><input class="input" name="basicPhone" type="tel" value="${phone}" readonly required><small class="muted">已自动填写微信授权手机号</small></div></section>`:`<section class="card assessment-basic"><h3>基础信息</h3><div class="field"><label>姓名</label><input class="input" name="basicName" autocomplete="name" required></div><div class="field"><label>性别</label><select class="input" name="basicGender" required><option value="">请选择</option><option>女</option><option>男</option><option>其他</option></select></div><div class="field"><label>年龄</label><input class="input" name="basicAge" type="number" min="1" max="120" inputmode="numeric" required></div><div class="field"><label>身高（cm）</label><input class="input" name="basicHeight" type="number" min="1" max="250" inputmode="decimal" required></div><div class="field"><label>体重（kg）</label><input class="input" name="basicWeight" type="number" min="1" max="350" inputmode="decimal" required></div><div class="field"><label>联系电话</label><input class="input" name="basicPhone" type="tel" inputmode="tel" autocomplete="tel" required></div></section>`;
+  return `${basicFields}<div class="card assessment-form"><h3>评估资料</h3><div class="field"><label>评估项目</label><input class="input" value="${S[index][0]}" disabled></div>${questions}<div class="field"><label>补充说明（选填）</label><textarea class="input textarea" name="assessmentNote" placeholder="补充说明本次评估相关情况"></textarea></div></div>${basic?'<p class="assessment-basic-saved">基本资料已保存</p>':''}${cta('<button class="btn" data-act="submitAssessment">提交评估资料</button>')}`;
 }
 
 function workflowAppointmentDetail(){
@@ -122,7 +126,9 @@ pagesContent=function(page){
 
 function saveAssessmentBasic(){
   const values=Object.fromEntries(['Name','Gender','Age','Height','Weight','Phone'].map(key=>[key,document.querySelector(`[name="basic${key}"]`)?.value.trim()||'']));
-  const required=['Name','Gender','Age','Height','Weight','Phone'];
+  const brain=st.service===4||st.service===5;
+  if(brain&&!values.Phone)values.Phone=workflowAuthorizedPhone();
+  const required=brain?['Name','Gender','Age','Phone']:['Name','Gender','Age','Height','Weight','Phone'];
   const missing=required.find(key=>!values[key]);
   if(missing){document.querySelector(`[name="basic${missing}"]`)?.focus();toast('请填写完整基础信息');return false}
   if(!/^1\d{10}$/.test(values.Phone)){document.querySelector('[name="basicPhone"]')?.focus();toast('请输入正确的联系电话');return false}
