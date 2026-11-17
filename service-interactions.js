@@ -153,8 +153,8 @@ function productCheckoutTotals(){
   return {goods:goods/100,coupon:coupon/100,membership:membership/100,points:points/100,shipping:shipping/100,total:(goods-coupon-membership-points+shipping)/100};
 }
 function serviceCheckoutTotals(){
-  const service=S[st.service]||S[6];
-  const base=Math.round(Number(st.btype==='eval'?service[3]:service[1].startsWith('svc-')?service[3]:S[6][3])*100)*validProductQuantity(st.serviceQty||1);
+  const service=S[st.service]||S[7];
+  const base=Math.round(Number(st.btype==='eval'?service[3]:service[1].startsWith('svc-')?service[3]:S[7][3])*100)*validProductQuantity(st.serviceQty||1);
   const membership=Math.min(base,500);
   const coupon=Math.min(base-membership,st.coupon?2000:0);
   const points=Math.min(base-membership-coupon,st.points?1000:0);

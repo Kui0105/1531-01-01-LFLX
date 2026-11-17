@@ -202,10 +202,10 @@ act=function(event){
     const date=item.date.match(/(\d+)月(\d+)日/),time=item.date.match(/(\d{1,2}):(\d{2})/);
     st.appointmentId=item.id;st.store=item.store;st.therapist=item.coach;st.bookedName=item.name;st.slot='';
     if(date)st.date=`${date[1]}月${date[2]}日`;
-    st.service=S.findIndex(service=>service[0]===item.name);if(st.service<0)st.service=6;
+    st.service=S.findIndex(service=>service[0]===item.name);if(st.service<0)st.service=7;
     st.btype=item.name.includes('评估')?'eval':'service';go('booking');return;
   }
-  if(action==='bookService'&&node.dataset.id){const item=st.appointments.find(appointment=>appointment.id===node.dataset.id);if(item){st.service=S.findIndex(service=>service[0]===item.name);if(st.service<0)st.service=6;st.bookedName=item.name;st.btype=item.name.includes('评估')?'eval':'service'}}
+  if(action==='bookService'&&node.dataset.id){const item=st.appointments.find(appointment=>appointment.id===node.dataset.id);if(item){st.service=S.findIndex(service=>service[0]===item.name);if(st.service<0)st.service=7;st.bookedName=item.name;st.btype=item.name.includes('评估')?'eval':'service'}}
   workflowBaseAct(event);
   if(action==='bookingSuccess'&&st.appointments[0]){
     const appointment=st.appointments[0],coachIndex=Math.max(0,coaches.findIndex(coach=>coach.name===appointment.coach)),storeIndex=Math.max(0,stores.findIndex(store=>store.name===appointment.store));

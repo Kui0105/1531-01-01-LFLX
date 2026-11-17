@@ -8,7 +8,7 @@ const lifecycleProfilePage=accountProfilePage;
 
 function lifecycleEscape(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
 function lifecycleNow(){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date())}
-function lifecycleService(order){return S.find(service=>service[0]===order.name)||S[6]}
+function lifecycleService(order){return S.find(service=>service[0]===order.name)||S[7]}
 function lifecycleUsesPerUnit(){return 1}
 function lifecycleQuantity(order){return Math.max(1,Number.isSafeInteger(Number(order.quantity))?Number(order.quantity):Number(order.detail?.match(/数量\s*×\s*(\d+)/)?.[1]||1))}
 function lifecycleTotalUses(order){return lifecycleQuantity(order)*lifecycleUsesPerUnit(order)}

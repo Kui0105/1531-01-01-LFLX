@@ -173,15 +173,15 @@ act=function(event){
     st.store=st.orderFlowStore;st.therapist=st.orderFlowCoach;st.btype='eval';st.service=Math.max(0,S.findIndex(service=>service[0]===st.accountOrder?.name));go('assessment');return;
   }
   if(action==='startImmediateService'){
-    st.accountOrder=st.orders.find(order=>order.id===id)||st.accountOrder;st.orderFlowStore=st.store;st.orderFlowCoach=st.therapist;st.orderFlowService=S[6][0];go('orderServiceStart');return;
+    st.accountOrder=st.orders.find(order=>order.id===id)||st.accountOrder;st.orderFlowStore=st.store;st.orderFlowCoach=st.therapist;st.orderFlowService=S[7][0];go('orderServiceStart');return;
   }
   if(action==='submitImmediateService'){
     const store=document.querySelector('[data-order-flow="store"]').value,coach=document.querySelector('[data-order-flow="coach"]').value,serviceName=document.querySelector('[data-order-flow="service"]').value,channel=document.querySelector('[data-order-flow="channel"]').value,voucher=document.querySelector('[data-order-flow="voucher"]').value.trim();
-    const service=S.find(item=>item[0]===serviceName)||S[6];
+    const service=S.find(item=>item[0]===serviceName)||S[7];
     modal('确认立即服务',`<p class="small">${store} · ${coach}<br>${serviceName}<br>渠道：${channel}${voucher?'<br>券码：'+voucher:''}<br><br>提交后将生成已核销的服务订单。</p><div class="grid2"><button class="btn ghost" data-act="close">返回修改</button><button class="btn" data-act="confirmImmediateService" data-store="${store}" data-coach="${coach}" data-service="${serviceName}" data-channel="${channel}" data-voucher="${voucher}">确认提交</button></div>`);return;
   }
   if(action==='confirmImmediateService'){
-    const service=S.find(item=>item[0]===node.dataset.service)||S[6];
+    const service=S.find(item=>item[0]===node.dataset.service)||S[7];
     const now=new Date(),date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     const generated={id:`SV${Date.now()}`,type:'服务订单',status:'服务中',name:service[0],detail:`${service[2]} · ${node.dataset.coach} · 已核销`,price:Number(service[3])||0,image:service[4],date,checkedIn:true,store:node.dataset.store,source:node.dataset.channel,voucher:node.dataset.voucher,assessmentOrderId:st.accountOrder?.id};
     st.orders.unshift(generated);st.accountOrder=generated;st.orderType='服务订单';st.orderFilter='全部';close();go('orderDetail');toast('服务订单已生成并核销');return;
@@ -207,7 +207,7 @@ act=function(event){
     const order=st.orders.find(item=>item.id===id);
     if(order.type==='商品订单'){toast('物流信息已更新');return}
     if(order.type==='评估订单'){st.btype='eval';st.service=1;st.orderType='评估订单';go('booking');return}
-    st.btype='service';st.service=6;go('booking');return;
+    st.btype='service';st.service=7;go('booking');return;
   }
   if(action==='cancelAccountAppointment'){
     const appointment=st.appointments.find(item=>item.id===id);
@@ -218,14 +218,14 @@ act=function(event){
   }
   if(action==='rescheduleAccountAppointment'){
     const appointment=st.appointments.find(item=>item.id===id);
-    st.bookedName=appointment.name;st.store=appointment.store;st.therapist=appointment.coach;st.date='11月05日 周四';st.slot='';st.btype=appointment.name.includes('评估')?'eval':'service';st.service=S.findIndex(service=>service[0]===appointment.name);if(st.service<0)st.service=6;go('booking');return;
+    st.bookedName=appointment.name;st.store=appointment.store;st.therapist=appointment.coach;st.date='11月05日 周四';st.slot='';st.btype=appointment.name.includes('评估')?'eval':'service';st.service=S.findIndex(service=>service[0]===appointment.name);if(st.service<0)st.service=7;go('booking');return;
   }
   if(action==='accountCardRecords'){
     modal('预约明细',`<p class="small">${node.dataset.name}<br>2026-10-28 膝关节康复 · 已核销<br>2026-10-21 膝关节康复 · 已核销</p><button class="btn full" data-act="close">完成</button>`);return;
   }
   if(action==='cardTab'||action==='orderFilter'||action==='apptTab'){accountBaseAct(event);return}
   if(action==='payOk'&&node.dataset.product==='false'){
-    const service=st.orderedService||S[st.service]||S[6];
+    const service=st.orderedService||S[st.service]||S[7];
     const evaluation=st.btype==='eval',quantity=evaluation?1:Math.max(1,Math.floor(Number(st.serviceQty)||1));
     st.orders.unshift({id:`${evaluation?'EV':'SV'}${Date.now()}`,type:evaluation?'评估订单':'服务订单',status:evaluation?'待评估':'待服务',name:service[0],detail:`${service[2]}${evaluation?'':` · 数量 ×${quantity}`}`,quantity,unitPrice:Number(service[3])||0,price:checkoutAmount(false),image:service[4],date:new Date().toLocaleDateString('sv-SE')});
     st.orderFilter='全部';
