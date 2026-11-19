@@ -2,6 +2,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const harness=fs.readFileSync('brain-assessment-integration-test.cjs','utf8').split("run(\"st.page='employee'")[0];
 eval(harness+`
 vm.runInContext(fs.readFileSync('role-booking-refinements.js','utf8'),context);
+vm.runInContext(fs.readFileSync('nutrition-youth-assessment.js','utf8'),context);
 const fire=(action,data={})=>run('act')({currentTarget:{dataset:{act:action,...data}}});
 for(const [role,type,group] of [['康复师','康复师','therapistStandardServiceNames'],['康复师','康复师Ⅱ','therapistIIServiceNames'],['店长','技术型店长','therapistStandardServiceNames'],['店长','普通店长',null]]){
   run('st.page="employee";st.employeeRole='+JSON.stringify(role)+';st.employeeType='+JSON.stringify(type));
@@ -14,7 +15,14 @@ for(const [role,type,group] of [['康复师','康复师','therapistStandardServi
     const status=blocked.status;fire('therapistStart',{id:blocked.id});assert.equal(blocked.status,status);assert.match(run('lastToast'),/无法操作/);
   }
 }
-for(const index of [4,5,6,11,12,13,14,15]){run('st.service='+index+';go("booking")');let html=run('pagesContent("booking")');assert.match(html,/选择预约日期/);assert.doesNotMatch(html,/selection-person/);assert.match(html,/confirmBooking" disabled/)}
+for(const index of [4,5,6,11,12,13,14,15,16]){run('st.service='+index+';go("booking")');let html=run('pagesContent("booking")');assert.match(html,/选择预约日期/);assert.doesNotMatch(html,/selection-person/);assert.match(html,/confirmBooking" disabled/)}
+assert.equal(run('iiBookingDates().length'),7,'预约日期只显示近七天');
+assert.equal((run('pagesContent("booking")').match(/data-act="iiBookingDate"/g)||[]).length,7,'日期横向排班展示七个日期');
+run('st.service=6;st.page="assessment"');
+const youthForm=run('pagesContent("assessment")');
+for(const label of ['青少年/儿童营养评估','出生年月日','出生体重','孕育周期','排便次数','膳食结构调查','健康关注与日常保养'])assert.ok(youthForm.includes(label),label);
+run('st.service=16;st.page="serviceDetail"');
+assert.equal(run('S[6][0]'),'青少年/儿童营养评估');assert.equal(run('S[16][0]'),'成人营养评估');
 run('st.service=7;go("booking")');assert.doesNotMatch(run('pagesContent("booking")'),/iiBookingDate/);
 run('st.service=11;st.btype="service";go("booking");st.accountOrder=null');
 const days=run('iiBookingDates()');
@@ -41,5 +49,5 @@ run('st.page="appointments"');fire('confirmCancelAccountAppointment',{id:saved.i
 assert.equal(run('therapistAppointments.find(item=>item.id==="AP-USER-"+'+JSON.stringify(saved.id)+').status'),'已取消');
 run('st.service=11;go("booking")');fire('iiBookingDate',{key:day.key});fire('iiBookingCoach');
 assert.equal(run('iiBookingSlotStatus(iiBookingSelection().day,'+JSON.stringify(time)+')'),'空闲','取消预约释放用户与员工两端时段');
-console.log('角色订单与预约集成测试通过：四角色分组、八类预约、门店排班、冲突、保存、改期与取消。');
+console.log('角色订单与预约集成测试通过：四角色分组、九类预约、门店排班、冲突、保存、改期与取消。');
 `);

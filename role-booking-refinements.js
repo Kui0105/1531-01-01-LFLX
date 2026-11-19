@@ -4,7 +4,7 @@ const iiBookingApplies=()=>therapistIIServiceNames.includes(S[Number(st.service)
 const iiBookingMinutes=value=>{const [hours,minutes]=String(value).split(':').map(Number);return hours*60+minutes};
 const iiBookingDuration=value=>Number(String(value).match(/\d+/)?.[0])||60;
 function iiBookingDates(){
-  return Array.from({length:14},(_,index)=>{
+  return Array.from({length:7},(_,index)=>{
     const date=new Date(therapistToday+'T12:00:00');date.setDate(date.getDate()+index);
     return {key:therapistDateKey(date),date,label:`${date.getMonth()+1}月${String(date.getDate()).padStart(2,'0')}日 周${['日','一','二','三','四','五','六'][date.getDay()]}`};
   });
@@ -42,7 +42,7 @@ function iiBookingSlotStatus(day,time,duration=iiBookingDuration(S[st.service]?.
 function iiBookingPage(){
   if(st.iiBookingService!==Number(st.service))iiBookingReset();
   const {day,shift,store,coachSelected}=iiBookingSelection();
-  const dates=iiBookingDates().map(item=>`<button class="tile ${day?.key===item.key?'ii-date-selected':''}" data-act="iiBookingDate" data-key="${item.key}" aria-pressed="${day?.key===item.key}"><b>${item.label.split(' ')[0]}</b><small>${item.label.split(' ')[1]}</small></button>`).join('');
+  const dates=iiBookingDates().map(item=>`<button class="tile ${day?.key===item.key?'ii-date-selected':''}" data-act="iiBookingDate" aria-label="${item.label}" data-key="${item.key}" aria-pressed="${day?.key===item.key}"><b>${item.date.getMonth()+1}/${item.date.getDate()}</b><small>${item.label.split(' ')[1]}</small></button>`).join('');
   const coachBlock=day?`<section class="selection-group"><h3>选择康复师</h3>${store?`<button class="selection-person ${coachSelected?'selected':''}" data-act="iiBookingCoach" aria-pressed="${coachSelected}"><img src="${A+iiBookingCoach.image}" alt="康复师头像"><span class="selection-person-copy"><b>${iiBookingCoach.name}</b><small>${iiBookingCoach.title}</small></span><span class="selection-check" aria-hidden="true">${coachSelected?'✓':''}</span></button>`:`<p class="small muted">${shift==='休息'?'当天康复师休息，请更换日期。':'当天尚未安排服务门店，请选择其他日期。'}</p>`}</section>`:'<p class="tiny muted">请先选择预约日期，再选择康复师。</p>';
   const storeBlock=coachSelected?`<section class="selection-group"><h3>服务门店</h3><div class="selection-store"><img src="${A+store.images[0]}" alt="门店环境"><span class="selection-store-copy"><b>${store.name}</b><small>${store.address}</small><small>康复师当日在岗门店 · ${day.label}</small></span></div></section>`:'';
   const slots=coachSelected?therapistSlotList.filter(time=>time>=therapistBusinessHours(day.date)[0]&&time<therapistBusinessHours(day.date)[1]).map(time=>{
@@ -136,7 +136,7 @@ act=function(event){
       let appointment=st.appointments[0];
       Object.assign(appointment,{dateKey:day.key,time:slot,coach:iiBookingCoach.name,coachImage:iiBookingCoach.image,coachTitle:iiBookingCoach.title,store,storeImage:stores.find(item=>item.name===store).images[0]});
       if(previous){st.appointments.shift();Object.assign(previous,{...appointment,id:previous.id,orderId:previous.orderId});appointment=previous}
-      iiBookingSaveStaffAppointment(appointment);st.iiRescheduleId='';draw();return;
+      st.appointmentId=appointment.id;iiBookingSaveStaffAppointment(appointment);st.iiRescheduleId='';draw();return;
     }
   }
   const result=roleBookingBaseAct(event);

@@ -23,7 +23,8 @@ const therapistAppointments=[
   ,{id:'AP-M001',customerId:'CU1003',customer:'王女士',date:therapistToday,time:'17:30',service:'颈肩腰放松疗程',type:'服务',status:'待服务',duration:'50 分钟',orderId:'SO2025091803',image:'service-back.png',assignedTo:'周店长'}
   ,{id:'AP-M002',customerId:'CU1001',customer:'张女士',date:therapistToday,time:'15:00',service:'膝关节运动康复',type:'服务',status:'待核销',duration:'50 分钟',orderId:'SO2026102501',image:'service-knee.png',assignedTo:'林教练'}
 ];
-const therapistIIServiceNames=['青少年/儿童运动脑科学评估','成人运动脑科学评估','运动表现提升','专注力提升','体态纠正','睡眠压力管理','营养评估','运动营养康复指导'];
+const therapistIIServiceNames=['青少年/儿童运动脑科学评估','成人运动脑科学评估','运动表现提升','专注力提升','体态纠正','睡眠压力管理','青少年/儿童营养评估','运动营养康复指导','成人营养评估'];
+const therapistIsNutritionAssessment=service=>['青少年/儿童营养评估','成人营养评估','营养评估'].includes(service);
 const therapistStandardServiceNames=['放松评估','颈肩腰放松疗程','运动损伤评估','术后评估','颈肩腰痛评估','膝关节运动康复','筋膜放松体验卡'];
 const therapistIsII=()=>st.employeeRole==='康复师'&&st.employeeType==='康复师Ⅱ';
 const employeeVisibleServiceNames=()=>st.employeeRole==='康复师'?(therapistIsII()?therapistIIServiceNames:therapistStandardServiceNames):st.employeeRole==='店长'&&st.employeeType==='技术型店长'?therapistStandardServiceNames:null;
@@ -31,7 +32,7 @@ const employeeCanSeeService=name=>{const allowed=employeeVisibleServiceNames();r
 const therapistVisibleAppointments=()=>{const allowed=therapistIsII()?therapistIIServiceNames:therapistStandardServiceNames;return therapistAppointments.filter(item=>allowed.includes(item.service))};
 const managerVisibleAppointments=()=>st.employeeType==='技术型店长'?therapistAppointments.filter(item=>therapistStandardServiceNames.includes(item.service)):therapistAppointments;
 for(const [index,service] of therapistIIServiceNames.entries()){
-  const id='AP-II-'+(index+1),orderId='SO-II-'+(index+1),customer=therapistCustomerData[index%therapistCustomerData.length],isAssessment=service==='营养评估';
+  const id='AP-II-'+(index+1),orderId='SO-II-'+(index+1),customer=therapistCustomerData[index%therapistCustomerData.length],isAssessment=therapistIsNutritionAssessment(service);
   customer.orders.push({id:orderId,name:service,total:1,used:0,expiry:'2027-12-31',records:[]});
   const assessment=service.includes('评估')||isAssessment;
   therapistAppointments.push({id,customerId:customer.id,customer:customer.name,date:therapistToday,time:`${String(10+index).padStart(2,'0')}:00`,service,type:assessment?'评估':'服务',status:'待服务',duration:assessment?'60 分钟':'50 分钟',orderId,image:assessment?'service-eval.png':'service-back.png'});
@@ -150,7 +151,7 @@ function therapistAppointmentCard(appointment,compact=false){
 }
 function therapistIIWorkbench(){
   const all=therapistVisibleAppointments(),today=all.filter(item=>item.date===therapistToday),pending=all.filter(item=>item.status==='服务中');
-  const notes=pending.filter(item=>item.type==='服务'),summaries=notes.filter(therapistNeedsSummary),assessments=pending.filter(item=>item.type==='评估'&&item.service!=='营养评估'),nutrition=pending.filter(item=>item.service==='营养评估');
+  const notes=pending.filter(item=>item.type==='服务'),summaries=notes.filter(therapistNeedsSummary),assessments=pending.filter(item=>item.type==='评估'&&!therapistIsNutritionAssessment(item.service)),nutrition=pending.filter(item=>therapistIsNutritionAssessment(item.service));
   const todos=[['康复纪要待填写',notes.length,'openNextNote'],['康复小结待填写',summaries.length,'openNextSummary'],['评估资料待填写',assessments.length,'openNextAssessment'],['营养评估报告待上传',nutrition.length,'therapistNutritionPending']];
   return `${therapistHeader()}<section class="therapist-section therapist-overview"><div class="between"><div><h2>数据概览</h2><small class="muted">${therapistToday}</small></div><span class="therapist-role-tag">康复师Ⅱ</span></div><div class="therapist-metrics therapist-ii-metrics"><div><b>${today.length}</b><small>今日预约</small></div><div><b>${today.filter(item=>item.status==='已完成').length}</b><small>今日完成</small></div></div></section><section class="therapist-section"><div class="between"><h2>待办事项</h2><span class="tag gold">${todos.reduce((n,t)=>n+t[1],0)} 项</span></div><div class="therapist-todo-list">${todos.map(([title,count,action])=>`<article class="listitem"><span class="iconbox">${ic('file')}</span><span class="grow"><b>${title}</b><small>${count} 项待处理</small></span><button class="textbtn" data-act="${action}">${action==='therapistNutritionPending'?'查看':'填写'}</button></article>`).join('')}</div></section><section class="therapist-section"><div class="between"><h2>服务预约</h2><button class="textbtn" data-act="therapistTab" data-v="therapistSchedule">查看全部 ›</button></div><div class="therapist-appointment-list">${today.filter(item=>item.status!=='已完成').slice(0,3).map(item=>therapistAppointmentCard(item,true)).join('')||'<div class="empty">今日暂无待处理预约</div>'}</div></section>`;
 }
@@ -344,7 +345,7 @@ act=function(event){
   }
   if(action==='therapistNutritionPending'){st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='服务中';therapistNavigate('therapistSchedule');return}
   if(action==='openNextAssessment'||action==='openNextNote'||action==='openNextSummary'){
-    const appointment=therapistVisibleAppointments().find(item=>(therapistIsII()||item.date===therapistToday)&&item.status==='服务中'&&(action==='openNextAssessment'?item.type==='评估'&&(!therapistIsII()||item.service!=='营养评估'):item.type==='服务'&&(action!=='openNextSummary'||therapistNeedsSummary(item))));
+    const appointment=therapistVisibleAppointments().find(item=>(therapistIsII()||item.date===therapistToday)&&item.status==='服务中'&&(action==='openNextAssessment'?item.type==='评估'&&(!therapistIsII()||!therapistIsNutritionAssessment(item.service)):item.type==='服务'&&(action!=='openNextSummary'||therapistNeedsSummary(item))));
     if(!appointment){toast('当前没有对应待办');return}st.therapistAppointmentId=appointment.id;st.therapistDraft={};therapistNavigate('therapistRecordForm');return;
   }
   if(action==='saveTherapistAssessment'){
