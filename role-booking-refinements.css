@@ -16,3 +16,6 @@
 .youth-score-row small{display:block;color:#7a8984;font-size:11px}
 .youth-score-row select{width:115px;flex-shrink:0}
 .assessment-basic [data-youth-basic]{margin-bottom:8px}
+
+.youth-nutrition-detail[hidden], [name="assessmentNote"][hidden], [data-adult-note][hidden]{display:none}
+.adult-section-heading{margin:24px 0 12px}

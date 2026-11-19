@@ -405,7 +405,7 @@ draw = function () {
   // Move the existing bar outside the scroll area, preserving its bound actions.
   document.getElementById('commerceActionBar')?.remove();
   originalDraw();
-  if (['productDetail', 'cart', 'productCheckout', 'serviceCheckout', 'addresses', 'complaints', 'orderDetail', 'appointmentDetail', 'assessment', 'orderAssessmentStart', 'promotionWithdraw', 'promotionPoster'].includes(st.page)) {
+  if (['productDetail', 'cart', 'productCheckout', 'serviceCheckout', 'addresses', 'complaints', 'orderDetail', 'appointmentDetail', 'assessment', 'booking', 'orderAssessmentStart', 'promotionWithdraw', 'promotionPoster'].includes(st.page)) {
     const bar = document.querySelector('#view > .cta');
     if (bar) {
       bar.id = 'commerceActionBar';
