@@ -179,7 +179,7 @@ const lifecycleEmployeePhones=[
   {phone:'13100000001',role:'康复师',store:'静安运动康复中心'},
   {phone:'13100000002',role:'店长',kind:'普通店长',store:'静安运动康复中心'},
   {phone:'13100000003',role:'店长',kind:'技术型店长',store:'静安运动康复中心'},
-  {phone:'13100000004',role:'康复师',kind:'康复师Ⅱ',store:'静安运动康复中心'}
+  {phone:'13100000004',role:'康复师',kind:'康复师Ⅱ'}
 ];
 function lifecycleEmployeeLoginPage(){
   return `<section class="employee-login-brand"><div class="launch-mark">${ic('user')}</div><h2>员工授权登录</h2><p>使用微信授权手机号验证员工身份</p></section><section class="card employee-login-guide"><b>手机号仅用于身份识别</b><p class="small muted">授权后将根据手机号进入对应员工工作台。</p></section><div class="employee-login-footer"><label class="small"><input type="checkbox" id="employeeAgree"> 我已阅读并同意 <button class="textbtn" data-act="protocol">《用户协议》与《隐私政策》</button></label><button class="btn full employee-wechat-button" data-act="employeeLogin">授权登录</button></div>`;
@@ -267,7 +267,7 @@ act=function(event){
   if(action==='confirmEmployeePhone'){
     const staff=lifecycleEmployeePhones.find(item=>item.phone===st.pendingEmployeePhone);
     if(!staff){toast('请选择要授权的手机号');return}
-    st.employeePhone=staff.phone;st.selectedEmployeePhone=staff.phone;st.pendingEmployeePhone='';st.employeeRole=staff.role;st.employeeType=staff.kind||staff.role;st.employeeTab=staff.role==='店长'?'managerWorkbench':'employee';if(staff.role==='店长')st.managerScheduleStaff=staff.kind==='技术型店长'?'周店长':'王店长';st.managerStaffDetail='';st.therapistRouteStack=[];st.loggedIn=true;close();go('employee');toast('已授权登录：'+(staff.kind||staff.role));return;
+    st.employeePhone=staff.phone;st.selectedEmployeePhone=staff.phone;st.pendingEmployeePhone='';st.employeeRole=staff.role;st.employeeType=staff.kind||staff.role;st.employeeTab=staff.role==='店长'?'managerWorkbench':'employee';st.therapistScheduleWeek=0;st.therapistSelectedDate=therapistToday;if(staff.role==='店长')st.managerScheduleStaff=staff.kind==='技术型店长'?'周店长':'王店长';st.managerStaffDetail='';st.therapistRouteStack=[];st.loggedIn=true;close();go('employee');toast('已授权登录：'+(staff.kind||staff.role));return;
   }
   if(action==='agreeOk'&&st.page==='employeeLogin'){
     close();const checkbox=document.getElementById('employeeAgree');if(checkbox)checkbox.checked=true;toast('已同意协议');return;
