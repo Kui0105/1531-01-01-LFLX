@@ -1,6 +1,6 @@
 .ii-booking .selection-group{margin-bottom:20px}
 .ii-booking-dates{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;overflow:hidden}
-.ii-booking-dates .tile{padding:10px 2px;min-width:0;font-size:11px}
+.ii-booking-dates .tile{padding:10px 2px;min-width:0;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .ii-booking-dates b{display:block;font-size:12px;white-space:nowrap}
 .ii-booking-dates small{display:block;margin-top:4px;font-size:10px}
 .ii-booking-dates .ii-date-selected{border-color:#79b5ac;background:#edf8f5;color:#286e64}
