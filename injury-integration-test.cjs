@@ -25,7 +25,8 @@ run("therapistAppointment('AP-T002').status='已完成';therapistAppointment('AP
 assert.equal(run("therapistAppointment('AP-T-DEMO-2').status"),'待服务');
 assert.equal(run("therapistServiceOrder('SO-DEMO-EVAL-2').total"),1);
 run('therapistEnsureAssessmentDemo()');
-assert.ok(run("therapistAppointments.some(item=>item.id==='AP-T007'&&item.status==='待服务')"));
+assert.equal(run("therapistAppointment('AP-T007').status"),'已完成','保留已完成订单，使用新的模拟订单演示');
+assert.equal(run("therapistAppointments.filter(item=>item.id==='AP-T-DEMO-2').length"),1,'重复进入不重复创建模拟订单');
 assert.equal(run("therapistAppointments.filter(item=>item.service==='运动损伤评估'&&item.status==='待服务').length"),1);
 assert.equal(run("st.therapistAppointmentFilter"),'全部');
 run("st.therapistCustomerId='CU1002';st.therapistArchiveReportIndex=0");

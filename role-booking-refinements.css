@@ -1,0 +1,10 @@
+.ii-booking .selection-group{margin-bottom:20px}
+.ii-booking-dates{gap:9px}
+.ii-booking-dates .tile{padding:12px 4px;min-width:0}
+.ii-booking-dates b{display:block;font-size:13px;white-space:nowrap}
+.ii-booking-dates small{display:block;margin-top:5px}
+.ii-booking-dates .ii-date-selected{border-color:#79b5ac;background:#edf8f5;color:#286e64}
+.ii-booking-slots{gap:9px}
+.ii-booking-slots .pill{min-height:48px}
+.ii-slot-status{display:block;font-size:10px;margin-top:3px}
+.ii-booking-slots .pill:disabled{opacity:.45}
