@@ -53,9 +53,12 @@ function accountOrderActions(order, detail=false) {
   }
   if(order.status==='待服务')return `<div class="order-actions"><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">预约服务</button></div>`;
   if(['待发货','待收货'].includes(order.status))return `<div class="order-actions"><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">查看物流</button>${order.status==='待收货'?'<button class="textbtn" data-act="confirmReceived" data-id="'+order.id+'">确认收货</button>':''}</div>`;
+  if(order.status==='服务中'&&order.type==='评估订单')return '';
   if(order.status==='服务中')return '<div class="order-actions"><button class="textbtn" data-go="appointments">查看预约</button><button class="textbtn" data-go="archives">查看档案</button></div>';
+  if(order.status==='已完成'&&order.type==='评估订单')return '<div class="order-actions"><button class="textbtn" data-go="reviews">评价服务</button></div>';
   if(order.status==='已完成')return `<div class="order-actions"><button class="textbtn" data-go="${order.type==='商品订单'?'orders':'reviews'}">${order.type==='商品订单'?'再次购买':'评价服务'}</button><button class="textbtn" data-go="${order.type==='商品订单'?'afterSale':'archives'}">${order.type==='商品订单'?'申请售后':'查看档案'}</button></div>`;
   if(order.status==='售后中')return '<div class="order-actions"><button class="textbtn" data-go="afterSale">售后详情</button></div>';
+  if(order.status==='已取消'&&order.type==='评估订单')return '<div class="order-actions"><button class="textbtn" data-act="reBuyAssessment" data-id="'+order.id+'">再次购买</button></div>';
   return '<div class="order-actions"><button class="textbtn" data-act="accountOrderAction" data-id="'+order.id+'">再次购买</button></div>';
 }
 
@@ -168,6 +171,11 @@ act=function(event){
     st.apptTab='待服务';
     go('appointments');
     return;
+  }
+  if(action==='reBuyAssessment'){
+    const order=st.orders.find(item=>item.id===id);
+    if(!order)return;
+    st.accountOrder=order;st.service=Math.max(0,S.findIndex(service=>service[0]===order.name));st.btype='eval';st.orderType='评估订单';st.orderedService=S[st.service];go('serviceDetail');return;
   }
   if(action==='accountOrderDetail'){if(event.target.closest('button,a,input,select,textarea'))return;st.accountOrder=st.orders.find(order=>order.id===id);go('orderDetail');return}
   if(action==='orderEvalBook'){
