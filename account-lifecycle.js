@@ -33,6 +33,8 @@ function lifecycleRedemptionSection(order){
 }
 
 accountOrderActions=function(order, detail=false){
+  if(lifecycleIsAfterSaleOrder(order))return `<div class="order-actions"><button class="textbtn" data-act="openAfterSaleDetail" data-id="${order.id}">售后详情</button></div>`;
+  if(order.type==='商品订单'&&order.status==='已完成')return `<div class="order-actions"><button class="textbtn" data-go="orders">再次购买</button><button class="textbtn" data-act="applyProductAfterSale" data-id="${order.id}">申请售后</button></div>`;
   if(order.type==='服务订单'){
     if(['待服务','服务中'].includes(order.status)){
       const action=order.status==='待服务'?'cancelAccountOrder':'applyServiceAfterSale';
@@ -40,15 +42,17 @@ accountOrderActions=function(order, detail=false){
       return `<div class="order-actions"><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">预约服务</button><button class="textbtn" data-act="${action}" data-id="${order.id}">${label}</button></div>`;
     }
     if(order.status==='已完成')return '<div class="order-actions"><button class="textbtn" data-go="reviews">评价服务</button></div>';
-    if(order.status==='售后中')return `<div class="order-actions"><button class="textbtn" data-act="viewServiceAfterSale" data-id="${order.id}">售后详情</button></div>`;
   }
   return lifecycleOrderActions(order, detail);
 };
 
 const lifecycleAfterSaleReasons=['已康复，不需要了','达不到理想的效果'];
 const lifecycleAfterSaleStatuses=['全部','售后中','售后完成','售后驳回'];
-function lifecycleAfterSaleStatus(order){return order.afterSale?.status||'售后中'}
-function lifecycleOrderStatus(order){return order.type==='服务订单'&&order.status==='售后中'?lifecycleAfterSaleStatus(order):order.status}
+function lifecycleAfterSaleStatus(order){return order.afterSale?.status||(lifecycleAfterSaleStatuses.includes(order.status)?order.status:'售后中')}
+function lifecycleIsAfterSaleOrder(order){
+  return ['服务订单','商品订单'].includes(order.type)&&Boolean(order.afterSale||lifecycleAfterSaleStatuses.slice(1).includes(order.status));
+}
+function lifecycleOrderStatus(order){return lifecycleIsAfterSaleOrder(order)?lifecycleAfterSaleStatus(order):order.status}
 function lifecycleRefundAmount(order){
   const paidCents=Math.round(Math.max(0,Number(order.price)||0)*100);
   return Math.round(paidCents*lifecycleRemaining(order)/lifecycleTotalUses(order))/100;
@@ -65,10 +69,72 @@ if(lifecycleAfterSaleSample&&!lifecycleAfterSaleSample.afterSale){
   }
 }
 
-function lifecycleServiceAfterSalePage(){
-  const order=st.orders.find(item=>item.id===st.serviceAfterSaleOrderId);
+const lifecycleProductAfterSaleSample=st.orders.find(order=>order.id==='GO2026110405');
+if(lifecycleProductAfterSaleSample&&!lifecycleProductAfterSaleSample.afterSale){
+  lifecycleProductAfterSaleSample.afterSale={status:'售后中',reason:'商品质量问题',remarks:'商品收到后发现破损，申请退货退款。',amount:lifecycleProductAfterSaleSample.price,submittedAt:'2026-11-18 11:00:00'};
+  for(const [index,status] of ['售后完成','售后驳回'].entries()){
+    const id='GO-AFTER-SALE-'+index;
+    if(st.orders.some(order=>order.id===id))continue;
+    st.orders.push({...lifecycleProductAfterSaleSample,id,afterSale:{...lifecycleProductAfterSaleSample.afterSale,status,handledAt:'2026-11-19 16:00:00',result:index===0?'退款已原路退回（模拟）。':'凭证信息不完整，请联系客服补充。'}});
+  }
+}
+
+function lifecycleAfterSaleOrdersPage(){
+  const types=['服务订单','商品订单'];
+  const type=types.includes(st.afterSaleOrderType)?st.afterSaleOrderType:'服务订单';
+  const status=lifecycleAfterSaleStatuses.includes(st.afterSaleOrderStatus)?st.afterSaleOrderStatus:'全部';
+  const orders=st.orders.filter(order=>order.type===type&&lifecycleIsAfterSaleOrder(order)&&(status==='全部'||lifecycleAfterSaleStatus(order)===status));
+  return `${tabs(types,type,'afterSaleOrderType')}${tabs(lifecycleAfterSaleStatuses,status,'afterSaleOrderStatus')}
+    <div class="order-list">${orders.map(order=>{
+      const request=order.afterSale;
+      const amount=request?.amount??(order.type==='服务订单'?lifecycleRefundAmount(order):order.price);
+      return `<article class="card order-card" data-act="openAfterSaleDetail" data-id="${order.id}" role="link" tabindex="0" aria-label="查看${lifecycleEscape(order.name)}售后详情">
+        <div class="between"><small class="muted">${lifecycleEscape(order.id)}</small><span class="tag gold">${lifecycleAfterSaleStatus(order)}</span></div>
+        <div class="row order-product"><img class="thumb" src="${A+order.image}" alt="${lifecycleEscape(order.name)}"><div class="grow"><b>${lifecycleEscape(order.name)}</b><p>${lifecycleEscape(order.detail)}</p></div></div>
+        <p class="tiny muted">申请时间　${lifecycleEscape(request?.submittedAt||order.date)}</p>
+        <div class="order-card-footer"><span class="small">申请退款 <b class="price">¥${Number(amount).toFixed(2)}</b></span><span class="small">查看详情 ›</span></div>
+      </article>`;
+    }).join('')||'<div class="empty">当前状态暂无售后订单</div>'}</div>`;
+}
+
+function lifecycleAfterSaleDetailPage(){
+  const order=st.orders.find(item=>item.id===st.afterSaleDetailOrderId);
+  if(!order||!lifecycleIsAfterSaleOrder(order))return '<div class="empty">请从售后/退款列表选择订单</div>';
+  if(order.type==='服务订单')return lifecycleServiceAfterSalePage(order.id);
+  const request=order.afterSale;
+  return `<section class="card small">
+    <div class="between"><b>${lifecycleAfterSaleStatus(order)}</b><span class="muted">商品订单</span></div>
+    <p>订单编号　${lifecycleEscape(order.id)}</p>
+    <div class="row order-product"><img class="thumb" src="${A+order.image}" alt="${lifecycleEscape(order.name)}"><div class="grow"><b>${lifecycleEscape(order.name)}</b><p>${lifecycleEscape(order.detail)}</p></div></div>
+    <div class="between"><span>实付金额</span><b>¥${Number(order.price).toFixed(2)}</b></div>
+    <div class="between"><span>申请退款金额</span><b class="price">¥${Number(request?.amount??order.price).toFixed(2)}</b></div>
+  </section><section class="card small"><b>申请信息</b>
+    <p>售后原因　${lifecycleEscape(request?.reason||'—')}</p>
+    <p class="feedback-content">备注说明　${lifecycleEscape(request?.remarks||'—')}</p>
+    <p>提交时间　${lifecycleEscape(request?.submittedAt||order.date)}</p>
+    ${request?.handledAt?`<p>处理时间　${lifecycleEscape(request.handledAt)}</p>`:''}
+    ${request?.result?`<div class="complaint-result"><b>处理结果</b><p>${lifecycleEscape(request.result)}</p></div>`:''}
+  </section>`;
+}
+
+function lifecycleProductAfterSalePage(){
+  const order=st.orders.find(item=>item.id===st.productAfterSaleOrderId);
+  if(!order||order.type!=='商品订单'||order.status!=='已完成')return '<div class="empty">当前订单不可申请售后</div>';
+  const draft=st.productAfterSaleDraft||{};
+  return `<section class="card small"><p>订单编号　${lifecycleEscape(order.id)}</p>
+    <div class="row order-product"><img class="thumb" src="${A+order.image}" alt="${lifecycleEscape(order.name)}"><div class="grow"><b>${lifecycleEscape(order.name)}</b><p>${lifecycleEscape(order.detail)}</p></div></div>
+    <div class="between"><span>实付金额</span><b>¥${Number(order.price).toFixed(2)}</b></div>
+    <div class="between"><span>申请退款金额</span><b class="price">¥${Number(order.price).toFixed(2)}</b></div>
+  </section><section class="card">
+    <div class="field"><label for="productAfterSaleReason">售后原因</label><select id="productAfterSaleReason" class="input"><option value="">请选择售后原因</option>${['计划有变','服务时间不合适','其他'].map(reason=>`<option ${draft.reason===reason?'selected':''}>${reason}</option>`).join('')}</select></div>
+    <div class="field"><label for="productAfterSaleRemarks">备注说明</label><textarea id="productAfterSaleRemarks" class="input textarea" placeholder="补充说明">${lifecycleEscape(draft.remarks||'')}</textarea></div>
+  </section>${cta('<button class="btn full" data-act="submitProductAfterSale">提交申请</button>')}`;
+}
+
+function lifecycleServiceAfterSalePage(orderId=st.serviceAfterSaleOrderId){
+  const order=st.orders.find(item=>item.id===orderId);
   if(!order||order.type!=='服务订单')return '<div class="empty">请从服务订单进入申请售后</div>';
-  const request=order.afterSale,submitted=order.status==='售后中',draft=st.serviceAfterSaleDraft||{};
+  const request=order.afterSale,submitted=lifecycleIsAfterSaleOrder(order),draft=st.serviceAfterSaleDraft||{};
   const service=lifecycleService(order),amount=submitted?request?.amount??lifecycleRefundAmount(order):lifecycleRefundAmount(order);
   const status=submitted?lifecycleAfterSaleStatus(order):'申请售后';
   const facts=`<section class="card small">
@@ -244,18 +310,21 @@ function lifecycleEmployeePage(){
   return `<section class="card employee-identity-card"><div class="employee-avatar">${ic('user')}</div><div><small>员工身份</small><h2>${staff.kind||staff.role}</h2><p>${staff.phone}</p><p>${staff.store}</p></div></section><section class="card employee-workspace-note"><h3>${staff.kind||staff.role}工作台</h3><p>当前为身份授权流程演示。员工端业务页面待补充。</p></section><button class="btn ghost full" data-act="employeeLogout">退出员工登录</button>`;
 }
 
-const lifecycleRoutes=[['reviewDetail','评价详情'],['accountSettingsProfile','用户资料'],['userAgreement','用户协议'],['privacyPolicy','隐私政策']];
+const lifecycleRoutes=[['afterSaleOrders','售后/退款'],['afterSaleDetail','售后详情'],['reviewDetail','评价详情'],['accountSettingsProfile','用户资料'],['userAgreement','用户协议'],['privacyPolicy','隐私政策']];
 labels.logisticsDetail='物流详情';
 notes.logisticsDetail='查看所选商品订单的承运状态、物流单号与物流轨迹。';
 labels.employeeLogin='员工授权登录';
 notes.employeeLogin='选择微信授权手机号后按手机号识别康复师或店长身份。';
-const lifecycleGroup=groups.find(group=>group[0]==='消息与我的');
+const lifecycleGroup=groups.find(group=>group[0]==='消息与我的')||groups.find(group=>group[0]==='用户端');
 lifecycleRoutes.forEach(([route,label])=>{labels[route]=label;if(lifecycleGroup&&!lifecycleGroup[1].some(item=>item[0]===route))lifecycleGroup[1].push([route,label])});
 notes.userAgreement='用户协议富文本展示。当前内容为原型示例，正式内容由管理端配置。';
 notes.privacyPolicy='隐私政策富文本展示。当前内容为原型示例，正式内容由管理端配置。';
 
 pagesContent=function(page){
+  if(page==='afterSaleOrders')return lifecycleAfterSaleOrdersPage();
+  if(page==='afterSaleDetail')return lifecycleAfterSaleDetailPage();
   if(page==='afterSale'&&st.accountOrder?.id===st.serviceAfterSaleOrderId)return lifecycleServiceAfterSalePage();
+  if(page==='afterSale'&&st.accountOrder?.id===st.productAfterSaleOrderId)return lifecycleProductAfterSalePage();
   if(page==='employeeLogin')return lifecycleEmployeeLoginPage();
   if(page==='employee')return lifecycleEmployeePage();
   if(page==='logisticsDetail')return lifecycleLogisticsPage();
@@ -283,16 +352,47 @@ function lifecycleSubmitReview(){
 
 act=function(event){
   const node=event.currentTarget,action=node.dataset.act,id=node.dataset.id;
-  if(action==='orderType'||action==='orderFilter')st.serviceAfterSaleFilter='全部';
-  if(action==='serviceAfterSaleFilter'){
-    if(!lifecycleAfterSaleStatuses.includes(node.dataset.v))return;
-    st.serviceAfterSaleFilter=node.dataset.v;draw();return;
+  if(action==='afterSaleOrderType'){
+    if(!['服务订单','商品订单'].includes(node.dataset.v))return;
+    st.afterSaleOrderType=node.dataset.v;st.afterSaleOrderStatus='全部';draw();return;
   }
-  if(action==='applyServiceAfterSale'||action==='viewServiceAfterSale'){
+  if(action==='afterSaleOrderStatus'){
+    if(!lifecycleAfterSaleStatuses.includes(node.dataset.v))return;
+    st.afterSaleOrderStatus=node.dataset.v;draw();return;
+  }
+  if(action==='openAfterSaleDetail'||action==='viewServiceAfterSale'){
+    const order=st.orders.find(item=>item.id===id);
+    if(!order||!lifecycleIsAfterSaleOrder(order))return;
+    st.accountOrder=order;st.afterSaleDetailOrderId=order.id;
+    go('afterSaleDetail');return;
+  }
+  if(action==='applyProductAfterSale'){
+    const order=st.orders.find(item=>item.id===id);
+    if(!order||order.type!=='商品订单'||order.status!=='已完成'||lifecycleIsAfterSaleOrder(order))return;
+    st.accountOrder=order;st.productAfterSaleOrderId=order.id;st.productAfterSaleDraft={reason:'',remarks:''};st.pendingProductAfterSale=null;
+    go('afterSale');return;
+  }
+  if(action==='submitProductAfterSale'){
+    const order=st.orders.find(item=>item.id===st.productAfterSaleOrderId);
+    if(!order||order.type!=='商品订单'||order.status!=='已完成'||lifecycleIsAfterSaleOrder(order)){toast('当前订单不可申请售后');return}
+    const reason=document.getElementById('productAfterSaleReason')?.value||'';
+    const remarks=(document.getElementById('productAfterSaleRemarks')?.value||'').trim();
+    st.productAfterSaleDraft={reason,remarks};
+    if(!['计划有变','服务时间不合适','其他'].includes(reason)){toast('请选择售后原因');return}
+    st.pendingProductAfterSale={orderId:order.id,reason,remarks,amount:order.price};
+    modal('确认提交售后',`<p class="small">申请退款金额 ¥${Number(order.price).toFixed(2)}，确认提交申请？</p><div class="grid2"><button class="btn ghost" data-act="close">返回修改</button><button class="btn" data-act="confirmProductAfterSale">确认提交</button></div>`);return;
+  }
+  if(action==='confirmProductAfterSale'){
+    const pending=st.pendingProductAfterSale,order=st.orders.find(item=>item.id===pending?.orderId);
+    if(!pending||!order||order.type!=='商品订单'||order.status!=='已完成'||lifecycleIsAfterSaleOrder(order)){close();toast('当前订单不可重复申请');return}
+    order.afterSale={status:'售后中',reason:pending.reason,remarks:pending.remarks,amount:pending.amount,submittedAt:lifecycleNow()};
+    order.status='售后中';st.pendingProductAfterSale=null;
+    st.afterSaleOrderType='商品订单';st.afterSaleOrderStatus='售后中';close();go('afterSaleOrders');toast('售后申请已提交');return;
+  }
+  if(action==='applyServiceAfterSale'){
     const order=st.orders.find(item=>item.id===id);
     if(!order||order.type!=='服务订单')return;
     if(action==='applyServiceAfterSale'&&(order.status!=='服务中'||lifecycleRemaining(order)===0)){toast('当前订单不可申请售后');return}
-    if(action==='viewServiceAfterSale'&&order.status!=='售后中')return;
     st.serviceAfterSaleOrderId=order.id;st.accountOrder=order;
     st.serviceAfterSaleDraft={reason:'',remarks:''};st.pendingServiceAfterSale=null;
     go('afterSale');return;
@@ -315,8 +415,8 @@ act=function(event){
     }
     order.afterSale={status:'售后中',reason:pending.reason,remarks:pending.remarks,amount:pending.amount,remaining:pending.remaining,total:pending.total,submittedAt:lifecycleNow()};
     order.status='售后中';st.pendingServiceAfterSale=null;
-    st.orderType='服务订单';st.orderFilter='售后中';st.serviceAfterSaleFilter='售后中';
-    close();go('orders');toast('售后申请已提交');return;
+    st.afterSaleOrderType='服务订单';st.afterSaleOrderStatus='售后中';
+    close();go('afterSaleOrders');toast('售后申请已提交');return;
   }
   if(['cancelAccountOrder','confirmCancelAccountOrder'].includes(action)){
     const order=st.orders.find(item=>item.id===id);
@@ -455,6 +555,9 @@ async function lifecycleReadImages(input,target,key,single=false){
 
 draw=function(){
   lifecycleBaseDraw();
+  if(st.page==='afterSaleOrders')document.querySelectorAll('.order-card[data-act="openAfterSaleDetail"]').forEach(card=>card.addEventListener('keydown',event=>{
+    if(event.target===card&&['Enter',' '].includes(event.key)){event.preventDefault();card.click()}
+  }));
   if(st.page==='orders'){
     const strip=document.querySelector('.order-status-tabs'),active=strip?.querySelector('.active');
     if(active)strip.scrollLeft=Math.max(0,active.offsetLeft-strip.offsetLeft-(strip.clientWidth-active.offsetWidth)/2);
