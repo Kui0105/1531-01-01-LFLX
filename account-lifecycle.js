@@ -33,15 +33,65 @@ function lifecycleRedemptionSection(order){
 }
 
 accountOrderActions=function(order, detail=false){
-  if(order.type==='服务订单'&&order.status==='服务中'&&lifecycleRemaining(order)>0)return `<div class="order-actions"><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">预约服务</button><button class="textbtn" data-go="archives">查看档案</button></div>`;
+  if(order.type==='服务订单'){
+    if(['待服务','服务中'].includes(order.status)){
+      const action=order.status==='待服务'?'cancelAccountOrder':'applyServiceAfterSale';
+      const label=order.status==='待服务'?'取消订单':'申请售后';
+      return `<div class="order-actions"><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">预约服务</button><button class="textbtn" data-act="${action}" data-id="${order.id}">${label}</button></div>`;
+    }
+    if(order.status==='已完成')return '<div class="order-actions"><button class="textbtn" data-go="reviews">评价服务</button></div>';
+    if(order.status==='售后中')return `<div class="order-actions"><button class="textbtn" data-act="viewServiceAfterSale" data-id="${order.id}">售后详情</button></div>`;
+  }
   return lifecycleOrderActions(order, detail);
 };
+
+const lifecycleAfterSaleReasons=['已康复，不需要了','达不到理想的效果'];
+const lifecycleAfterSaleStatuses=['全部','售后中','售后完成','售后驳回'];
+function lifecycleAfterSaleStatus(order){return order.afterSale?.status||'售后中'}
+function lifecycleOrderStatus(order){return order.type==='服务订单'&&order.status==='售后中'?lifecycleAfterSaleStatus(order):order.status}
+function lifecycleRefundAmount(order){
+  const paidCents=Math.round(Math.max(0,Number(order.price)||0)*100);
+  return Math.round(paidCents*lifecycleRemaining(order)/lifecycleTotalUses(order))/100;
+}
+
+const lifecycleAfterSaleSample=st.orders.find(order=>order.id==='SV2026110405');
+if(lifecycleAfterSaleSample&&!lifecycleAfterSaleSample.afterSale){
+  lifecycleAfterSaleSample.afterSale={status:'售后中',reason:lifecycleAfterSaleReasons[0],remarks:'近期已恢复，希望退还剩余服务费用。',amount:lifecycleRefundAmount(lifecycleAfterSaleSample),remaining:lifecycleRemaining(lifecycleAfterSaleSample),total:lifecycleTotalUses(lifecycleAfterSaleSample),submittedAt:'2026-11-18 10:30:00'};
+  for(const [index,status] of ['售后完成','售后驳回'].entries()){
+    const id='SV-AFTER-SALE-'+index;
+    if(st.orders.some(order=>order.id===id))continue;
+    const order={...lifecycleAfterSaleSample,id,afterSale:{...lifecycleAfterSaleSample.afterSale,status,handledAt:'2026-11-19 15:00:00',result:index===0?'退款已原路退回（模拟）。':'申请信息需进一步核实，请联系客服。'}};
+    st.orders.push(order);
+  }
+}
+
+function lifecycleServiceAfterSalePage(){
+  const order=st.orders.find(item=>item.id===st.serviceAfterSaleOrderId);
+  if(!order||order.type!=='服务订单')return '<div class="empty">请从服务订单进入申请售后</div>';
+  const request=order.afterSale,submitted=order.status==='售后中',draft=st.serviceAfterSaleDraft||{};
+  const service=lifecycleService(order),amount=submitted?request?.amount??lifecycleRefundAmount(order):lifecycleRefundAmount(order);
+  const status=submitted?lifecycleAfterSaleStatus(order):'申请售后';
+  const facts=`<section class="card small">
+      <div class="between"><b>${status}</b><span class="muted">服务订单</span></div>
+      <p>订单编号　${lifecycleEscape(order.id)}</p>
+      <div class="row order-product"><img class="thumb" src="${A+order.image}" alt="${lifecycleEscape(order.name)}"><div class="grow"><b>${lifecycleEscape(order.name)}</b><p>时长　${lifecycleEscape(service[2])}</p><p>价格　¥${Number(order.unitPrice??service[3]).toFixed(2)}</p></div></div>
+      <div class="between"><span>实付金额</span><b>¥${Number(order.price).toFixed(2)}</b></div></section>
+    <section class="card small">
+      <div class="between"><span>剩余次数 / 总次数</span><b>${submitted?request?.remaining??lifecycleRemaining(order):lifecycleRemaining(order)} / ${submitted?request?.total??lifecycleTotalUses(order):lifecycleTotalUses(order)} 次</b></div>
+      <div class="divider"></div>
+      <div class="between"><span>${submitted?'申请退款金额':'可退金额'}</span><b class="price">¥${Number(amount).toFixed(2)}</b></div><p class="tiny muted">按实付金额与剩余服务次数比例计算。</p></section>`;
+  if(submitted)return facts+`<section class="card small"><b>申请信息</b><p>售后原因　${lifecycleEscape(request?.reason||'—')}</p><p class="feedback-content">备注说明　${lifecycleEscape(request?.remarks||'—')}</p><p>提交时间　${lifecycleEscape(request?.submittedAt||order.date)}</p>${request?.handledAt?`<p>处理时间　${lifecycleEscape(request.handledAt)}</p>`:''}${request?.result?`<div class="complaint-result"><b>处理结果</b><p>${lifecycleEscape(request.result)}</p></div>`:''}</section>`;
+  if(order.status!=='服务中')return facts+'<div class="empty">当前订单状态不可申请售后</div>';
+  return facts+`<section class="card">
+      <div class="field"><label for="serviceAfterSaleReason">售后原因</label><select id="serviceAfterSaleReason" class="input"><option value="">请选择售后原因</option>${lifecycleAfterSaleReasons.map(reason=>`<option ${draft.reason===reason?'selected':''}>${reason}</option>`).join('')}</select></div>
+      <div class="field"><label for="serviceAfterSaleRemarks">备注说明</label><textarea id="serviceAfterSaleRemarks" class="input textarea" placeholder="请填写补充说明">${lifecycleEscape(draft.remarks||'')}</textarea></div></section>${cta('<button class="btn full" data-act="submitServiceAfterSale">提交申请</button>')}`;
+}
 
 accountOrderDetail=function(order){
   let html=lifecycleOrderDetail(order);
   if(['评估订单','服务订单'].includes(order.type)){
     // Completed/fully used orders display their records instead of a stale code.
-    if(order.status==='已完成'||(order.type==='服务订单'&&lifecycleRemaining(order)===0))html=html.replace(/<div class="card order-code-card">[\s\S]*?<\/p><\/div>/,'');
+    if(order.status==='已完成'||(order.type==='服务订单'&&(order.status==='售后中'||lifecycleRemaining(order)===0)))html=html.replace(/<div class="card order-code-card">[\s\S]*?<\/p><\/div>/,'');
     const section=lifecycleRedemptionSection(order);
     html=html.replace('<div class="card small"><b>优惠信息</b>',section+'<div class="card small"><b>优惠信息</b>');
   }
@@ -205,6 +255,7 @@ notes.userAgreement='用户协议富文本展示。当前内容为原型示例�
 notes.privacyPolicy='隐私政策富文本展示。当前内容为原型示例，正式内容由管理端配置。';
 
 pagesContent=function(page){
+  if(page==='afterSale'&&st.accountOrder?.id===st.serviceAfterSaleOrderId)return lifecycleServiceAfterSalePage();
   if(page==='employeeLogin')return lifecycleEmployeeLoginPage();
   if(page==='employee')return lifecycleEmployeePage();
   if(page==='logisticsDetail')return lifecycleLogisticsPage();
@@ -232,6 +283,54 @@ function lifecycleSubmitReview(){
 
 act=function(event){
   const node=event.currentTarget,action=node.dataset.act,id=node.dataset.id;
+  if(action==='orderType'||action==='orderFilter')st.serviceAfterSaleFilter='全部';
+  if(action==='serviceAfterSaleFilter'){
+    if(!lifecycleAfterSaleStatuses.includes(node.dataset.v))return;
+    st.serviceAfterSaleFilter=node.dataset.v;draw();return;
+  }
+  if(action==='applyServiceAfterSale'||action==='viewServiceAfterSale'){
+    const order=st.orders.find(item=>item.id===id);
+    if(!order||order.type!=='服务订单')return;
+    if(action==='applyServiceAfterSale'&&(order.status!=='服务中'||lifecycleRemaining(order)===0)){toast('当前订单不可申请售后');return}
+    if(action==='viewServiceAfterSale'&&order.status!=='售后中')return;
+    st.serviceAfterSaleOrderId=order.id;st.accountOrder=order;
+    st.serviceAfterSaleDraft={reason:'',remarks:''};st.pendingServiceAfterSale=null;
+    go('afterSale');return;
+  }
+  if(action==='submitServiceAfterSale'){
+    const order=st.orders.find(item=>item.id===st.serviceAfterSaleOrderId);
+    if(!order||order.type!=='服务订单'||order.status!=='服务中'||lifecycleRemaining(order)===0){toast('当前订单不可申请售后');return}
+    const reason=document.getElementById('serviceAfterSaleReason')?.value||'';
+    const remarks=(document.getElementById('serviceAfterSaleRemarks')?.value||'').trim();
+    st.serviceAfterSaleDraft={reason,remarks};
+    if(!lifecycleAfterSaleReasons.includes(reason)){toast('请选择售后原因');return}
+    st.pendingServiceAfterSale={orderId:order.id,reason,remarks,amount:lifecycleRefundAmount(order),remaining:lifecycleRemaining(order),total:lifecycleTotalUses(order)};
+    modal('确认提交售后',`<p class="small">申请退还「${lifecycleEscape(order.name)}」剩余 ${lifecycleRemaining(order)} 次服务，申请金额 ¥${lifecycleRefundAmount(order).toFixed(2)}。</p><div class="grid2"><button class="btn ghost" data-act="close">返回修改</button><button class="btn" data-act="confirmServiceAfterSale">确认提交</button></div>`);return;
+  }
+  if(action==='confirmServiceAfterSale'){
+    const pending=st.pendingServiceAfterSale,order=st.orders.find(item=>item.id===pending?.orderId);
+    if(!pending||!order||order.type!=='服务订单'||order.status!=='服务中'){close();toast('当前订单不可重复申请');return}
+    if(pending.remaining!==lifecycleRemaining(order)||pending.amount!==lifecycleRefundAmount(order)){
+      st.pendingServiceAfterSale=null;close();draw();toast('服务次数或金额已变化，请核对后重新提交');return;
+    }
+    order.afterSale={status:'售后中',reason:pending.reason,remarks:pending.remarks,amount:pending.amount,remaining:pending.remaining,total:pending.total,submittedAt:lifecycleNow()};
+    order.status='售后中';st.pendingServiceAfterSale=null;
+    st.orderType='服务订单';st.orderFilter='售后中';st.serviceAfterSaleFilter='售后中';
+    close();go('orders');toast('售后申请已提交');return;
+  }
+  if(['cancelAccountOrder','confirmCancelAccountOrder'].includes(action)){
+    const order=st.orders.find(item=>item.id===id);
+    if(order?.type==='服务订单'){
+      if(!['待付款','待服务'].includes(order.status)){close();toast('当前订单不可取消');return}
+      if(action==='confirmCancelAccountOrder'){
+        for(const appointment of st.appointments.filter(item=>item.orderId===id&&item.status==='待服务')){
+          appointment.status='已取消';
+          const staff=therapistAppointments.find(item=>item.id==='AP-USER-'+appointment.id);
+          if(staff)staff.status='已取消';
+        }
+      }
+    }
+  }
   if(action==='openArchiveResult'){
     const record=lifecycleArchiveRecords[Number(node.dataset.i)];
     if(!record?.linked)return;
