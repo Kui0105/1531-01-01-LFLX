@@ -344,7 +344,7 @@ act=function(event){
   }
   if(action==='confirmTherapistStart'){
     if(st.employeeRole==='店长'&&st.employeeType!=='技术型店长'){toast('普通店长不能开始服务');return}
-    const appointment=therapistAppointment(node.dataset.id);if(!appointment)return;appointment.status='服务中';close();st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='服务中';draw();toast('已开始，预约状态更新为服务中');return;
+    const appointment=therapistAppointment(node.dataset.id);if(!appointment||appointment.status!=='待服务')return;appointment.status='服务中';const userAppointment=st.appointments.find(item=>'AP-USER-'+item.id===appointment.id);if(userAppointment)userAppointment.status='服务中';const userOrder=st.orders.find(item=>item.id===appointment.orderId);if(userOrder?.type==='评估订单'&&userOrder.status==='待评估')userOrder.status='服务中';close();st.therapistScheduleTab='预约服务';st.therapistAppointmentFilter='服务中';draw();toast('已开始，预约状态更新为服务中');return;
   }
   if(action==='therapistFillRecord'){
     if(st.employeeRole==='店长'&&st.employeeType!=='技术型店长'){toast('普通店长不能填写服务记录');return}
