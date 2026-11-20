@@ -9,11 +9,11 @@ const workflowBrainIssues=['专注力不好','体态不好','性格敏感/易紧
 function workflowAuthorizedPhone(){return String(st.authorizedPhone||st.accountProfile?.phone||'13800138000');}
 const workflowTitles=coaches.map((_,index)=>index===0?'首席康复师':'高级康复师');
 const workflowMessages=[
-  {title:'预约到店提醒',content:'预约的膝关节康复将于 11月05日 14:00 开始。',target:'appointmentDetail'},
-  {title:'服务到期提醒',content:'您的康复服务即将到期，请查看剩余服务安排。',target:'orders'},
-  {title:'康复复测提醒',content:'您的复测时间为 11月08日。',target:'appointments'},
-  {title:'投诉处理结果',content:'投诉反馈已处理完毕。',target:'complaints'},
-  {title:'生日祝福提醒',get content(){return `尊敬的${st.accountProfile?.nickname||'林间微光'}，本月是您的生日月，祝您生日快乐；平台为您准备了生日福利，可前往我的-生日福利进行领取！`},target:'birthday',unread:true}
+  {title:'预约到店提醒',content:'预约的膝关节运动康复将于11月05日 14:00 在静安运动康复中心开始。请提前10分钟到店，如需改约/取消请提前1小时在我的订单内进行处理。期待为您服务！',target:'appointmentDetail'},
+  {title:'服务到期提醒',content:'尊敬的张女士，您的膝关节运动康复将于2027年02月28日到期，当前剩余2次。为避免权益失效，请尽快到店使用！',target:'orders'},
+  {title:'康复复测提醒',get content(){return `尊敬的${st.accountProfile?.nickname||'林间微光'}，您康复复测时间为11月08日。请按时到店进行复测，如有疑问请联系您的康复师！`},target:'appointments'},
+  {title:'投诉处理结果',get content(){return `尊敬的${st.accountProfile?.nickname||'林间微光'}，您于11月01日反馈的服务问题我们已处理完毕，给您带来不便深表歉意，如您还有其他问题请联系客服说明！`},target:'complaints'},
+  {title:'生日祝福提醒',get content(){return `尊敬的${st.accountProfile?.nickname||'林间微光'}，今天是您的生日，祝您生日快乐；平台为您准备了生日福利，可前往我的-生日福利进行领取！`},target:'birthday',unread:true}
 ];
 
 function workflowMessagePage(){
