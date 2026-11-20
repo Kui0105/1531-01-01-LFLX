@@ -32,9 +32,9 @@ function lifecycleRedemptionSection(order){
   return `<section class="card redemption-summary"><h3>服务次数</h3><div class="redemption-counts"><div><small>总次数</small><b>${lifecycleTotalUses(order)}</b></div><div><small>已核销</small><b>${records.length}</b></div><div><small>剩余次数</small><b>${lifecycleRemaining(order)}</b></div></div><p class="tiny muted">购买 ${lifecycleQuantity(order)} 份 · 每份 ${lifecycleUsesPerUnit(order)} 次</p></section><section class="card redemption-records"><h3>核销记录</h3>${records.length?records.slice().reverse().map((record,index)=>`<article><div class="between"><b>第 ${records.length-index} 次核销</b><span class="tag">已核销</span></div><p>${lifecycleEscape(record.service)}</p><p>${lifecycleEscape(record.store)} · ${lifecycleEscape(record.coach)}</p><time>${lifecycleEscape(record.time)}</time></article>`).join(''):'<p class="small muted">暂无核销记录</p>'}</section>`;
 }
 
-accountOrderActions=function(order){
+accountOrderActions=function(order, detail=false){
   if(order.type==='服务订单'&&order.status==='服务中'&&lifecycleRemaining(order)>0)return `<div class="order-actions"><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">预约服务</button><button class="textbtn" data-go="archives">查看档案</button></div>`;
-  return lifecycleOrderActions(order);
+  return lifecycleOrderActions(order, detail);
 };
 
 accountOrderDetail=function(order){
