@@ -11,6 +11,94 @@ const fire = (action, data = {}) => run('act')({
 const render = page => run('pagesContent(' + JSON.stringify(page) + ')');
 const selectOrder = id => run('st.accountOrder=st.orders.find(order=>order.id===' + JSON.stringify(id) + ')');
 
+// Exercise reservation-dependent buttons through the list, detail and actions.
+const originalOrders = run('JSON.stringify(st.orders)');
+const originalAppointments = run('JSON.stringify(st.appointments)');
+const assertActions = (id, labels) => {
+  selectOrder(id);
+  run('st.orderType="服务订单";st.orderFilter="全部"');
+  const list = render('orders');
+  const card = list.slice(list.indexOf('data-id="' + id + '"')).split('</article>')[0];
+  const detail = render('orderDetail');
+  for (const html of [card, detail]) {
+    const buttons = [...html.matchAll(/<button[^>]*>([^<]+)<[/]button>/g)].map(match => match[1]);
+    assert.deepEqual(buttons, labels);
+  }
+};
+const book = id => {
+  fire('accountOrderAction', { id });
+  assert.equal(run('st.page'), 'booking');
+  run('st.date="11月28日 周六";st.slot="14:00"');
+  fire('confirmBooking');
+  fire('bookingSuccess');
+  assert.equal(run('st.appointments[0].orderId'), id);
+};
+for (const [id, status] of [['SV2026110402', '待服务'], ['SV2026110403', '服务中']]) {
+  const defaults = ['立即服务', '预约服务', status === '待服务' ? '取消订单' : '申请售后'];
+  assertActions(id, defaults);
+  book(id);
+  assert.equal(run('st.orders.find(order=>order.id===' + JSON.stringify(id) + ').status'), status);
+  assertActions(id, status === '待服务' ? ['查看预约', '取消订单'] : ['查看预约']);
+  run('st.apptTab="已取消"');
+  fire('viewPendingAppointment');
+  assert.equal(run('st.page'), 'appointments');
+  assert.equal(run('st.apptTab'), '待服务');
+  assert.ok(render('appointments').includes(run('st.appointments[0].id')));
+  if (status === '待服务') {
+    fire('cancelAccountOrder', { id });
+    assert.equal(run('lastToast'), '请取消预约');
+    fire('confirmCancelAccountOrder', { id });
+    assert.equal(run('lastToast'), '请取消预约');
+    assert.equal(run('st.orders.find(order=>order.id===' + JSON.stringify(id) + ').status'), status);
+  }
+  fire('confirmCancelAccountAppointment', { id: run('st.appointments[0].id') });
+  assertActions(id, defaults);
+}
+
+// A one-use order starts service without becoming completed on submission.
+const querySelector = context.document.querySelector;
+context.document.querySelector = selector => {
+  if (selector === '[data-order-flow="store"]') return { value: '静安运动康复中心' };
+  if (selector === '[data-order-flow="coach"]') return { value: '林教练' };
+  return null;
+};
+fire('startImmediateService', { id: 'SV2026110402' });
+assert.equal(run('st.page'), 'orderServiceStart');
+assert.match(render('orderServiceStart'), /提交立即服务/);
+fire('submitImmediateService');
+assert.equal(run('lastModal.title'), '确认立即服务');
+fire('confirmStartImmediateService');
+assert.equal(run('st.accountOrder.status'), '服务中');
+assert.equal(run('lifecycleRemaining(st.accountOrder)'), 1);
+assertActions('SV2026110402', ['立即服务', '预约服务', '申请售后']);
+fire('confirmStartImmediateService');
+assert.equal(run('st.accountOrder.status'), '服务中');
+context.document.querySelector = querySelector;
+
+for (const id of ['SV2026110402', 'SV2026110403', 'EV2026110402', 'EV2026110403']) {
+  selectOrder(id);
+  assert.match(render('orderDetail'), /有效期/);
+  assert.match(render('orderDetail'), /2027-02-28/);
+  run('st.accountOrder.expiry="2028-05-01"');
+  assert.match(render('orderDetail'), /有效期　2028-05-01/);
+}
+run('st.orders=' + originalOrders + ';st.appointments=' + originalAppointments + ';st.accountOrder=null');
+
+// Brain-science service reservations use the same buttons with date-first booking.
+run('st.orders.unshift({id:"SV-II-BOOKING",type:"服务订单",status:"待服务",name:S[11][0],detail:S[11][2],price:299,image:"service-back.png",date:"2026-11-20"})');
+fire('accountOrderAction', { id: 'SV-II-BOOKING' });
+const day = run('iiBookingDates().find((item,index)=>index>0&&stores.some(store=>store.name===therapistIIShiftLabel(item.key)))');
+fire('iiBookingDate', { key: day.key });
+fire('iiBookingCoach');
+const slot = run('therapistSlotList.find(time=>iiBookingSlotStatus(iiBookingSelection().day,time)==="空闲")');
+fire('iiBookingSlot', { v: slot });
+fire('confirmBooking');
+fire('bookingSuccess');
+assertActions('SV-II-BOOKING', ['查看预约', '取消订单']);
+fire('confirmCancelAccountAppointment', { id: run('st.appointments[0].id') });
+assertActions('SV-II-BOOKING', ['立即服务', '预约服务', '取消订单']);
+run('st.orders=' + originalOrders + ';st.appointments=' + originalAppointments + ';st.accountOrder=null');
+
 for (const [id, status, expected] of [
   ['SV2026110402', '待服务', ['立即服务', '预约服务', '取消订单']],
   ['SV2026110403', '服务中', ['立即服务', '预约服务', '申请售后']],
@@ -81,8 +169,11 @@ for (const [status, id] of [['售后中', 'SV2026110405'], ['售后完成', 'SV-
   assert.doesNotMatch(render('afterSaleDetail'), /data-act="submitServiceAfterSale"/);
 }
 
-// Pending service cancellation also cancels its pending reservation.
+// Pending reservations must be cancelled before cancelling the service order.
 run('st.appointments.push({id:"AP-CANCEL-TEST",orderId:"SV2026110402",status:"待服务"})');
+fire('cancelAccountOrder', { id: 'SV2026110402' });
+assert.equal(run('lastToast'), '请取消预约');
+fire('confirmCancelAccountAppointment', { id: 'AP-CANCEL-TEST' });
 fire('cancelAccountOrder', { id: 'SV2026110402' });
 assert.equal(run('lastModal.title'), '取消订单');
 fire('confirmCancelAccountOrder', { id: 'SV2026110402' });

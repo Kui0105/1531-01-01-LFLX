@@ -257,6 +257,7 @@ act=function(event){
     st.orderFilter='全部';
   }
   if(action==='bookingSuccess'){
+    if(st.page!=='booking')return;
     const name=st.bookedName||S[st.service]?.[0]||'膝关节运动康复';
     const order=st.accountOrder?.name===name?st.accountOrder:null;const appointment={id:`AP${Date.now()}`,orderId:order?.id||'',name,status:'待服务',store:st.store,coach:st.therapist,date:`${st.date} ${st.slot||'14:00'}`,duration:S[st.service]?.[2]||'50分钟',image:S[st.service]?.[4]||'service-knee.png'};st.appointments.unshift(appointment);
     if(order&&st.btype==='eval'&&!therapistIIServiceNames.includes(name)){const phone=workflowAuthorizedPhone();let customer=therapistCustomerData.find(item=>item.phone===phone);if(!customer){customer={id:'CU-USER-'+phone,name:st.accountProfile?.name||st.accountProfile?.nickname||'预约用户',nickname:st.accountProfile?.nickname||'预约用户',gender:st.accountProfile?.gender||'—',phone,avatar:'coach-lin.png',kind:'新客',orders:[]};therapistCustomerData.push(customer)}if(!customer.orders.some(item=>item.id===order.id))customer.orders.push({id:order.id,name,total:1,used:0,expiry:'2027-12-31',records:[]});const match=String(st.date).match(/(\d+)月(\d+)日/),year=new Date().getFullYear(),date=match?`${year}-${match[1].padStart(2,'0')}-${match[2].padStart(2,'0')}`:therapistToday;therapistAppointments.push({id:'AP-USER-'+appointment.id,customerId:customer.id,customer:customer.name,date,time:st.slot||'14:00',service:name,type:'评估',status:'待服务',duration:appointment.duration,orderId:order.id,image:appointment.image,assignedTo:st.therapist,store:st.store})}

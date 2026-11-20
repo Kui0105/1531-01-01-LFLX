@@ -13,6 +13,7 @@ function lifecycleUsesPerUnit(){return 1}
 function lifecycleQuantity(order){return Math.max(1,Number.isSafeInteger(Number(order.quantity))?Number(order.quantity):Number(order.detail?.match(/数量\s*×\s*(\d+)/)?.[1]||1))}
 function lifecycleTotalUses(order){return lifecycleQuantity(order)*lifecycleUsesPerUnit(order)}
 function lifecycleRemaining(order){return Math.max(0,lifecycleTotalUses(order)-(order.redemptions||[]).length)}
+function lifecyclePendingAppointment(order){return st.appointments.find(item=>item.orderId===order.id&&item.status==='待服务')}
 function lifecycleRemainingCards(){return st.orders.filter(order=>order.type==='服务订单'&&order.status==='服务中').reduce((sum,order)=>sum+lifecycleRemaining(order),0)}
 
 // Seed one partially redeemed multi-use order and completed assessment data.
@@ -37,6 +38,10 @@ accountOrderActions=function(order, detail=false){
   if(order.type==='商品订单'&&order.status==='已完成')return `<div class="order-actions"><button class="textbtn" data-go="orders">再次购买</button><button class="textbtn" data-act="applyProductAfterSale" data-id="${order.id}">申请售后</button></div>`;
   if(order.type==='服务订单'){
     if(['待服务','服务中'].includes(order.status)){
+      if(lifecyclePendingAppointment(order)){
+        const cancel=order.status==='待服务'?`<button class="textbtn" data-act="cancelAccountOrder" data-id="${order.id}">取消订单</button>`:'';
+        return `<div class="order-actions"><button class="textbtn" data-act="viewPendingAppointment">查看预约</button>${cancel}</div>`;
+      }
       const action=order.status==='待服务'?'cancelAccountOrder':'applyServiceAfterSale';
       const label=order.status==='待服务'?'取消订单':'申请售后';
       return `<div class="order-actions"><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">预约服务</button><button class="textbtn" data-act="${action}" data-id="${order.id}">${label}</button></div>`;
@@ -155,6 +160,9 @@ function lifecycleServiceAfterSalePage(orderId=st.serviceAfterSaleOrderId){
 
 accountOrderDetail=function(order){
   let html=lifecycleOrderDetail(order);
+  if((order.type==='服务订单'&&['待服务','服务中'].includes(order.status))||(order.type==='评估订单'&&['待评估','服务中'].includes(order.status))){
+    html=html.replace('<b>订单信息</b>','<b>订单信息</b><p>有效期　'+lifecycleEscape(order.expiry||'2027-02-28')+'</p>');
+  }
   if(['评估订单','服务订单'].includes(order.type)){
     // Completed/fully used orders display their records instead of a stale code.
     if(order.status==='已完成'||(order.type==='服务订单'&&(order.status==='售后中'||lifecycleRemaining(order)===0)))html=html.replace(/<div class="card order-code-card">[\s\S]*?<\/p><\/div>/,'');
@@ -180,7 +188,7 @@ function lifecycleApplyRedemption(order,details){
 }
 
 function lifecycleImmediateServicePage(order){
-  return `<section class="card"><b>关联服务订单</b><p class="small muted">${lifecycleEscape(order.name)} · ${order.id}</p><p class="small">剩余 ${lifecycleRemaining(order)} / ${lifecycleTotalUses(order)} 次</p></section><div class="field"><label>服务门店</label><select class="input" data-order-flow="store">${stores.map(store=>`<option ${store.name===(st.orderFlowStore||st.store)?'selected':''}>${store.name}</option>`).join('')}</select></div><div class="field"><label>康复师</label><select class="input" data-order-flow="coach">${coaches.map(coach=>`<option ${coach.name===(st.orderFlowCoach||st.therapist)?'selected':''}>${coach.name}</option>`).join('')}</select></div><div class="field"><label>服务项目</label><input class="input" value="${lifecycleEscape(order.name)}" disabled></div><p class="small muted">本次使用 1 次服务，确认后更新该订单核销记录。</p><button class="btn full" data-act="submitImmediateService">提交并核销本次服务</button>`;
+  return `<section class="card"><b>关联服务订单</b><p class="small muted">${lifecycleEscape(order.name)} · ${order.id}</p><p class="small">剩余 ${lifecycleRemaining(order)} / ${lifecycleTotalUses(order)} 次</p></section><div class="field"><label>服务门店</label><select class="input" data-order-flow="store">${stores.map(store=>`<option ${store.name===(st.orderFlowStore||st.store)?'selected':''}>${store.name}</option>`).join('')}</select></div><div class="field"><label>康复师</label><select class="input" data-order-flow="coach">${coaches.map(coach=>`<option ${coach.name===(st.orderFlowCoach||st.therapist)?'selected':''}>${coach.name}</option>`).join('')}</select></div><div class="field"><label>服务项目</label><input class="input" value="${lifecycleEscape(order.name)}" disabled></div><p class="small muted">确认提交后订单进入服务中。</p><button class="btn full" data-act="submitImmediateService">提交立即服务</button>`;
 }
 
 const lifecycleReviews=[
@@ -393,6 +401,7 @@ act=function(event){
     const order=st.orders.find(item=>item.id===id);
     if(!order||order.type!=='服务订单')return;
     if(action==='applyServiceAfterSale'&&(order.status!=='服务中'||lifecycleRemaining(order)===0)){toast('当前订单不可申请售后');return}
+    if(lifecyclePendingAppointment(order)){toast('请先取消预约');return}
     st.serviceAfterSaleOrderId=order.id;st.accountOrder=order;
     st.serviceAfterSaleDraft={reason:'',remarks:''};st.pendingServiceAfterSale=null;
     go('afterSale');return;
@@ -400,6 +409,7 @@ act=function(event){
   if(action==='submitServiceAfterSale'){
     const order=st.orders.find(item=>item.id===st.serviceAfterSaleOrderId);
     if(!order||order.type!=='服务订单'||order.status!=='服务中'||lifecycleRemaining(order)===0){toast('当前订单不可申请售后');return}
+    if(lifecyclePendingAppointment(order)){toast('请先取消预约');return}
     const reason=document.getElementById('serviceAfterSaleReason')?.value||'';
     const remarks=(document.getElementById('serviceAfterSaleRemarks')?.value||'').trim();
     st.serviceAfterSaleDraft={reason,remarks};
@@ -410,6 +420,7 @@ act=function(event){
   if(action==='confirmServiceAfterSale'){
     const pending=st.pendingServiceAfterSale,order=st.orders.find(item=>item.id===pending?.orderId);
     if(!pending||!order||order.type!=='服务订单'||order.status!=='服务中'){close();toast('当前订单不可重复申请');return}
+    if(lifecyclePendingAppointment(order)){st.pendingServiceAfterSale=null;close();toast('请先取消预约');return}
     if(pending.remaining!==lifecycleRemaining(order)||pending.amount!==lifecycleRefundAmount(order)){
       st.pendingServiceAfterSale=null;close();draw();toast('服务次数或金额已变化，请核对后重新提交');return;
     }
@@ -422,13 +433,7 @@ act=function(event){
     const order=st.orders.find(item=>item.id===id);
     if(order?.type==='服务订单'){
       if(!['待付款','待服务'].includes(order.status)){close();toast('当前订单不可取消');return}
-      if(action==='confirmCancelAccountOrder'){
-        for(const appointment of st.appointments.filter(item=>item.orderId===id&&item.status==='待服务')){
-          appointment.status='已取消';
-          const staff=therapistAppointments.find(item=>item.id==='AP-USER-'+appointment.id);
-          if(staff)staff.status='已取消';
-        }
-      }
+      if(lifecyclePendingAppointment(order)){close();toast('请取消预约');return}
     }
   }
   if(action==='openArchiveResult'){
@@ -453,6 +458,7 @@ act=function(event){
       st.accountOrder=order;st.logisticsOrderId=order.id;go('logisticsDetail');return;
     }
     if(order?.type==='服务订单'&&['待服务','服务中'].includes(order.status)){
+      if(lifecyclePendingAppointment(order)){toast('该订单已有预约，请先取消预约');return}
       st.accountOrder=order;st.service=Math.max(6,S.findIndex(service=>service[0]===order.name));st.btype='service';st.bookedName=order.name;go('booking');return;
     }
   }
@@ -474,12 +480,28 @@ act=function(event){
   if(action==='employeeLogout'){
     st.employeePhone=null;st.employeeRole=null;st.employeeType=null;st.selectedEmployeePhone='';st.pendingEmployeePhone='';st.loggedIn=false;go('role');return;
   }
+  if(action==='startImmediateService'){
+    const order=st.orders.find(item=>item.id===id);
+    if(order?.type==='服务订单'&&lifecyclePendingAppointment(order)){toast('请先取消预约');return}
+    st.pendingImmediateService=null;
+  }
   if(action==='submitImmediateService'&&st.accountOrder?.type==='服务订单'){
     const order=st.accountOrder;
-    if(!['待服务','服务中'].includes(order.status)||!lifecycleRemaining(order)){toast('当前订单没有可核销次数');return}
+    if(!['待服务','服务中'].includes(order.status)||!lifecycleRemaining(order)){toast('当前订单没有可用服务次数');return}
+    if(lifecyclePendingAppointment(order)){toast('请先取消预约');return}
     const store=document.querySelector('[data-order-flow="store"]').value,coach=document.querySelector('[data-order-flow="coach"]').value;
-    st.pendingRedemption={id:'RX'+Date.now(),orderId:order.id,store,coach};
-    modal('确认核销本次服务',`<p class="small">${lifecycleEscape(order.name)}<br>${lifecycleEscape(store)} · ${lifecycleEscape(coach)}<br>本次扣减 1 次，核销后剩余 ${lifecycleRemaining(order)-1} 次。</p><div class="grid2"><button class="btn ghost" data-act="close">返回修改</button><button class="btn" data-act="confirmServiceRedemption">确认核销</button></div>`);return;
+    st.pendingImmediateService={orderId:order.id,store,coach,status:order.status};
+    modal('确认立即服务',`<p class="small">${lifecycleEscape(order.name)}<br>${lifecycleEscape(store)} · ${lifecycleEscape(coach)}<br>确认后订单进入服务中。</p><div class="grid2"><button class="btn ghost" data-act="close">返回修改</button><button class="btn" data-act="confirmStartImmediateService">确认提交</button></div>`);return;
+  }
+  if(action==='confirmStartImmediateService'){
+    const pending=st.pendingImmediateService,order=st.orders.find(item=>item.id===pending?.orderId);
+    if(!pending||!order)return;
+    if(order.status!==pending.status||!['待服务','服务中'].includes(order.status)||!lifecycleRemaining(order)||lifecycleIsAfterSaleOrder(order)){
+      st.pendingImmediateService=null;close();toast('订单状态已变化，请重新操作');return;
+    }
+    if(lifecyclePendingAppointment(order)){st.pendingImmediateService=null;close();toast('请先取消预约');return}
+    order.status='服务中';order.store=pending.store;order.coach=pending.coach;
+    st.pendingImmediateService=null;st.accountOrder=order;st.orderType='服务订单';st.orderFilter='服务中';close();go('orderDetail');toast('立即服务已提交，订单服务中');return;
   }
   if(action==='confirmServiceRedemption'){
     const pending=st.pendingRedemption,order=st.orders.find(item=>item.id===pending?.orderId);
