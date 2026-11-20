@@ -48,7 +48,7 @@ function accountOrderActions(order, detail=false) {
   if(order.status==='待评估'){
     const booked=st.appointments.some(item=>item.orderId===order.id&&item.status!=='已取消');
     const cancel=`<button class="textbtn" data-act="cancelAccountOrder" data-id="${order.id}">取消订单</button>`;
-    if(booked)return `<div class="order-actions">${cancel}</div>`;
+    if(booked)return `<div class="order-actions"><button class="textbtn" data-act="viewPendingAppointment">查看预约</button>${cancel}</div>`;
     return `<div class="order-actions"><button class="textbtn" data-act="orderEvalBook" data-id="${order.id}">预约评估</button><button class="textbtn" data-act="startImmediateAssessment" data-id="${order.id}">立即评估</button><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button>${detail?cancel:''}</div>`;
   }
   if(order.status==='待服务')return `<div class="order-actions"><button class="textbtn" data-act="startImmediateService" data-id="${order.id}">立即服务</button><button class="textbtn" data-act="accountOrderAction" data-id="${order.id}">预约服务</button></div>`;
@@ -164,6 +164,11 @@ act=function(event){
     return;
   }
   if(action==='orderType'){st.orderFilter='全部';st.accountOrder=null;accountBaseAct(event);return}
+  if(action==='viewPendingAppointment'){
+    st.apptTab='待服务';
+    go('appointments');
+    return;
+  }
   if(action==='accountOrderDetail'){if(event.target.closest('button,a,input,select,textarea'))return;st.accountOrder=st.orders.find(order=>order.id===id);go('orderDetail');return}
   if(action==='orderEvalBook'){
     st.accountOrder=st.orders.find(order=>order.id===id)||st.accountOrder;
