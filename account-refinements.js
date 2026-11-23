@@ -21,10 +21,10 @@ const accountOrders = [
 st.orders ||= accountOrders.map(order=>({...order}));
 
 const accountAppointments = [
-  {id:'AP20261105001',name:'膝关节运动康复',status:'待服务',store:'静安运动康复中心',coach:'林教练',date:'11月05日 周四 14:00',duration:'50分钟',image:'service-knee.png'},
-  {id:'AP20261108002',name:'运动损伤评估',status:'服务中',store:'静安运动康复中心',coach:'赵教练',date:'11月08日 周日 10:30',duration:'45分钟',image:'service-eval.png'},
-  {id:'AP20261028003',name:'颈肩腰放松疗程',status:'已完成',store:'静安运动康复中心',coach:'林教练',date:'10月28日 周三 16:00',duration:'45分钟',image:'service-back.png'},
-  {id:'AP20261025004',name:'术后评估',status:'已取消',store:'静安运动康复中心',coach:'赵教练',date:'10月25日 周日 11:00',duration:'45分钟',image:'service-eval.png'}
+  {id:'AP20261105001',orderId:'SV2026110404',name:'膝关节运动康复',status:'待服务',store:'静安运动康复中心',coach:'林教练',date:'11月05日 周四 14:00',duration:'50分钟',image:'service-knee.png'},
+  {id:'AP20261108002',orderId:'EV2026110403',name:'运动损伤评估',status:'服务中',store:'静安运动康复中心',coach:'赵教练',date:'11月08日 周日 10:30',duration:'45分钟',image:'service-eval.png'},
+  {id:'AP20261028003',orderId:'SV2026110406',name:'颈肩腰放松疗程',status:'已完成',store:'静安运动康复中心',coach:'林教练',date:'10月28日 周三 16:00',duration:'45分钟',image:'service-back.png'},
+  {id:'AP20261025004',orderId:'EV2026110406',name:'术后评估',status:'已取消',store:'静安运动康复中心',coach:'赵教练',date:'10月25日 周日 11:00',duration:'45分钟',image:'service-eval.png'}
 ];
 st.appointments ||= accountAppointments.map(item=>({...item}));
 
@@ -72,7 +72,16 @@ function accountOrderActions(order, detail=false) {
 function accountAppointmentPage() {
   const filters=['全部','服务中','已完成','已取消'],filter=st.apptTab||'全部';
   const appointments=st.appointments.filter(item=>filter==='全部'||item.status===filter);
-  return `${tabs(filters,filter,'apptTab').replace('class="tabs"','class="tabs appointment-tabs"')}<div class="appointment-list">${appointments.map(item=>`<article class="listitem appointment-card"><img class="thumb" src="${A+item.image}" alt="${item.name}"><div class="appointment-copy"><div class="between"><h4>${item.name}</h4><span class="tag ${item.status==='已取消'?'gold':''}">${item.status}</span></div><p>${item.store} · ${item.coach}</p><p>${item.date} · ${item.duration}</p><div class="appointment-actions">${item.status==='待服务'?(isWithinHour()?'<span class="tiny muted">预约即将开始，改期/取消入口已关闭</span>':`<button class="textbtn" data-act="rescheduleAccountAppointment" data-id="${item.id}">改期</button><button class="textbtn" data-act="cancelAccountAppointment" data-id="${item.id}">取消预约</button><button class="textbtn" data-go="archives">查看档案</button>`):item.status==='服务中'?'<button class="textbtn" data-go="appointmentDetail">查看详情</button><button class="textbtn" data-go="archives">查看档案</button>':item.status==='已完成'?'<button class="textbtn" data-go="archives">查看档案</button><button class="textbtn" data-go="reviews">评价服务</button>':'<button class="textbtn" data-act="bookService">重新预约</button>'}</div></div></article>`).join('')||'<div class="empty">当前状态暂无预约</div>'}</div>`;
+  return `${tabs(filters,filter,'apptTab').replace('class="tabs"','class="tabs appointment-tabs"')}<div class="appointment-list">${appointments.map(item=>`<article class="listitem appointment-card" data-act="accountAppointmentDetail" data-id="${item.id}" role="link" tabindex="0"><img class="thumb" src="${A+item.image}" alt="${item.name}"><div class="appointment-copy"><div class="between"><h4>${item.name}</h4><span class="tag ${item.status==='已取消'?'gold':''}">${item.status}</span></div><p>${item.store} · ${item.coach}</p><p>${item.date} · ${item.duration}</p><p class="tiny muted">关联订单号　${item.orderId||'—'}</p><div class="appointment-actions">${item.status==='待服务'?(isWithinHour()?'<span class="tiny muted">预约即将开始，改期/取消入口已关闭</span>':`<button class="textbtn" data-act="rescheduleAccountAppointment" data-id="${item.id}">改期</button><button class="textbtn" data-act="cancelAccountAppointment" data-id="${item.id}">取消预约</button><button class="textbtn" data-go="archives">查看档案</button>`):item.status==='服务中'?'<button class="textbtn" data-act="accountAppointmentDetail" data-id="'+item.id+'">查看详情</button><button class="textbtn" data-go="archives">查看档案</button>':item.status==='已完成'?'<button class="textbtn" data-go="archives">查看档案</button><button class="textbtn" data-go="reviews">评价服务</button>':'<button class="textbtn" data-act="bookService">重新预约</button>'}</div></div></article>`).join('')||'<div class="empty">当前状态暂无预约</div>'}</div>`;
+}
+
+function accountAppointmentDetailPage() {
+  const item=st.appointments.find(entry=>entry.id===st.accountAppointmentId)||st.appointments[0];
+  if(!item)return '<div class="empty">暂无预约详情</div>';
+  const order=st.orders.find(entry=>entry.id===item.orderId);
+  const orderId=item.orderId||order?.id||'—';
+  const actions=item.status==='待服务'?`<div class="grid2"><button class="btn ghost" data-act="rescheduleAccountAppointment" data-id="${item.id}">改期</button><button class="btn ghost" data-act="cancelAccountAppointment" data-id="${item.id}">取消预约</button></div>`:item.status==='已完成'?'<button class="btn secondary full" data-go="reviews">评价服务</button>':'';
+  return `<div class="card"><span class="tag ${item.status==='已取消'?'gold':''}">${item.status}</span><h3>${item.name}</h3><p class="small footnote">关联订单号　${orderId}<br>预约门店　${item.store}<br>康复师　${item.coach}<br>时间　${item.date}<br>时长　${item.duration}</p><button class="btn secondary" data-act="navigate">一键导航</button></div>${actions}<div class="card small muted">预约开始前一小时内不可改期或取消；完成核销后可查看档案并评价。</div>`;
 }
 
 function accountCardPage() {
@@ -156,6 +165,7 @@ pagesContent=function(page){
   if(page==='my')return accountProfilePage();
   if(page==='orders')return accountOrderPage();
   if(page==='appointments')return accountAppointmentPage();
+  if(page==='appointmentDetail')return accountAppointmentDetailPage();
   if(page==='cards')return accountCardPage();
   if(page==='points')return accountBasePages(page).replace('<h2 class="title">积分明细</h2>','');
   if(page==='messages')return accountBasePages(page).replace('class="message-toolbar"','class="message-toolbar message-toolbar-left"');
@@ -178,6 +188,13 @@ act=function(event){
     st.apptTab='待服务';
     go('appointments');
     return;
+  }
+  if(action==='accountAppointmentDetail'){
+    if(event.target.closest('button,a,input,select,textarea')&&event.target.closest('button,a,input,select,textarea')!==node)return;
+    st.accountAppointmentId=id;
+    const appointment=st.appointments.find(item=>item.id===id);
+    if(appointment){st.bookedName=appointment.name;st.bookedDuration=appointment.duration;st.store=appointment.store;st.therapist=appointment.coach;st.date=appointment.date;st.slot='';}
+    go('appointmentDetail');return;
   }
   if(action==='reBuyAssessment'){
     const order=st.orders.find(item=>item.id===id);

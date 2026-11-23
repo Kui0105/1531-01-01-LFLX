@@ -312,6 +312,7 @@ button.therapist-star{cursor:pointer}
 .return-tracking-number{overflow-wrap:anywhere}
 .payment-countdown{display:inline-block;margin-left:6px;color:#c43d3d;font-size:12px;font-weight:600;white-space:nowrap}
 .appointment-tabs{margin:0 -16px 14px;padding:0 16px 4px}
+.appointment-card{cursor:pointer}
 .screen .appointment-card{align-items:flex-start;margin:0;padding:14px}
 .appointment-card>.thumb{width:68px;height:68px}
 .appointment-copy{flex:1;min-width:0}

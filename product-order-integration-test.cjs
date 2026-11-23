@@ -10,6 +10,9 @@ const fire = (action, data = {}) => run('act')({
 });
 const render = page => run('pagesContent(' + JSON.stringify(page) + ')');
 const select = id => run('st.accountOrder=st.orders.find(item=>item.id===' + JSON.stringify(id) + ')');
+run('st.page="appointments";st.apptTab="全部";st.appointmentId="AP20261105001"');
+assert.match(render('appointments'), /关联订单号　SV2026110404/);
+assert.match(render('appointmentDetail'), /关联订单号 SV2026110404/);
 const simulate = (id, next) => {
   const stage = run('lifecycleProductAfterSaleStage(st.orders.find(item=>item.id===' + JSON.stringify(id) + '))');
   fire('simulateProductAfterSale', { id, stage, next });
