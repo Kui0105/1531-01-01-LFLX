@@ -458,3 +458,5 @@ button.therapist-star{cursor:pointer}
 .therapist-ii-shift{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border-radius:10px;background:#f3f8f6}.therapist-ii-shift div{display:flex;flex-direction:column;gap:5px;min-width:0}.therapist-ii-shift small{font-size:11px;color:#718282}.therapist-ii-shift b{font-size:14px;overflow-wrap:anywhere}.therapist-ii-choices{display:grid;gap:9px;margin-top:14px}.therapist-week-switch .pill.active{background:#287f73;color:white}.therapist-slot.slot-未排班{border-color:#e5eae8;background:#f5f7f6;color:#879491}
 
 .therapist-ii-calendar .therapist-day i{max-width:100%;overflow-wrap:anywhere;line-height:1.2;text-align:center}
+
+.archive-record-meta{display:block;margin-top:7px;font-size:11px;line-height:1.5;color:#718282}

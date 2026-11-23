@@ -323,12 +323,12 @@ function lifecyclePolicyPage(privacy){
 }
 
 const lifecycleArchiveRecords=[
-  {type:'康复纪要',name:'膝关节运动康复',time:'2026-11-03 15:20',title:'第 3 次康复训练纪要',content:'本次完成自行车热身 8 分钟、股四头肌等长收缩 3 组、台阶上下训练 3 组及单腿平衡练习。训练中膝关节无明显疼痛，动作控制较上次稳定。居家练习：靠墙静蹲 3 组，每组 30 秒；如出现疼痛及时停止并联系康复师。'},
-  {type:'评估结果',name:'术后评估',time:'2026-11-03 10:10',title:'术后阶段评估结果',content:'膝关节术后恢复进展稳定，屈伸活动度较上次改善。步行时轻微不适，股四头肌力量仍需加强。评估结果已生成阶段性康复方案。',linked:true},
-  {type:'康复小结',name:'膝关节运动康复',time:'2026-11-02 16:10',title:'阶段康复小结',content:'本阶段已完成 4 次到店康复训练。膝关节活动范围、单腿稳定性和步行耐力均有改善，日常步行基本无不适。建议继续按康复方案进行力量和平衡训练，并于两周后复评。'},
-  {type:'康复纪要',name:'颈肩腰放松疗程',time:'2026-10-30 11:30',title:'肩颈放松训练纪要',content:'完成胸椎活动、肩胛控制练习及颈肩软组织放松。训练后肩颈紧绷感减轻。建议每工作 1 小时起身活动 3 至 5 分钟，每日完成胸椎伸展练习。'},
-  {type:'评估结果',name:'运动损伤评估',time:'2026-10-28 16:10',title:'首次运动功能评估结果',content:'记录右膝跑步后不适情况，完成关节活动度、单腿稳定性与下肢力量评估。建议阶段性调整跑步训练负荷，先进行基础力量及动作控制训练。',linked:true},
-  {type:'康复小结',name:'颈肩腰放松疗程',time:'2026-10-24 09:40',title:'肩颈康复阶段小结',content:'已完成 3 次肩颈放松与活动训练，颈肩僵硬频率减少，活动舒适度提升。建议保持规律活动和居家拉伸，后续根据工作强度安排复评。'}
+  {type:'康复纪要',name:'膝关节运动康复',time:'2026-11-03 15:20',title:'第 3 次康复训练纪要',content:'本次完成自行车热身 8 分钟、股四头肌等长收缩 3 组、台阶上下训练 3 组及单腿平衡练习。训练中膝关节无明显疼痛，动作控制较上次稳定。居家练习：靠墙静蹲 3 组，每组 30 秒；如出现疼痛及时停止并联系康复师。',store:'静安运动康复中心',coach:'林教练'},
+  {type:'评估结果',name:'术后评估',time:'2026-11-03 10:10',title:'术后阶段评估结果',content:'膝关节术后恢复进展稳定，屈伸活动度较上次改善。步行时轻微不适，股四头肌力量仍需加强。评估结果已生成阶段性康复方案。',store:'静安运动康复中心',coach:'林教练',linked:true},
+  {type:'康复小结',name:'膝关节运动康复',time:'2026-11-02 16:10',title:'阶段康复小结',content:'本阶段已完成 4 次到店康复训练。膝关节活动范围、单腿稳定性和步行耐力均有改善，日常步行基本无不适。建议继续按康复方案进行力量和平衡训练，并于两周后复评。',store:'静安运动康复中心',coach:'林教练'},
+  {type:'康复纪要',name:'颈肩腰放松疗程',time:'2026-10-30 11:30',title:'肩颈放松训练纪要',content:'完成胸椎活动、肩胛控制练习及颈肩软组织放松。训练后肩颈紧绷感减轻。建议每工作 1 小时起身活动 3 至 5 分钟，每日完成胸椎伸展练习。',store:'徐汇运动康复中心',coach:'赵教练'},
+  {type:'评估结果',name:'运动损伤评估',time:'2026-10-28 16:10',title:'首次运动功能评估结果',content:'记录右膝跑步后不适情况，完成关节活动度、单腿稳定性与下肢力量评估。建议阶段性调整跑步训练负荷，先进行基础力量及动作控制训练。',store:'徐汇运动康复中心',coach:'赵教练',linked:true},
+  {type:'康复小结',name:'颈肩腰放松疗程',time:'2026-10-24 09:40',title:'肩颈康复阶段小结',content:'已完成 3 次肩颈放松与活动训练，颈肩僵硬频率减少，活动舒适度提升。建议保持规律活动和居家拉伸，后续根据工作强度安排复评。',store:'徐汇运动康复中心',coach:'赵教练'}
 ];
 const lifecycleArchivePlans=[
   {name:'术后评估',time:'2026-11-03 10:20',title:'膝关节术后阶段康复方案',content:'康复目标：逐步恢复膝关节活动度、下肢肌力与日常步行能力。第一阶段进行股四头肌激活、踝泵和辅助屈伸练习；第二阶段逐步增加闭链力量及平衡训练。每周到店训练 2 次，训练后如出现持续肿胀或明显疼痛应暂停并联系康复师。',status:'待签名'}
@@ -342,14 +342,14 @@ function lifecycleArchivePage(){
   const profile=st.accountProfile||{},filter=st.recordTab||'全部';
   const records=lifecycleArchiveRecords.filter(item=>filter==='全部'||item.type===filter).slice().sort((a,b)=>b.time.localeCompare(a.time));
   const identity=[profile.name||'张女士',profile.gender||'女'].join(' · ');
-  return `<section class="card archive-user"><img class="avatar" src="${lifecycleEscape(profile.avatar||A+'coach-lin.png')}" alt="用户头像"><div class="grow"><b>${lifecycleEscape(profile.nickname||'林间微光')}</b><p>${lifecycleEscape(identity)}</p><small>手机号码　${lifecycleEscape(lifecycleMaskPhone(profile.phone))}</small></div></section>${tabs(['全部','评估结果','康复纪要','康复小结'],filter,'recordTab')}<div class="archive-timeline">${records.map(record=>`<article class="archive-record"><div class="archive-timeline-mark" aria-hidden="true"></div><time>${record.time}</time><section class="card"><div class="archive-record-heading"><b>${record.name}</b><span class="tag">${record.type}</span></div><h3>${record.title}</h3><p>${record.content}</p>${record.linked?`<button class="archive-result-link" data-act="openArchiveResult" data-i="${lifecycleArchiveRecords.indexOf(record)}">查看评估结果及康复方案 <span aria-hidden="true">›</span></button>`:''}</section></article>`).join('')||'<div class="empty">当前分类暂无档案记录</div>'}</div>`;
+  return `<section class="card archive-user"><img class="avatar" src="${lifecycleEscape(profile.avatar||A+'coach-lin.png')}" alt="用户头像"><div class="grow"><b>${lifecycleEscape(profile.nickname||'林间微光')}</b><p>${lifecycleEscape(identity)}</p><small>手机号码　${lifecycleEscape(lifecycleMaskPhone(profile.phone))}</small></div></section>${tabs(['全部','评估结果','康复纪要','康复小结'],filter,'recordTab')}<div class="archive-timeline">${records.map(record=>`<article class="archive-record"><div class="archive-timeline-mark" aria-hidden="true"></div><time>${record.time}</time><section class="card"><div class="archive-record-heading"><b>${lifecycleEscape(record.name)}</b><span class="tag">${lifecycleEscape(record.type)}</span></div><small class="archive-record-meta">门店名称　${lifecycleEscape(record.store||'静安运动康复中心')}　·　康复师姓名　${lifecycleEscape(record.coach||'林教练')}</small><h3>${lifecycleEscape(record.title)}</h3><p>${lifecycleEscape(record.content)}</p>${record.linked?`<button class="archive-result-link" data-act="openArchiveResult" data-i="${lifecycleArchiveRecords.indexOf(record)}">查看评估结果及康复方案 <span aria-hidden="true">›</span></button>`:''}</section></article>`).join('')||'<div class="empty">当前分类暂无档案记录</div>'}</div>`;
 }
 
 function lifecycleArchiveResult(){
   const record=lifecycleArchiveRecords[Number(st.archiveRecord)];
   if(!record||!record.linked)return lifecycleArchivePage();
   const plan=lifecycleArchivePlans.find(item=>item.name===record.name);
-  return `<section class="card archive-result-heading"><span class="tag">${record.type}</span><h2>${record.name}</h2><time>${record.time}</time></section><section class="card archive-result-content"><h3>${record.title}</h3><p>${record.content}</p></section>${plan?`<section class="card archive-result-content"><div class="between"><h3>康复方案</h3><span class="tag ${plan.status==='待签名'?'gold':''}">${plan.status}</span></div><p class="tiny muted">${plan.time}</p><h4>${plan.title}</h4><p>${plan.content}</p>${plan.status==='待签名'?'<button class="btn full" data-act="signArchivePlan">确认签署康复方案</button>':''}</section>`:''}<button class="btn ghost full" data-act="archiveResultsBack">返回康复档案</button>`;
+  return `<section class="card archive-result-heading"><span class="tag">${lifecycleEscape(record.type)}</span><h2>${lifecycleEscape(record.name)}</h2><time>${lifecycleEscape(record.time)}</time><small class="archive-record-meta">门店名称　${lifecycleEscape(record.store||'静安运动康复中心')}　·　康复师姓名　${lifecycleEscape(record.coach||'林教练')}</small></section><section class="card archive-result-content"><h3>${lifecycleEscape(record.title)}</h3><p>${lifecycleEscape(record.content)}</p></section>${plan?`<section class="card archive-result-content"><div class="between"><h3>康复方案</h3><span class="tag ${plan.status==='待签名'?'gold':''}">${plan.status}</span></div><p class="tiny muted">${plan.time}</p><h4>${plan.title}</h4><p>${plan.content}</p>${plan.status==='待签名'?'<button class="btn full" data-act="signArchivePlan">确认签署康复方案</button>':''}</section>`:''}<button class="btn ghost full" data-act="archiveResultsBack">返回康复档案</button>`;
 }
 
 function lifecycleLogisticsPage(){
