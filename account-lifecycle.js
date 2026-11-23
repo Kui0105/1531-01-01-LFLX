@@ -11,7 +11,7 @@ function lifecycleNow(){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/S
 function lifecycleExpirePendingProductPayments(){
   const now=Date.now(),expired=[];
   st.orders.forEach(order=>{
-    if(order.type!=='商品订单'||order.status!=='待付款')return;
+    if(!['评估订单','服务订单','商品订单'].includes(order.type)||order.status!=='待付款')return;
     if(!Number.isFinite(Number(order.paymentDeadline)))order.paymentDeadline=now+15*60*1000;
     if(Number(order.paymentDeadline)<=now){
       order.status='已取消';order.cancelledAt=lifecycleNow();order.cancelReason='支付超时自动取消';expired.push(order);
@@ -747,7 +747,7 @@ draw=function(){
   document.querySelectorAll('[data-profile]').forEach(input=>input.addEventListener('input',()=>st.profileEditDraft[input.dataset.profile]=input.value));
   document.getElementById('profileAvatarInput')?.addEventListener('change',event=>lifecycleReadImages(event.target,st.profileEditDraft,'avatar',true));
   if(st.paymentCountdownTimer)clearInterval(st.paymentCountdownTimer);
-  const countdownOrders=st.orders.filter(order=>order.type==='商品订单'&&order.status==='待付款');
+  const countdownOrders=st.orders.filter(order=>['评估订单','服务订单','商品订单'].includes(order.type)&&order.status==='待付款');
   if(countdownOrders.length&&['orders','orderDetail'].includes(st.page)){
     st.paymentCountdownTimer=setInterval(()=>{
       const expired=lifecycleExpirePendingProductPayments();

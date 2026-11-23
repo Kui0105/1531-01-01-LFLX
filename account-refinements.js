@@ -1,10 +1,10 @@
 const accountOrders = [
-  {id:'EV2026110401',type:'评估订单',status:'待付款',name:'放松评估',detail:'45 分钟 · 评估服务',price:99,image:'service-eval.png',date:'2026-11-04'},
+  {id:'EV2026110401',type:'评估订单',status:'待付款',name:'放松评估',detail:'45 分钟 · 评估服务',price:99,image:'service-eval.png',date:'2026-11-04',paymentDeadline:Date.now()+15*60*1000},
   {id:'EV2026110402',type:'评估订单',status:'待评估',name:'运动损伤评估',detail:'60 分钟 · 评估服务',price:199,image:'service-knee.png',date:'2026-11-03'},
   {id:'EV2026110403',type:'评估订单',status:'服务中',name:'术后评估',detail:'60 分钟 · 评估服务',price:199,image:'service-back.png',date:'2026-11-02'},
   {id:'EV2026110404',type:'评估订单',status:'已完成',name:'颈肩腰痛评估',detail:'45 分钟 · 评估服务',price:159,image:'service-back.png',date:'2026-10-29'},
   {id:'EV2026110406',type:'评估订单',status:'已取消',name:'放松评估',detail:'45 分钟 · 评估服务',price:99,image:'service-eval.png',date:'2026-10-25'},
-  {id:'SV2026110401',type:'服务订单',status:'待付款',name:'颈肩腰放松疗程',detail:'45 分钟 · 到店康复',price:268,image:'service-back.png',date:'2026-11-04'},
+  {id:'SV2026110401',type:'服务订单',status:'待付款',name:'颈肩腰放松疗程',detail:'45 分钟 · 到店康复',price:268,image:'service-back.png',date:'2026-11-04',paymentDeadline:Date.now()+15*60*1000},
   {id:'SV2026110402',type:'服务订单',status:'待服务',name:'筋膜放松体验卡',detail:'3 次卡 · 待服务',price:699,image:'service-back.png',date:'2026-11-03'},
   {id:'SV2026110403',type:'服务订单',status:'服务中',name:'膝关节运动康复',detail:'50 分钟 · 林教练',price:328,image:'service-knee.png',date:'2026-11-02'},
   {id:'SV2026110404',type:'服务订单',status:'已完成',name:'膝关节运动康复',detail:'50 分钟 · 林教练',price:328,image:'service-knee.png',date:'2026-10-29'},
@@ -35,7 +35,7 @@ const accountOrdersByType = {
 };
 
 function accountPaymentCountdown(order){
-  if(order.type!=='商品订单'||order.status!=='待付款')return '';
+  if(order.status!=='待付款')return '';
   const remaining=Math.max(0,Number(order.paymentDeadline||0)-Date.now());
   const minutes=Math.floor(remaining/60000),seconds=Math.floor(remaining/1000)%60;
   return ` · 付款剩余 ${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
@@ -47,7 +47,7 @@ function accountOrderPage() {
   const filter=accountOrdersByType[type].includes(st.orderFilter)?st.orderFilter:'全部';
   st.orderFilter=filter;
   const orders=st.orders.filter(order=>order.type===type&&!lifecycleIsAfterSaleOrder(order)&&(filter==='全部'||order.status===filter));
-  return `${tabs(Object.keys(accountOrdersByType),type,'orderType').replace('class="tabs"','class="tabs order-type-tabs"')}${tabs(accountOrdersByType[type],filter,'orderFilter').replace('class="tabs"','class="tabs order-status-tabs"')}<div class="order-list">${orders.map(order=>`<article class="card order-card" data-act="accountOrderDetail" data-id="${order.id}" role="link" tabindex="0" aria-label="查看${order.name}订单详情"><div class="between"><small class="muted">${order.id} · ${order.date}<span data-payment-countdown="${order.id}">${accountPaymentCountdown(order)}</span></small><span class="tag ${['待付款','售后中'].includes(order.status)?'gold':''}">${lifecycleOrderStatus(order)}</span></div><div class="row order-product"><img class="thumb" src="${A+order.image}" alt="${order.name}"><div class="grow"><b>${order.name}</b><p>${order.detail}</p></div><b class="price">¥${order.price}</b></div><div class="order-card-footer"><small>实付 ¥${order.price}</small>${accountOrderActions(order)}</div></article>`).join('')||'<div class="empty">当前状态暂无订单</div>'}</div>`;
+  return `${tabs(Object.keys(accountOrdersByType),type,'orderType').replace('class="tabs"','class="tabs order-type-tabs"')}${tabs(accountOrdersByType[type],filter,'orderFilter').replace('class="tabs"','class="tabs order-status-tabs"')}<div class="order-list">${orders.map(order=>`<article class="card order-card" data-act="accountOrderDetail" data-id="${order.id}" role="link" tabindex="0" aria-label="查看${order.name}订单详情"><div class="between"><small class="muted">${order.id} · ${order.date}</small><span class="tag ${['待付款','售后中'].includes(order.status)?'gold':''}">${lifecycleOrderStatus(order)}</span></div><div class="row order-product"><img class="thumb" src="${A+order.image}" alt="${order.name}"><div class="grow"><b>${order.name}</b><p>${order.detail}</p></div><b class="price">¥${order.price}</b></div><div class="order-card-footer"><small>实付 ¥${order.price}<span class="payment-countdown" data-payment-countdown="${order.id}">${accountPaymentCountdown(order)}</span></small>${accountOrderActions(order)}</div></article>`).join('')||'<div class="empty">当前状态暂无订单</div>'}</div>`;
 }
 
 function accountOrderActions(order, detail=false) {
@@ -118,7 +118,7 @@ function accountOrderDetail(order) {
   const product=order.type==='商品订单';
   const checkedIn=order.detail.includes('已核销');
   st.orderedService=S.find(service=>service[0]===order.name)||st.orderedService;
-  return `<div class="card"><span class="tag ${order.status==='待付款'?'gold':''}">${lifecycleOrderStatus(order)}</span><p class="small">订单编号 ${order.id}</p><p class="tiny muted">下单时间 ${order.date} · ${order.status==='待付款'?'未支付':'微信支付'}<span data-payment-countdown="${order.id}">${accountPaymentCountdown(order)}</span></p></div><div class="card row"><img class="thumb" src="${A+order.image}" alt="${order.name}"><div class="grow"><b>${order.name}</b><p>${order.detail}</p></div><b class="price">¥${order.price}</b></div>${product?`<div class="card small"><b>收货信息</b><p>张女士　138****2888</p><p class="muted">上海市静安区南京西路 1288 号 8F</p></div>`:!['待付款','已取消'].includes(order.status)?`<div class="card order-code-card"><div class="order-code-icon">${ic('file')}</div><b>到店核销码</b><p class="tiny muted">${checkedIn?'该服务已核销':'请出示此码完成到店核销'}</p></div>`:''}<div class="card small"><b>优惠信息</b><div class="divider"></div><div class="between"><span>优惠券抵扣</span><span>−¥0</span></div><div class="between"><span>积分抵扣</span><span>−¥0</span></div><div class="divider"></div><div class="between"><span>订单金额</span><b>¥${order.price}</b></div><div class="between"><span>实付金额</span><b class="price">¥${order.price}</b></div></div>${order.refundStatus?`<div class="card small"><b>退款信息</b><p>退款金额　¥${Number(order.refundAmount).toFixed(2)}</p><p>退款方式　${order.refundStatus}</p></div>`:''}<div class="card small"><b>订单信息</b><p>订单编号　${order.id}</p><p>下单时间　${order.date}</p><p>支付时间　${order.status==='待付款'?'待支付':order.date}</p><p>支付方式　${order.status==='待付款'?'—':'微信支付'}</p></div>${cta(accountOrderActions(order,true))}`;
+  return `<div class="card"><span class="tag ${order.status==='待付款'?'gold':''}">${lifecycleOrderStatus(order)}</span><p class="small">订单编号 ${order.id}</p><p class="tiny muted">下单时间 ${order.date} · ${order.status==='待付款'?'未支付':'微信支付'}</p></div><div class="card row order-product"><img class="thumb" src="${A+order.image}" alt="${order.name}"><div class="grow"><b>${order.name}</b><p>${order.detail}</p></div><b class="price">¥${order.price}<span class="payment-countdown" data-payment-countdown="${order.id}">${accountPaymentCountdown(order)}</span></b></div>${product?`<div class="card small"><b>收货信息</b><p>张女士　138****2888</p><p class="muted">上海市静安区南京西路 1288 号 8F</p></div>`:!['待付款','已取消'].includes(order.status)?`<div class="card order-code-card"><div class="order-code-icon">${ic('file')}</div><b>到店核销码</b><p class="tiny muted">${checkedIn?'该服务已核销':'请出示此码完成到店核销'}</p></div>`:''}<div class="card small"><b>优惠信息</b><div class="divider"></div><div class="between"><span>优惠券抵扣</span><span>−¥0</span></div><div class="between"><span>积分抵扣</span><span>−¥0</span></div><div class="divider"></div><div class="between"><span>订单金额</span><b>¥${order.price}</b></div><div class="between"><span>实付金额</span><b class="price">¥${order.price}</b></div></div>${order.refundStatus?`<div class="card small"><b>退款信息</b><p>退款金额　¥${Number(order.refundAmount).toFixed(2)}</p><p>退款方式　${order.refundStatus}</p></div>`:''}<div class="card small"><b>订单信息</b><p>订单编号　${order.id}</p><p>下单时间　${order.date}</p><p>支付时间　${order.status==='待付款'?'待支付':order.date}</p><p>支付方式　${order.status==='待付款'?'—':'微信支付'}</p></div>${cta(accountOrderActions(order,true))}`;
 }
 
 function accountOrderFlowPage(kind) {
@@ -255,12 +255,12 @@ act=function(event){
   if(action==='payOk'&&node.dataset.product==='false'){
     const service=st.orderedService||S[st.service]||S[7];
     const evaluation=st.btype==='eval',quantity=evaluation?1:Math.max(1,Math.floor(Number(st.serviceQty)||1));
-    st.orders.unshift({id:`${evaluation?'EV':'SV'}${Date.now()}`,type:evaluation?'评估订单':'服务订单',status:evaluation?'待评估':'待服务',name:service[0],detail:`${service[2]}${evaluation?'':` · 数量 ×${quantity}`}`,quantity,unitPrice:Number(service[3])||0,price:checkoutAmount(false),image:service[4],date:new Date().toLocaleDateString('sv-SE')});
+    st.orders.unshift({id:`${evaluation?'EV':'SV'}${Date.now()}`,type:evaluation?'评估订单':'服务订单',status:evaluation?'待评估':'待服务',name:service[0],detail:`${service[2]}${evaluation?'':` · 数量 ×${quantity}`}`,quantity,unitPrice:Number(service[3])||0,price:checkoutAmount(false),image:service[4],date:new Date().toLocaleDateString('sv-SE'),paymentDeadline:Date.now()+15*60*1000});
     st.orderFilter='全部';
   }
   if(action==='payOk'&&node.dataset.product==='true'){
     const cartItem=st.cart.find(item=>item.checked&&!item.invalid);
-    if(cartItem)st.orders.unshift({id:`GO${Date.now()}`,type:'商品订单',status:'待发货',name:cartItem.name,detail:`${cartItem.spec} × ${cartItem.qty}`,price:checkoutAmount(true),image:'product.png',date:'2026-11-04'});
+    if(cartItem)st.orders.unshift({id:`GO${Date.now()}`,type:'商品订单',status:'待发货',name:cartItem.name,detail:`${cartItem.spec} × ${cartItem.qty}`,price:checkoutAmount(true),image:'product.png',date:'2026-11-04',paymentDeadline:Date.now()+15*60*1000});
     st.orderFilter='全部';
   }
   if(action==='bookingSuccess'){

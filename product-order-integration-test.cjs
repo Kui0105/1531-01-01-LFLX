@@ -55,8 +55,15 @@ assert.equal(run('st.orders.find(order=>order.id==="GO2026110401").status'), '�
 assert.equal(run('st.orders.find(order=>order.id==="GO2026110401").cancelReason'), '支付超时自动取消');
 assert.match(render('orders'), /GO2026110401/);
 
+for (const [type, id] of [['评估订单', 'EV2026110401'], ['服务订单', 'SV2026110401']]) {
+  run('st.orderType=' + JSON.stringify(type) + ';st.orderFilter="待付款";st.orders.find(order=>order.id===' + JSON.stringify(id) + ').paymentDeadline=Date.now()+60000');
+  assert.match(render('orders'), /payment-countdown/);
+  assert.match(render('orders'), /付款剩余/);
+}
+
 // Completed product orders provide a direct review entry.
 select('GO2026110404');
+run('st.orderType="商品订单";st.orderFilter="已完成"');
 assert.match(render('orders'), /data-go="reviews">去评价/);
 assert.match(render('orderDetail'), /data-go="reviews">去评价/);
 
