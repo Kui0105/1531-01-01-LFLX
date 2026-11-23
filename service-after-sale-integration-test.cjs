@@ -211,6 +211,7 @@ fire('applyProductAfterSale', { id: 'GO2026110404' });
 assert.equal(run('st.page'), 'afterSale');
 assert.match(render('afterSale'), /GO2026110404/);
 elements.set('productAfterSaleReason', { value: '其他' });
+elements.set('productAfterSaleType', { value: '退货退款' });
 elements.set('productAfterSaleRemarks', { value: '申请退货退款' });
 fire('submitProductAfterSale');
 assert.equal(run('lastModal.title'), '确认提交售后');

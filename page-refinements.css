@@ -305,6 +305,11 @@ button.therapist-star{cursor:pointer}
 .order-card-footer .order-actions .textbtn{font-size:12px;min-height:44px;padding:3px 2px;white-space:nowrap}
 .order-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px;margin-top:8px;padding-top:6px}
 .order-actions .textbtn{min-height:38px;font-size:13px}
+.product-return-progress{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;padding:0;list-style:none}
+.product-return-progress li{padding:5px 8px;border-radius:6px;background:#f2f5f4;color:#71817d;font-size:12px}
+.product-return-progress li.active{background:#e3f2ec;color:#287765}
+.product-after-sale-demo-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}
+.return-tracking-number{overflow-wrap:anywhere}
 .appointment-tabs{margin:0 -16px 14px;padding:0 16px 4px}
 .screen .appointment-card{align-items:flex-start;margin:0;padding:14px}
 .appointment-card>.thumb{width:68px;height:68px}
