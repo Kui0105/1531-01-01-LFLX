@@ -126,7 +126,7 @@ function therapistServiceOrder(id){return therapistCustomerData.flatMap(customer
 let therapistAssessmentDemoSequence=1;
 function therapistEnsureAssessmentDemo(){
   st.therapistAppointmentFilter='全部';
-  const active=therapistAppointments.some(item=>item.customerId==='CU1002'&&item.service==='运动损伤评估'&&!['已完成','已取消'].includes(item.status));
+  const active=therapistAppointments.some(item=>item.customerId==='CU1002'&&item.service==='运动损伤评估'&&['待服务','服务中'].includes(item.status));
   if(active)return;
   const sequence=++therapistAssessmentDemoSequence,orderId=`SO-DEMO-EVAL-${sequence}`,appointmentId=`AP-T-DEMO-${sequence}`;
   therapistCustomer('CU1002').orders.push({id:orderId,name:'运动损伤评估',total:1,used:0,expiry:'2027-02-28',records:[]});
