@@ -508,6 +508,7 @@ for(const record of injuryReports()){
   const appointment=therapistAppointment(record.appointmentId);
   if(appointment&&appointment.customerId===record.customerId){appointment.status=record.statusAfterSubmission||'待核销';if(record.redeemed){appointment.redeemed=true;const order=therapistServiceOrder(appointment.orderId);if(order)order.used=Math.max(order.used,1)}}
 }
+therapistEnsureAssessmentDemo();
 const originalTherapistRecordForm=therapistRecordForm;
 therapistRecordForm=function(){
   const appointment=therapistAppointment(st.therapistAppointmentId);
