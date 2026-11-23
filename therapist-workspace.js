@@ -55,6 +55,7 @@ const therapistMessages=[
   {id:'TM001',type:'客户预约提醒',time:therapistToday+' 09:00',customerId:'CU1001',appointmentId:'AP-T001',content:'张女士已预约今日 10:00 膝关节运动康复，请及时跟进。',unread:true},
   {id:'TM002',type:'评估资料填写',time:therapistToday+' 08:30',customerId:'CU1002',appointmentId:'AP-T002',content:'李先生的运动损伤评估资料待填写。',unread:true},
   {id:'TM003',type:'康复纪要填写',time:therapistDateOffset(-1)+' 17:00',customerId:'CU1004',appointmentId:'AP-T003',content:'陈先生本次服务的康复纪要待填写。',unread:true},
+  {id:'TM006',type:'康复小结填写',time:therapistToday+' 08:10',customerId:'CU1003',appointmentId:'AP-T005',content:'王女士已完成阶段服务次数，本次康复小结待填写，请完成阶段记录。',unread:true},
   {id:'TM004',type:'订单核销提醒',time:therapistDateOffset(-1)+' 16:30',customerId:'CU1001',appointmentId:'AP-T001',content:'服务订单 SO2026102501 待核销。',unread:true},
   {id:'TM005',type:'康复复测提醒',time:therapistDateOffset(-2)+' 10:00',customerId:'CU1003',content:'王女士已到复测节点，请及时联系客户到店复测。',unread:false}
 ];
