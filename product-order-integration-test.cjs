@@ -49,6 +49,17 @@ fire('confirmCancelAccountOrder', { id: 'GO2026110402' });
 assert.equal(run('st.accountOrder.status'), '已取消');
 assert.equal(run('st.accountOrder.refundAmount'), 89);
 
+// Unpaid product orders show a countdown and expire into cancelled automatically.
+run('st.orders.find(order=>order.id==="GO2026110401").paymentDeadline=Date.now()-1;st.orderType="商品订单";st.orderFilter="全部";st.page="orders";lifecycleExpirePendingProductPayments()');
+assert.equal(run('st.orders.find(order=>order.id==="GO2026110401").status'), '已取消');
+assert.equal(run('st.orders.find(order=>order.id==="GO2026110401").cancelReason'), '支付超时自动取消');
+assert.match(render('orders'), /GO2026110401/);
+
+// Completed product orders provide a direct review entry.
+select('GO2026110404');
+assert.match(render('orders'), /data-go="reviews">去评价/);
+assert.match(render('orderDetail'), /data-go="reviews">去评价/);
+
 // Receiving an order requires confirmation and opens the completed list.
 select('GO2026110403');
 fire('confirmReceived', { id: 'GO2026110403' });

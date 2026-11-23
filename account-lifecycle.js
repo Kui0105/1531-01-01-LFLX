@@ -8,6 +8,17 @@ const lifecycleProfilePage=accountProfilePage;
 
 function lifecycleEscape(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
 function lifecycleNow(){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date())}
+function lifecycleExpirePendingProductPayments(){
+  const now=Date.now(),expired=[];
+  st.orders.forEach(order=>{
+    if(order.type!=='商品订单'||order.status!=='待付款')return;
+    if(!Number.isFinite(Number(order.paymentDeadline)))order.paymentDeadline=now+15*60*1000;
+    if(Number(order.paymentDeadline)<=now){
+      order.status='已取消';order.cancelledAt=lifecycleNow();order.cancelReason='支付超时自动取消';expired.push(order);
+    }
+  });
+  return expired;
+}
 function lifecycleService(order){return S.find(service=>service[0]===order.name)||S[7]}
 function lifecycleUsesPerUnit(){return 1}
 function lifecycleQuantity(order){return Math.max(1,Number.isSafeInteger(Number(order.quantity))?Number(order.quantity):Number(order.detail?.match(/数量\s*×\s*(\d+)/)?.[1]||1))}
@@ -36,7 +47,7 @@ function lifecycleRedemptionSection(order){
 accountOrderActions=function(order, detail=false){
   if(lifecycleIsAfterSaleOrder(order))return `<div class="order-actions"><button class="textbtn" data-act="openAfterSaleDetail" data-id="${order.id}">售后详情</button></div>`;
   if(order.type==='商品订单'&&order.status==='待发货')return `<div class="order-actions"><button class="textbtn" data-act="cancelAccountOrder" data-id="${order.id}">取消订单</button></div>`;
-  if(order.type==='商品订单'&&order.status==='已完成')return `<div class="order-actions"><button class="textbtn" data-go="products">再次购买</button><button class="textbtn" data-act="applyProductAfterSale" data-id="${order.id}">申请售后</button></div>`;
+  if(order.type==='商品订单'&&order.status==='已完成')return `<div class="order-actions"><button class="textbtn" data-go="products">再次购买</button><button class="textbtn" data-go="reviews">去评价</button><button class="textbtn" data-act="applyProductAfterSale" data-id="${order.id}">申请售后</button></div>`;
   if(order.type==='服务订单'){
     if(['待服务','服务中'].includes(order.status)){
       if(lifecyclePendingAppointment(order)){
@@ -701,6 +712,7 @@ async function lifecycleReadImages(input,target,key,single=false){
 }
 
 draw=function(){
+  const expiredPayments=lifecycleExpirePendingProductPayments();
   lifecycleBaseDraw();
   document.querySelectorAll('[data-product-after-sale-field]').forEach(field=>{
     const save=()=>{if(st.productAfterSaleDraft)st.productAfterSaleDraft[field.dataset.productAfterSaleField]=field.value};
@@ -734,5 +746,18 @@ draw=function(){
   document.getElementById('complaintImageInput')?.addEventListener('change',event=>lifecycleReadImages(event.target,st.complaintDraft,'images'));
   document.querySelectorAll('[data-profile]').forEach(input=>input.addEventListener('input',()=>st.profileEditDraft[input.dataset.profile]=input.value));
   document.getElementById('profileAvatarInput')?.addEventListener('change',event=>lifecycleReadImages(event.target,st.profileEditDraft,'avatar',true));
+  if(st.paymentCountdownTimer)clearInterval(st.paymentCountdownTimer);
+  const countdownOrders=st.orders.filter(order=>order.type==='商品订单'&&order.status==='待付款');
+  if(countdownOrders.length&&['orders','orderDetail'].includes(st.page)){
+    st.paymentCountdownTimer=setInterval(()=>{
+      const expired=lifecycleExpirePendingProductPayments();
+      if(expired.length){clearInterval(st.paymentCountdownTimer);st.paymentCountdownTimer=null;draw();toast('商品订单支付超时，已自动取消');return}
+      document.querySelectorAll('[data-payment-countdown]').forEach(element=>{
+        const order=st.orders.find(item=>item.id===element.dataset.paymentCountdown);
+        if(order)element.textContent=accountPaymentCountdown(order);
+      });
+    },1000);
+  }
+  if(expiredPayments.length)toast('商品订单支付超时，已自动取消');
 };
 draw();
