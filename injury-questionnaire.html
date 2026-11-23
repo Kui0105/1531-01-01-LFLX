@@ -469,7 +469,11 @@ const STEPS = [
     {type:'fields', items:[
       {k:'client', t:'A1 姓名', ph:'请输入姓名'},
       {k:'age', t:'A3 年龄', ph:'岁'},
-      {k:'bw', t:'A4 身高 / 体重', ph:'如 175 / 72'},
+      {k:'heightCm', t:'身高（cm）', ph:'请输入身高', inputType:'number', step:'0.1'},
+      {k:'weightKg', t:'体重（kg）', ph:'请输入体重', inputType:'number', step:'0.1', bmiAfter:true},
+      {k:'mri', t:'MRI 检查与结果', ph:'填写检查部位、日期或检查结果'},
+      {k:'bodyFat', t:'体脂率（%）', ph:'请输入体脂率', inputType:'number', step:'0.1'},
+      {k:'visceralFat', t:'内脏脂肪', ph:'请输入内脏脂肪数值', inputType:'number', step:'0.1'},
       {k:'tel', t:'A5 联系电话', ph:'选填'},
       {k:'assessor', t:'A11 评估师', ph:'填写人'},
       {k:'date', t:'A12 评估日期', ph:'如 2026.10.23'}
@@ -680,10 +684,21 @@ function loadDraft(){
     const s = localStorage.getItem(draftKey);
     const o = s ? JSON.parse(s) : {};
     if(o && typeof o.e1 === 'string') o.e1 = [o.e1];
+    if(o?.bw&&(!o.heightCm||!o.weightKg)){
+      const measurements=String(o.bw).match(/(\d+(?:\.\d+)?)\s*(?:cm)?\s*[\/／]\s*(\d+(?:\.\d+)?)/i);
+      if(measurements){o.heightCm||=measurements[1];o.weightKg||=measurements[2]}
+    }
+    o.bmi=bmiFor(o.heightCm,o.weightKg)||'';
     return o || {};
   }catch(e){ return {}; }
 }
 function saveDraft(){ try{ localStorage.setItem(draftKey, JSON.stringify(ans)); }catch(e){} }
+function bmiFor(heightValue,weightValue){
+  const height=Number.parseFloat(heightValue),weight=Number.parseFloat(weightValue);
+  if(!Number.isFinite(height)||!Number.isFinite(weight)||height<=0||weight<=0)return '';
+  return (weight/((height/100)**2)).toFixed(1);
+}
+function calculatedBMI(){return bmiFor(ans.heightCm,ans.weightKg)}
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -719,7 +734,7 @@ function renderStep(){
       b.items.forEach(it=>{
         if(it.when && !it.when(ans)) return;
         html += `<div class="q"><div class="q-label">${esc(it.t)}</div>
-          <input class="inp" data-k="${it.k}" type="text" placeholder="${esc(it.ph||'')}" value="${esc(ans[it.k]||'')}"></div>`;
+          <input class="inp" data-k="${it.k}" type="${it.inputType||'text'}" ${it.inputType==='number'?`min="0" step="${it.step||'any'}" inputmode="decimal"`:''} placeholder="${esc(it.ph||'')}" value="${esc(ans[it.k]||'')}">${it.bmiAfter?`<div class="bmi-result" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;padding:11px 13px;border-radius:10px;background:#F3F7F4"><b style="color:#1F4E3D">BMI</b><span><strong data-bmi-value>${calculatedBMI()||'—'}</strong><small style="margin-left:5px;color:#718078">kg/m²</small></span></div><small data-bmi-hint style="display:block;margin-top:5px;color:#87928c">${calculatedBMI()?'':'输入身高和体重后自动计算'}</small>`:''}</div>`;
       });
       html += `</div>`; return;
     }
@@ -881,6 +896,12 @@ document.addEventListener('input', e=>{
     saveDraft();
   }else if(t.dataset.k){
     ans[t.dataset.k] = t.value;
+    if(t.dataset.k==='heightCm'||t.dataset.k==='weightKg'){
+      const bmi=calculatedBMI(),value=document.querySelector('[data-bmi-value]'),hint=document.querySelector('[data-bmi-hint]');
+      ans.bmi=bmi;
+      if(value)value.textContent=bmi||'—';
+      if(hint)hint.textContent=bmi?'':'输入身高和体重后自动计算';
+    }
     saveDraft();
   }
 });
