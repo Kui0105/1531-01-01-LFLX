@@ -407,6 +407,11 @@ button.therapist-star{cursor:pointer}
 .rewards-commission{display:flex;flex-direction:column;gap:8px;background:#edf6f2}.rewards-commission>span{font-size:13px;color:#617579}
 .rewards-commission>b{font-family:Arial,sans-serif;font-size:28px;line-height:36px;color:#236c60}.rewards-commission>small{font-size:12px;color:#617579}
 .rewards-commission>.textbtn{align-self:flex-start;min-height:36px;padding-left:0}
+.withdrawal-status-tabs{overflow-x:auto;scrollbar-width:none}.withdrawal-status-tabs .tabs{min-width:max-content}
+.withdrawal-record{cursor:default}.withdrawal-record-action{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}.withdrawal-record-action:active{transform:scale(.99)}
+.withdrawal-record-facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.withdrawal-record-facts span{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#718078}.withdrawal-record-facts b{font-size:15px;color:#26342e}
+.withdrawal-record>small,.withdrawal-record .between small{font-size:11px;color:#718078}
 .withdraw-amount{display:flex;gap:8px;align-items:center}.withdraw-amount>.input{flex:1;min-width:0}.withdraw-amount>.textbtn{flex:none;min-height:44px}
 .card-tabs{margin:0 -16px 14px;padding:0 16px 4px}
 .screen .membership-card{margin:0;padding:14px}
