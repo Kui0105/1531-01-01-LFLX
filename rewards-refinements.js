@@ -22,7 +22,7 @@ st.commissionEntries||=[
   {id:'CM1',reason:'佣金到账',date:'2026-10-18 16:40',amount:200,status:'已到账',note:'推广商品订单结算'}
 ];
 st.withdrawalRecords||=[
-  {id:'WD2026110801',amount:100,fee:1,received:99,date:'2026-11-08 15:20',status:'已打款',bank:'招商银行（尾号 6288）',proof:'电子回单号 ZB20261108001520',paidAt:'2026-11-08 15:20'},
+  {id:'WD2026110801',amount:100,fee:1,received:99,date:'2026-11-08 15:20',status:'已打款',bank:'招商银行（尾号 6288）',proofImage:'withdrawal-proof-sample.png',paidAt:'2026-11-08 15:20'},
   {id:'WD2026110601',amount:80,fee:0.8,received:79.2,date:'2026-11-06 11:32',status:'待打款',bank:'招商银行（尾号 6288）'},
   {id:'WD2026110401',amount:50,fee:0,received:50,date:'2026-11-04 09:18',status:'待审核',bank:'招商银行（尾号 6288）'},
   {id:'WD2026102901',amount:60,fee:0,received:0,date:'2026-10-29 16:05',status:'已拒绝',bank:'招商银行（尾号 6288）',reason:'收款账户姓名与开户信息不一致'}
@@ -92,7 +92,7 @@ function rewardsCommissionPage(){return `<div class="card rewards-commission"><s
 
 function rewardsWithdrawalDetail(record){
   if(record.status==='已打款'){
-    modal('打款凭证',`<section class="card small"><div class="between"><span>提现金额</span><b>¥${rewardsMoney(record.amount)}</b></div><div class="between"><span>提现手续费</span><span>¥${rewardsMoney(record.fee)}</span></div><div class="between"><span>到账金额</span><b class="price">¥${rewardsMoney(record.received)}</b></div><p>收款账户　${rewardsEscape(record.bank)}</p><p>打款时间　${rewardsEscape(record.paidAt||record.date)}</p><p>打款凭证　${rewardsEscape(record.proof||'电子回单')}</p></section><button class="btn full" data-act="close">完成</button>`);
+    modal('打款凭证',`<img class="withdrawal-proof-image" src="${A+rewardsEscape(record.proofImage||'withdrawal-proof-sample.png')}" alt="银行转账打款凭证图片"><button class="btn full" data-act="close">完成</button>`);
     return;
   }
   if(record.status==='已拒绝')modal('提现驳回原因',`<section class="card small"><p>提现申请　${rewardsEscape(record.id)}</p><p>驳回时间　${rewardsEscape(record.date)}</p><p>驳回原因　${rewardsEscape(record.reason||'未填写驳回原因')}</p></section><button class="btn full" data-act="close">知道了</button>`);

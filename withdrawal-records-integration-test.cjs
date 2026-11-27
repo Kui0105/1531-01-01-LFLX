@@ -24,7 +24,8 @@ assert.equal(run('st.withdrawalRecords.length'), 4);
 
 fire('withdrawalRecordDetail', { id: 'WD2026110801' });
 assert.equal(run('globalThis.lastModal.title'), '打款凭证');
-assert.match(run('globalThis.lastModal.body'), /ZB20261108001520/);
+assert.ok(run('globalThis.lastModal.body').includes('<img class="withdrawal-proof-image" src="assets/withdrawal-proof-sample.png"'));
+assert.equal(fs.readFileSync('assets/withdrawal-proof-sample.png').subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
 fire('withdrawalRecordDetail', { id: 'WD2026102901' });
 assert.equal(run('globalThis.lastModal.title'), '提现驳回原因');
 assert.match(run('globalThis.lastModal.body'), /收款账户姓名与开户信息不一致/);

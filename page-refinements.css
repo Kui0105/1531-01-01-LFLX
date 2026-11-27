@@ -412,6 +412,7 @@ button.therapist-star{cursor:pointer}
 .withdrawal-record-facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .withdrawal-record-facts span{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#718078}.withdrawal-record-facts b{font-size:15px;color:#26342e}
 .withdrawal-record>small,.withdrawal-record .between small{font-size:11px;color:#718078}
+.withdrawal-proof-image{display:block;width:100%;height:auto;max-height:68vh;object-fit:contain;margin:8px auto 14px;border-radius:8px;background:#f1f4f2}
 .withdraw-amount{display:flex;gap:8px;align-items:center}.withdraw-amount>.input{flex:1;min-width:0}.withdraw-amount>.textbtn{flex:none;min-height:44px}
 .card-tabs{margin:0 -16px 14px;padding:0 16px 4px}
 .screen .membership-card{margin:0;padding:14px}
